@@ -26,6 +26,7 @@
   "bugs": {
     "url": "https://github.com/css-blocks/opticss/issues"
   },
+  "types": "dist/src/index.d.ts",
   "homepage": "https://github.com/css-blocks/opticss#readme",
   "devDependencies": {
     "@types/chai": "^3.5.2",
