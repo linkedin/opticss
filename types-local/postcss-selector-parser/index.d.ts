@@ -174,16 +174,20 @@ declare namespace parser {
     }
     class Pseudo extends Container implements PseudoOptions {
     }
+    interface TagOptions extends NodeOptions {
+    }
+    class Tag extends Node implements TagOptions {
+    }
     function attribute(opts: AttributeOptions): Attribute;
     function className(opts: ClassOptions): ClassName;
     function combinator(opts: CombinatorOptions): Combinator;
     function pseudo(opts: PseudoOptions): Pseudo;
+    function tag(opts: TagOptions): Tag;
     function comment(opts: any): any;
     function id(opts: any): any;
     function nesting(opts: any): any;
     function root(opts: any): any;
     function selector(opts: any): any;
     function string(opts: any): any;
-    function tag(opts: any): any;
     function universal(opts: any): any;
 }
