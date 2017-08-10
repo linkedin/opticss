@@ -1,8 +1,6 @@
 import { inspect } from "util";
-// TODO bring CompoundSelector over from css-blocks.
-export interface CompoundSelector {
-
-}
+import { CompoundSelector } from "./parseSelector";
+import * as SelectorParser from "postcss-selector-parser";
 
 // TODO: make styleables belong to a template. that template can have template-wide config associated to it.
 // E.g. namespace mappings.
@@ -22,6 +20,14 @@ export interface Styleable {
 export interface HasNamespace {
   readonly namespaceURL: string | null;
 }
+
+// Ok so a quick rundown on the type strategy for tagname and attribute values:
+// There are exclusive interfaces that can be passed in and this prevents the
+// creation of nonsensical value data like `{unknown: true, value: "asdf"}`. But
+// when it comes time to read these values we have to read them off a data type
+// where any of the values might be present without introducing a bunch of
+// casting So the normalized types are a superset of the types that are exlusive
+// when passed as arguments. This keeps us from having to do a bunch of casting.
 
 /**
  * A value that contains no dynamic component.
@@ -75,55 +81,79 @@ export interface ValueEndsWith {
  */
 export type ValueStartsAndEndsWith = ValueStartsWith & ValueEndsWith;
 
+export type AttributeValueChoiceOption =
+  ValueAbsent |
+  ValueConstant |
+  ValueStartsWith |
+  ValueEndsWith |
+  ValueStartsAndEndsWith |
+  AttributeValueSet;
+
+export type NormalizedAttributeValueChoiceOption =
+  Partial<ValueAbsent> &
+  Partial<ValueConstant> &
+  Partial<ValueStartsWith> &
+  Partial<ValueEndsWith> &
+  Partial<ValueStartsAndEndsWith> &
+  Partial<NormalizedAttributeValueSet>;
+
 /**
  * The value may have one of several values.
  * Assumed to match if any of the choices matches.
  */
 export interface AttributeValueChoice {
-  oneOf: Array<ValueAbsent |
-               ValueConstant |
-               ValueStartsWith |
-               ValueEndsWith |
-               ValueStartsAndEndsWith>;
+  oneOf: Array<AttributeValueChoiceOption>;
 }
 
-/**
- * Normalized result of a value choice to make interacting with it more straightforward with type checking.
- */
 export interface NormalizedAttributeValueChoice {
-  absent: boolean;
-  value?: string;
-  startsWith?: string;
-  endsWith?: string;
+  oneOf: Array<NormalizedAttributeValueChoiceOption>;
 }
 
-export type AttributeValue = ValueAbsent |
-                             ValueUnknown |
-                             ValueConstant |
-                             AttributeValueChoice |
-                             ValueStartsWith |
-                             ValueEndsWith |
-                             ValueStartsAndEndsWith;
+export type AttributeValueSetItem =
+  ValueConstant |
+  ValueStartsWith |
+  ValueEndsWith |
+  ValueStartsAndEndsWith |
+  AttributeValueChoice;
 
-/**
- * Normalize result of a value to make interacting with it more straightforward with type checking.
- */
-export interface NormalizedAttributeValue extends NormalizedAttributeValueChoice {
-  unknown: boolean;
-  oneOf?: Array<NormalizedAttributeValueChoice>;
-}
+export type NormalizedAttributeValueSetItem =
+  Partial<ValueConstant> &
+  Partial<ValueStartsWith> &
+  Partial<ValueEndsWith> &
+  Partial<ValueStartsAndEndsWith> &
+  Partial<NormalizedAttributeValueChoice>;
 
 /**
- * Normalizes a value so that some properties are always set for performance and type checking.
+ * An attribute value set represents a space delimited set of values
+ * like you would expect to find in an html class attribute.
  */
-function normalizeValue(value: AttributeValue): NormalizedAttributeValue {
-  let normalized: NormalizedAttributeValue = {
-    absent: false,
-    unknown: false
-  };
-  Object.assign(normalized, value);
-  return normalized;
+export interface AttributeValueSet {
+  allOf: Array<AttributeValueSetItem>;
 }
+
+export interface NormalizedAttributeValueSet {
+  allOf: Array<NormalizedAttributeValueSetItem>;
+}
+
+export type AttributeValue =
+  ValueAbsent |
+  ValueUnknown |
+  ValueConstant |
+  ValueStartsWith |
+  ValueEndsWith |
+  ValueStartsAndEndsWith |
+  AttributeValueChoice |
+  AttributeValueSet;
+
+export type NormalizedAttributeValue =
+  Partial<ValueAbsent> &
+  Partial<ValueUnknown> &
+  Partial<ValueConstant> &
+  Partial<ValueStartsWith> &
+  Partial<ValueEndsWith> &
+  Partial<ValueStartsAndEndsWith> &
+  Partial<NormalizedAttributeValueChoice> &
+  Partial<NormalizedAttributeValueSet>;
 
 /**
  * Represents an arbitrary html attribute in a document. Based on the value type it will match against
@@ -182,7 +212,7 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
   constructor(namespaceURL: string | null, name: string, value: AttributeValue = {unknown: true}) {
     this._namespaceURL = namespaceURL;
     this._name = name;
-    this._value = normalizeValue(value);
+    this._value = value;
   }
 
   get namespaceURL(): string | null {
@@ -204,9 +234,29 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
     }
   }
 
-  valueToString(): string {
-    // TODO
-    return "";
+  valueToString(value: NormalizedAttributeValue): string {
+    if (value.unknown) {
+      return "???";
+    } else if (value.value) {
+      return `${value.value}`;
+    } else if (value.startsWith && value.endsWith) {
+      return value.startsWith + "*" + value.endsWith;
+    } else if (value.startsWith) {
+      return value.startsWith + "*";
+    } else if (value.endsWith) {
+      return "*" + value.endsWith;
+    } else if (value.oneOf) {
+      return "(" + value.oneOf.reduce((prev, v) => {
+        if (v.absent) {
+          prev.push("<absent>");
+        } else {
+          prev.push(this.valueToString(v));
+        }
+        return prev;
+      }, new Array<string>()).join("|") + ")";
+    } else {
+      return "";
+    }
   }
 
   toString() {
@@ -214,7 +264,7 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
     if (this.value.absent) {
       plainAttr = `${this.name}`;
     } else {
-      plainAttr = `${this.name}=${this.valueToString()}`;
+      plainAttr = `${this.name}="${this.valueToString(this.value)}"`;
     }
 
     if (this.namespaceURL) {
@@ -253,20 +303,22 @@ export interface TagnameValueChoice {
   oneOf: Array<string>;
 }
 
-export interface NormalizedTagnameValue {
-  unknown: boolean;
-  value?: string;
-  oneOf?: Array<string>;
-}
+export type TagnameValue =
+  ValueUnknown |
+  ValueConstant |
+  TagnameValueChoice;
 
-export type TagnameValue = ValueUnknown | ValueConstant | TagnameValueChoice;
+export type NormalizedTagnameValue =
+  Partial<ValueUnknown> &
+  Partial<ValueConstant> &
+  Partial<TagnameValueChoice>;
 
-function normalizeTagname(value: TagnameValue): NormalizedTagnameValue {
-  let normalized: NormalizedTagnameValue = {
-    unknown: false
-  };
-  Object.assign(normalized, value);
-  return normalized;
+function isTag(tag: SelectorParser.Node | undefined): tag is SelectorParser.Tag {
+  if (tag) {
+    return tag.type === SelectorParser.TAG;
+  } else {
+    return false;
+  }
 }
 
 export abstract class TagnameBase implements Styleable, HasNamespace {
@@ -274,7 +326,7 @@ export abstract class TagnameBase implements Styleable, HasNamespace {
   private _value: NormalizedTagnameValue;
   constructor(namespaceURI: string | null, value: TagnameValue) {
     this._namespaceURL = namespaceURI || null;
-    this._value = normalizeTagname(value);
+    this._value = value;
   }
 
   get namespaceURL(): string | null {
@@ -286,9 +338,16 @@ export abstract class TagnameBase implements Styleable, HasNamespace {
   }
 
   willNotMatch(selector: CompoundSelector): boolean {
-    // TODO
-    if (selector) {
-      return false;
+    if (this.value.unknown) return false;
+    let tag = selector.nodes.find((node) => isTag(node));
+    if (isTag(tag)) {
+      if (this.value.value) {
+        return tag.value !== this.value.value;
+      } else if (this.value.oneOf) {
+        return !this.value.oneOf.some(v => v === tag!.value);
+      } else {
+        return false;
+      }
     } else {
       return false;
     }
