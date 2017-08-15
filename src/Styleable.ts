@@ -36,14 +36,23 @@ export interface HasNamespace {
  * a ValueChoice should be used.
  */
 export interface ValueConstant {
-  value: string;
+  constant: string;
 }
 
 /**
- * Indicates the value, if it exists, may have any possible value.
+ * Indicates the value, if it exists, may have any possible value including
+ * possibly whitespace characters.
  */
 export interface ValueUnknown {
   unknown: true;
+}
+
+/**
+ * Indicates the value, if it exists, may have any possible value but will
+ * only be a single identifier.
+ */
+export interface ValueUnknownIdentifier {
+  unknownIdentifier: true;
 }
 
 /**
@@ -61,6 +70,7 @@ export interface ValueAbsent {
  */
 export interface ValueStartsWith {
   startsWith: string;
+  whitespace: boolean;
 }
 
 /**
@@ -71,6 +81,7 @@ export interface ValueStartsWith {
  */
 export interface ValueEndsWith {
   endsWith: string;
+  whitespace: boolean;
 }
 
 /**
@@ -110,6 +121,7 @@ export interface NormalizedAttributeValueChoice {
 }
 
 export type AttributeValueSetItem =
+  ValueUnknownIdentifier |
   ValueConstant |
   ValueStartsWith |
   ValueEndsWith |
@@ -117,6 +129,7 @@ export type AttributeValueSetItem =
   AttributeValueChoice;
 
 export type NormalizedAttributeValueSetItem =
+  Partial<ValueUnknownIdentifier> &
   Partial<ValueConstant> &
   Partial<ValueStartsWith> &
   Partial<ValueEndsWith> &
@@ -138,6 +151,7 @@ export interface NormalizedAttributeValueSet {
 export type AttributeValue =
   ValueAbsent |
   ValueUnknown |
+  ValueUnknownIdentifier |
   ValueConstant |
   ValueStartsWith |
   ValueEndsWith |
@@ -148,12 +162,19 @@ export type AttributeValue =
 export type NormalizedAttributeValue =
   Partial<ValueAbsent> &
   Partial<ValueUnknown> &
+  Partial<ValueUnknownIdentifier> &
   Partial<ValueConstant> &
   Partial<ValueStartsWith> &
   Partial<ValueEndsWith> &
   Partial<ValueStartsAndEndsWith> &
   Partial<NormalizedAttributeValueChoice> &
   Partial<NormalizedAttributeValueSet>;
+
+export interface SerializedAttribute {
+  namespaceURL?: string | null;
+  name: string;
+  value: NormalizedAttributeValue;
+}
 
 /**
  * Represents an arbitrary html attribute in a document. Based on the value type it will match against
@@ -237,8 +258,8 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
   valueToString(value: NormalizedAttributeValue): string {
     if (value.unknown) {
       return "???";
-    } else if (value.value) {
-      return `${value.value}`;
+    } else if (value.constant) {
+      return `${value.constant}`;
     } else if (value.startsWith && value.endsWith) {
       return value.startsWith + "*" + value.endsWith;
     } else if (value.startsWith) {
@@ -271,6 +292,31 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
       return `${this.namespaceURL}:${plainAttr}`;
     } else {
       return plainAttr;
+    }
+  }
+
+  toJSON(): SerializedAttribute {
+    let result: SerializedAttribute = {
+      name: this.name,
+      value: this.value,
+    };
+    if (this.namespaceURL) {
+      result.namespaceURL = this.namespaceURL;
+    }
+    return result;
+  }
+
+  static fromJSON(json: SerializedAttribute): AttributeNS | Attribute | Identifier | Class {
+    if (json.namespaceURL) {
+      return new AttributeNS(json.namespaceURL, json.name, json.value as ValueConstant);
+    } else {
+      if (name === "id") {
+        return new Identifier(json.value as ValueConstant);
+      } else if (name === "class") {
+        return new Class(json.value as ValueConstant);
+      } else {
+        return new Attribute(json.name, json.value as ValueConstant);
+      }
     }
   }
 }
@@ -321,11 +367,16 @@ function isTag(tag: SelectorParser.Node | undefined): tag is SelectorParser.Tag 
   }
 }
 
+export interface SerializedTagname {
+  namespaceURL?: string | null;
+  value: NormalizedTagnameValue;
+}
+
 export abstract class TagnameBase implements Styleable, HasNamespace {
   private _namespaceURL: string | null;
   private _value: NormalizedTagnameValue;
-  constructor(namespaceURI: string | null, value: TagnameValue) {
-    this._namespaceURL = namespaceURI || null;
+  constructor(namespaceURL: string | null, value: TagnameValue) {
+    this._namespaceURL = namespaceURL || null;
     this._value = value;
   }
 
@@ -341,8 +392,8 @@ export abstract class TagnameBase implements Styleable, HasNamespace {
     if (this.value.unknown) return false;
     let tag = selector.nodes.find((node) => isTag(node));
     if (isTag(tag)) {
-      if (this.value.value) {
-        return tag.value !== this.value.value;
+      if (this.value.constant) {
+        return tag.value !== this.value.constant;
       } else if (this.value.oneOf) {
         return !this.value.oneOf.some(v => v === tag!.value);
       } else {
@@ -356,8 +407,8 @@ export abstract class TagnameBase implements Styleable, HasNamespace {
   valueToString(): string {
     if (this.value.unknown) {
       return "???";
-    } else if (this.value.value) {
-      return this.value.value;
+    } else if (this.value.constant) {
+      return this.value.constant;
     } else if (this.value.oneOf) {
       return this.value.oneOf.join("|");
     } else {
@@ -370,6 +421,23 @@ export abstract class TagnameBase implements Styleable, HasNamespace {
       return `${this.valueToString()}`;
     } else {
       return `${this.namespaceURL}:${this.valueToString()}`;
+    }
+  }
+
+  toJSON(): SerializedTagname {
+    let result: SerializedTagname = {
+      value: this.value
+    };
+    if (this.namespaceURL) {
+      result.namespaceURL = this.namespaceURL;
+    }
+    return result;
+  }
+  static fromJSON(json: SerializedTagname): TagnameNS | Tagname {
+    if (json.namespaceURL) {
+      return new TagnameNS(json.namespaceURL, json.value as ValueConstant);
+    } else {
+      return new Tagname(json.value as ValueConstant);
     }
   }
 }

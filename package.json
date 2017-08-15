@@ -4,14 +4,15 @@
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
-    "compile": "rm -rf dist && tsc -p test/tsconfig.json",
+    "compile": "rm -rf dist && tsc -p test/tsconfig.json && cp test/util/*.js dist/test/util",
     "pretest": "npm run compile && tslint --project tsconfig.json --type-check",
     "prepublish": "npm run compile",
     "tslint": "tslint --project tsconfig.json",
     "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "docs": "typedoc --out ./docs ."
+    "docs": "typedoc --out ./docs .",
+    "grammars": "nearleyc test/util/attrvalue.ne -o test/util/attrvalue.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
+    "@types/nearley": "^2.9.0",
     "@types/node": "^7.0.39",
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
@@ -39,6 +41,8 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
+    "moo": "^0.4.1",
+    "nearley": "^2.10.3",
     "perfectionist": "^2.4.0",
     "postcss": "^5.2.17",
     "remap-istanbul": "^0.9.5",

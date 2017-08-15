@@ -23,8 +23,8 @@ export class StyleableTagnameTest {
     assert.equal(tagname.toString(), "???");
   }
   @test "can be a constant"() {
-    let tagname = new Tagname({value: "span"});
-    assert.equal(tagname.value.value, "span");
+    let tagname = new Tagname({constant: "span"});
+    assert.equal(tagname.value.constant, "span");
     assert.equal(tagname.toString(), "span");
   }
   @test "can be a choice"() {
@@ -33,8 +33,8 @@ export class StyleableTagnameTest {
     assert.equal(tagname.toString(), "div|span");
   }
   @test "can have a namespace"() {
-    let tagname = new TagnameNS("https://www.w3.org/2000/svg", {value: "svg"});
-    assert.deepEqual(tagname.value.value, "svg");
+    let tagname = new TagnameNS("https://www.w3.org/2000/svg", {constant: "svg"});
+    assert.deepEqual(tagname.value.constant, "svg");
     assert.equal(tagname.namespaceURL, "https://www.w3.org/2000/svg");
     assert.equal(tagname.toString(), "https://www.w3.org/2000/svg:svg");
   }
@@ -43,11 +43,11 @@ export class StyleableTagnameTest {
     assert.isFalse(tagname.willNotMatch(selector("span")));
   }
   @test "a constant value won't match a different specific selector"() {
-    let tagname = new Tagname({value: "span"});
+    let tagname = new Tagname({constant: "span"});
     assert.isTrue(tagname.willNotMatch(selector("div")));
   }
   @test "a constant value matches the same specific selector"() {
-    let tagname = new Tagname({value: "span"});
+    let tagname = new Tagname({constant: "span"});
     assert.isFalse(tagname.willNotMatch(selector("span")));
   }
   @test "a choice won't match if the value isn't one of the values"() {
@@ -60,15 +60,15 @@ export class StyleableTagnameTest {
     assert.isFalse(tagname.willNotMatch(selector("span")));
   }
   @test "might match a class selector"() {
-    let tagname = new Tagname({value: "div"});
+    let tagname = new Tagname({constant: "div"});
     assert.isFalse(tagname.willNotMatch(selector(".foo")));
   }
   @test "might match a compound selector containing the tag"() {
-    let tagname = new Tagname({value: "div"});
+    let tagname = new Tagname({constant: "div"});
     assert.isFalse(tagname.willNotMatch(selector("div.foo")));
   }
   @test "won't match a compound selector not containing the tag"() {
-    let tagname = new Tagname({value: "div"});
+    let tagname = new Tagname({constant: "div"});
     assert.isTrue(tagname.willNotMatch(selector("span.foo")));
   }
 }
@@ -86,34 +86,34 @@ export class StyleableAttributeTest {
     assert.equal(attr.toString(), "class");
   }
   @test "can have a constant value"() {
-    let attr = new Attribute("class", {value: "asdf"});
-    assert.equal(attr.value.value, "asdf");
+    let attr = new Attribute("class", {constant: "asdf"});
+    assert.equal(attr.value.constant, "asdf");
     assert.equal(attr.toString(), 'class="asdf"');
   }
   @test "can have a choice of constant values"() {
     let attr = new Attribute("class", {
       oneOf: [
-        {value: "asdf"},
-        {value: "foo"}
+        {constant: "asdf"},
+        {constant: "foo"}
       ]
     });
     assert.deepEqual(attr.value.oneOf,
-                     [{value: "asdf"},
-                      {value: "foo"}]);
+                     [{constant: "asdf"},
+                      {constant: "foo"}]);
     assert.equal(attr.toString(), 'class="(asdf|foo)"');
   }
   @test "can have a startsWith value"() {
-    let attr = new Attribute("class", {startsWith: "asdf"});
+    let attr = new Attribute("class", {startsWith: "asdf", whitespace: false});
     assert.equal(attr.value.startsWith, "asdf");
     assert.equal(attr.toString(), 'class="asdf*"');
   }
   @test "can have an endsWith value"() {
-    let attr = new Attribute("class", {endsWith: "asdf"});
+    let attr = new Attribute("class", {endsWith: "asdf", whitespace: false});
     assert.equal(attr.value.endsWith, "asdf");
     assert.equal(attr.toString(), 'class="*asdf"');
   }
   @test "can have startsWith and endsWith values"() {
-    let attr = new Attribute("class", {startsWith: "qwer", endsWith: "asdf"});
+    let attr = new Attribute("class", {startsWith: "qwer", endsWith: "asdf", whitespace: false});
     assert.equal(attr.value.startsWith, "qwer");
     assert.equal(attr.value.endsWith, "asdf");
     assert.equal(attr.toString(), 'class="qwer*asdf"');
@@ -122,18 +122,18 @@ export class StyleableAttributeTest {
     let attr = new Attribute("class", {
       oneOf: [
         {absent: true},
-        {value: "asdf"},
-        {startsWith: "foo"},
-        {endsWith: "bar"},
-        {startsWith: "aaaa", endsWith: "zzzz"},
+        {constant: "asdf"},
+        {startsWith: "foo", whitespace: false},
+        {endsWith: "bar", whitespace: false},
+        {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
       ]
     });
     assert.deepEqual(attr.value.oneOf,
                      [{absent: true},
-                      {value: "asdf"},
-                      {startsWith: "foo"},
-                      {endsWith: "bar"},
-                      {startsWith: "aaaa", endsWith: "zzzz"},
+                      {constant: "asdf"},
+                      {startsWith: "foo", whitespace: false},
+                      {endsWith: "bar", whitespace: false},
+                      {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
                     ]);
     assert.equal(attr.toString(), 'class="(<absent>|asdf|foo*|*bar|aaaa*zzzz)"');
   }
