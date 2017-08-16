@@ -134,7 +134,7 @@ export class TemplateAnalysisTest {
         "tagname": { "value": { "constant": "img" } },
         "attributes": [
           { "name": "src", "value": { "constant": "http://foo.com/wtf" } },
-          { "name": "style", "value": { "allOf": [ { "constant": "background-color:" }, { "constant": "red;" } ] } }
+          { "name": "style", "value": { "constant": "background-color: red;" } }
         ]
       },
       {

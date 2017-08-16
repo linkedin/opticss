@@ -15,8 +15,8 @@ export class SimpleAnalyzer<K extends keyof TemplateTypes> {
     this.includeSourceInformation = includeSourceInformation;
     this.valueParser = new AttributeValueParser();
   }
-  private attrValue(valueStr: string): AttributeValue {
-    return this.valueParser.parse(valueStr);
+  private attrValue(valueStr: string, whitespaceDelimited = false): AttributeValue {
+    return this.valueParser.parse(valueStr, whitespaceDelimited);
   }
   analyze(): TemplateAnalysis<K> {
     let analysis = new TemplateAnalysis<K>(this.template);
@@ -25,7 +25,7 @@ export class SimpleAnalyzer<K extends keyof TemplateTypes> {
       analysis.startElement(new Tagname({constant: el.name}), this.includeSourceInformation ? {line: i + 1} : POSITION_UNKNOWN);
       let attrs = Object.keys(el.attribs);
       attrs.forEach(attr => {
-        analysis.addAttribute(new Attribute(attr, this.attrValue(el.attribs[attr])));
+        analysis.addAttribute(new Attribute(attr, this.attrValue(el.attribs[attr], attr === "class")));
       });
       analysis.endElement();
     });

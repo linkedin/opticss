@@ -269,7 +269,7 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
     } else if (value.oneOf) {
       return "(" + value.oneOf.reduce((prev, v) => {
         if (v.absent) {
-          prev.push("<absent>");
+          prev.push("---");
         } else {
           prev.push(this.valueToString(v));
         }

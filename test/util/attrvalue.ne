@@ -4,11 +4,27 @@ const lexer = require("./attrlexer");
 
 @lexer lexer
 
-main -> _ attribute _ {% (data) =>  data[1] %}
+@{%
+  function choice(data) {
+    let rv = [data[2]];
+    data[4].forEach(group => {
+      rv.push(group[2])
+    });
+    return {oneOf: rv};
+  }
+%}
 
-attribute -> set {% id %}
-           | choice {% id %}
-           | constant {% id %}
+whitespaceDelimitedAttribute -> set {% id %}
+           | whitespaceDelimitedChoice {% id %}
+           | constantWithoutWhitespace {% id %}
+           | unknown {% id %}
+           | unknownIdentifier {% id %}
+           | startsWith {% id %}
+           | endsWith {% id %}
+           | empty {% id %}
+
+attribute -> choice {% id %}
+           | constantWithWhitespace {% id %}
            | unknown {% id %}
            | unknownIdentifier {% id %}
            | startsWith {% id %}
@@ -26,40 +42,50 @@ set -> setItem (%WS setItem):+ {%
   }
 %}
 
-setItem -> choice {% id %}
+setItem -> whitespaceDelimitedChoice {% id %}
          | unknown {% id %}
          | unknownIdentifier {% id %}
-         | constant {% id %}
+         | constantWithoutWhitespace {% id %}
          | startsWith {% id %}
          | endsWith {% id %}
 
-choice -> %lparen
-          _ choiceOption _
-          (%pipe _ choiceOption _):+
-          %rparen {%
-  (data) => {
-    let rv = [data[2]];
-    data[4].forEach(group => {
-      rv.push(group[2])
-    });
-    return {oneOf: rv};
-  }
-%}
+choiceOption -> absent {% id %}
+              | constantWithWhitespace {% id %}
+              | startsWith {% id %}
+              | endsWith {% id %}
 
-choiceOption -> set {% id %}
+whitespaceDelimitedChoiceOption -> set {% id %}
               | absent {% id %}
-              | constant {% id %}
+              | constantWithoutWhitespace {% id %}
               | startsWith {% id %}
               | endsWith {% id %}
 
 absent -> %absent {% (data) => { return {absent: true}; } %}
+
 empty -> null {% (data) => { return {absent: true}; } %}
 
 unknown -> %unknown {% (data) => { return {unknown: true}; } %}
 
 unknownIdentifier -> %unknownIdentifier {% (data) => { return {unknownIdentifier: true}; } %}
 
-constant -> %constant {% (data) => { return {constant: data[0].toString()}; } %}              
+whitespaceDelimitedChoice -> %lparen _ whitespaceDelimitedChoiceOption _ (%pipe _ whitespaceDelimitedChoiceOption _):+ %rparen {% (data) => choice(data) %}
+
+choice -> %lparen _ choiceOption _ (%pipe _ choiceOption _):+ %rparen {% (data) => choice(data) %}
+
+constantWithoutWhitespace -> %constant {% (data) => {
+  return {constant: data[0].toString()}; }
+%}
+
+constantWithWhitespace -> %constant (%WS %constant):* {%
+  (data) => {
+    let rv = data[0].toString();
+    let rest = data[1];
+    rest.forEach(r => {
+      rv += r[0].toString() + r[1].toString();
+    })
+    return {constant: rv};
+  }
+%}
 
 startsWith -> %constant %asterisk %constant:? {%
   (data) => {
