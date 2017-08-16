@@ -12,6 +12,7 @@ import {
 import { TemplateAnalysis } from "../src/TemplateAnalysis";
 import { Template } from "../src/TemplateInfo";
 import { SimpleAnalyzer } from "./util/SimpleAnalyzer";
+import { TestTemplate } from "./util/TestTemplate";
 
 function selector(selector: string): CompoundSelector {
   let parsed = parseSelector(selector);
@@ -27,10 +28,10 @@ function clean(strings: TemplateStringsArray, ...expressions: string[]) {
 @suite("Template Analysis")
 export class TemplateAnalysisTest {
   @test "Can add an element"() {
-    let template = new Template("test");
-    let analyzer = new SimpleAnalyzer(template, clean`
+    let template = new TestTemplate("test", clean`
       <div class="foo"></div>
     `);
+    let analyzer = new SimpleAnalyzer(template);
     assert.deepEqual(analyzer.analyze().serialize().elements,
       [
         {
@@ -42,10 +43,10 @@ export class TemplateAnalysisTest {
       ]);
   }
   @test "Can add an attribute with no value"() {
-    let template = new Template("test");
-    let analyzer = new SimpleAnalyzer(template, clean`
+    let template = new TestTemplate("test", clean`
       <div contenteditable></div>
     `);
+    let analyzer = new SimpleAnalyzer(template);
     assert.deepEqual(analyzer.analyze().serialize().elements,
       [
         {
@@ -57,10 +58,10 @@ export class TemplateAnalysisTest {
       ]);
   }
   @test "Can add an attribute with unknown value"() {
-    let template = new Template("test");
-    let analyzer = new SimpleAnalyzer(template, clean`
-      <div data-foo="???"></div>
-    `);
+    let template = new TestTemplate("test", clean`
+    <div data-foo="???"></div>
+  `);
+    let analyzer = new SimpleAnalyzer(template);
     assert.deepEqual(analyzer.analyze().serialize().elements,
       [
         {
@@ -72,10 +73,10 @@ export class TemplateAnalysisTest {
       ]);
   }
   @test "Can add an attribute with unknown identifier"() {
-    let template = new Template("test");
-    let analyzer = new SimpleAnalyzer(template, clean`
+    let template = new TestTemplate("test", clean`
       <div class="?"></div>
     `);
+    let analyzer = new SimpleAnalyzer(template);
     assert.deepEqual(analyzer.analyze().serialize().elements,
       [
         {
@@ -87,10 +88,10 @@ export class TemplateAnalysisTest {
       ]);
   }
   @test "Can add an attribute with two unknown identifiers"() {
-    let template = new Template("test");
-    let analyzer = new SimpleAnalyzer(template, clean`
+    let template = new TestTemplate("test", clean`
       <div class="? ?"></div>
     `);
+    let analyzer = new SimpleAnalyzer(template);
     assert.deepEqual(analyzer.analyze().serialize().elements,
       [
         {
@@ -110,14 +111,14 @@ export class TemplateAnalysisTest {
     );
   }
   @test "Analyzes a non-trivial fragment."() {
-    let template = new Template("test");
-    let analyzer = new SimpleAnalyzer(template, clean`
-      <article class="main-content">
-        <h1>My Title</h1>
-        <img src="http://foo.com/wtf" style="background-color: red;" />
-        <p>Four score and twenty years ago our forefathers brought forth a new nation...</p>
-      </article>
-    `);
+    let template = new TestTemplate("test", clean`
+    <article class="main-content">
+      <h1>My Title</h1>
+      <img src="http://foo.com/wtf" style="background-color: red;" />
+      <p>Four score and twenty years ago our forefathers brought forth a new nation...</p>
+    </article>
+  `);
+    let analyzer = new SimpleAnalyzer(template);
     let els = analyzer.analyze().serialize().elements;
     assert.deepEqual(els, [
       {
@@ -144,10 +145,10 @@ export class TemplateAnalysisTest {
     ]);
   }
   @test "Can analyze a complex nested dynamic class expression"() {
-    let template = new Template("test");
-    let analyzer = new SimpleAnalyzer(template, clean`
-      <div class="a (b | c1 c2 c3 | d) e f* *g h*i (--- | j) ?"></div>
-    `);
+    let template = new TestTemplate("test", clean`
+    <div class="a (b | c1 c2 c3 | d) e f* *g h*i (--- | j) ?"></div>
+  `);
+    let analyzer = new SimpleAnalyzer(template);
     assert.deepEqual(analyzer.analyze().serialize().elements,
       [
         {
