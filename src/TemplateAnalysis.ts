@@ -16,6 +16,7 @@ export interface ElementInfo<TagnameType = TagnameBase, AttributeType = Attribut
   sourceLocation?: SourceLocation;
   tagname: TagnameType;
   attributes: Array<AttributeType>;
+  id?: string;
 }
 
 export type SerializedElementInfo = ElementInfo<SerializedTagname, SerializedAttribute>;
@@ -97,6 +98,20 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
       this.currentElement.sourceLocation = {start: position};
     }
     return this;
+  }
+
+  setId(id: string): this {
+    if (this.currentElement) {
+      this.currentElement.id = id;
+    } else {
+       throw new errors.OpticssError(`startElement() must be called before calling setId()`,
+                                     {filename: this.template.identifier});
+    }
+    return this;
+  }
+
+  getElementInfo(id: string): ElementInfo | undefined {
+    return this.elements.find(el => el.id === id); // consider using a map for performance?
   }
 
   /**
