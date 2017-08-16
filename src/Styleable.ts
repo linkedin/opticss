@@ -375,6 +375,8 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
   valueToString(value: NormalizedAttributeValue): string {
     if (value.unknown) {
       return "???";
+    } else if (value.unknownIdentifier) {
+      return "?";
     } else if (value.constant) {
       return `${value.constant}`;
     } else if (value.startsWith && value.endsWith) {
@@ -395,7 +397,7 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
     } else if (value.allOf) {
       return value.allOf.map(v => this.valueToString(v)).join(" ");
     } else {
-      return "";
+      throw new Error(`INTERNAL ERROR: Missing case for: ${inspect(value)}`);
     }
   }
 
