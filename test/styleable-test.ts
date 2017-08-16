@@ -79,16 +79,22 @@ export class StyleableAttributeTest {
     let attr = new Attribute("class", {unknown: true});
     assert.equal(attr.value.unknown, true);
     assert.equal(attr.toString(), 'class="???"');
+    assert.equal(attr.isLegal("asdf"), true);
+    assert.equal(attr.isLegal("asdf qwert"), true);
   }
   @test "can be absent"() {
     let attr = new Attribute("class", {absent: true});
     assert.equal(attr.value.absent, true);
     assert.equal(attr.toString(), "class");
+    assert.equal(attr.isLegal(""), true);
+    assert.equal(attr.isLegal("asdf"), false);
   }
   @test "can have a constant value"() {
     let attr = new Attribute("class", {constant: "asdf"});
     assert.equal(attr.value.constant, "asdf");
     assert.equal(attr.toString(), 'class="asdf"');
+    assert.equal(attr.isLegal("asdf"), true);
+    assert.equal(attr.isLegal("asdd"), false);
   }
   @test "can have a choice of constant values"() {
     let attr = new Attribute("class", {
@@ -101,16 +107,23 @@ export class StyleableAttributeTest {
                      [{constant: "asdf"},
                       {constant: "foo"}]);
     assert.equal(attr.toString(), 'class="(asdf|foo)"');
+    assert.equal(attr.isLegal("asdf"), true);
+    assert.equal(attr.isLegal("foo"), true);
+    assert.equal(attr.isLegal("bar"), false);
   }
   @test "can have a startsWith value"() {
     let attr = new Attribute("class", {startsWith: "asdf", whitespace: false});
     assert.equal(attr.value.startsWith, "asdf");
     assert.equal(attr.toString(), 'class="asdf*"');
+    assert.equal(attr.isLegal("asdffa"), true);
+    assert.equal(attr.isLegal("asdffa qwer"), false);
   }
   @test "can have an endsWith value"() {
     let attr = new Attribute("class", {endsWith: "asdf", whitespace: false});
     assert.equal(attr.value.endsWith, "asdf");
     assert.equal(attr.toString(), 'class="*asdf"');
+    assert.equal(attr.isLegal("poiuasdf"), true);
+    assert.equal(attr.isLegal("po iuasdf"), false);
   }
   @test "can have startsWith and endsWith values"() {
     let attr = new Attribute("class", {startsWith: "qwer", endsWith: "asdf", whitespace: false});
@@ -135,6 +148,87 @@ export class StyleableAttributeTest {
                       {endsWith: "bar", whitespace: false},
                       {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
                     ]);
-    assert.equal(attr.toString(), 'class="(<absent>|asdf|foo*|*bar|aaaa*zzzz)"');
+    assert.equal(attr.toString(), 'class="(---|asdf|foo*|*bar|aaaa*zzzz)"');
+  }
+  @test "can have a list of values"() {
+    let attr = new Attribute("class", {
+      allOf: [
+        {constant: "asdf"},
+        {startsWith: "foo", whitespace: false},
+        {endsWith: "bar", whitespace: false},
+        {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
+      ]
+    });
+    assert.deepEqual(attr.value.allOf,
+                     [{constant: "asdf"},
+                      {startsWith: "foo", whitespace: false},
+                      {endsWith: "bar", whitespace: false},
+                      {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
+                    ]);
+    assert.equal(attr.toString(), 'class="asdf foo* *bar aaaa*zzzz"');
+  }
+  @test "can have nested lists and optionals"() {
+    let attr = new Attribute("class", {
+      allOf: [
+        {oneOf: [
+          {allOf: [{constant: "a"}, {constant: "b"}]},
+          {allOf: [{constant: "c"}, {constant: "d"}]}
+        ]},
+        {oneOf: [
+          {allOf: [{constant: "e"}, {constant: "f"}]},
+          {allOf: [{constant: "g"}, {constant: "h"}]}
+        ]}
+      ]
+    });
+    assert.equal(attr.toString(), 'class="(a b|c d) (e f|g h)"');
+  }
+  @test "can flatten a set of choices of sets"() {
+    let attr = new Attribute("class", {
+      allOf: [
+        {oneOf: [
+          {allOf: [{constant: "a"}, {constant: "b"}]},
+          {allOf: [{constant: "c"}, {constant: "d"}]}
+        ]},
+        {oneOf: [
+          {allOf: [{constant: "e"}, {constant: "f"}]},
+          {allOf: [{constant: "g"}, {constant: "h"}]}
+        ]}
+      ]
+    });
+    let flattened = attr.flattenedValue();
+    assert.deepEqual(flattened, [
+      {allOf: [{constant: "a"}, {constant: "b"}, {constant: "e"}, {constant: "f"}]},
+      {allOf: [{constant: "c"}, {constant: "d"}, {constant: "e"}, {constant: "f"}]},
+      {allOf: [{constant: "a"}, {constant: "b"}, {constant: "g"}, {constant: "h"}]},
+      {allOf: [{constant: "c"}, {constant: "d"}, {constant: "g"}, {constant: "h"}]}
+    ]);
+  }
+  @test "can flatten choice of sets"() {
+    let attr = new Attribute("class", {
+      oneOf: [
+        {allOf: [{constant: "e"}, {constant: "f"}]},
+        {allOf: [{constant: "g"}, {constant: "h"}]}
+      ]
+    });
+    let flattened = attr.flattenedValue();
+    assert.deepEqual(flattened, [
+      {allOf: [{constant: "e"}, {constant: "f"}]},
+      {allOf: [{constant: "g"}, {constant: "h"}]}
+    ]);
+  }
+  @test "can flatten set of choices"() {
+    let attr = new Attribute("class", {
+      allOf: [
+        {oneOf: [{constant: "e"}, {constant: "f"}]},
+        {oneOf: [{constant: "g"}, {constant: "h"}]}
+      ]
+    });
+    let flattened = attr.flattenedValue();
+    assert.deepEqual(flattened, [
+      {allOf: [{constant: "e"}, {constant: "g"}]},
+      {allOf: [{constant: "f"}, {constant: "g"}]},
+      {allOf: [{constant: "e"}, {constant: "h"}]},
+      {allOf: [{constant: "f"}, {constant: "h"}]}
+    ]);
   }
 }

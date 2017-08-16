@@ -170,6 +170,27 @@ export type NormalizedAttributeValue =
   Partial<NormalizedAttributeValueChoice> &
   Partial<NormalizedAttributeValueSet>;
 
+export type FlattenedAttributeValueSetItem =
+  Partial<ValueUnknownIdentifier> &
+  Partial<ValueConstant> &
+  Partial<ValueStartsWith> &
+  Partial<ValueEndsWith> &
+  Partial<ValueStartsAndEndsWith>;
+
+export interface FlattenedAttributeValueSet {
+  allOf: Array<FlattenedAttributeValueSetItem>;
+}
+
+export type FlattenedAttributeValue =
+  Partial<ValueAbsent> &
+  Partial<ValueUnknown> &
+  Partial<ValueUnknownIdentifier> &
+  Partial<ValueConstant> &
+  Partial<ValueStartsWith> &
+  Partial<ValueEndsWith> &
+  Partial<ValueStartsAndEndsWith> &
+  Partial<FlattenedAttributeValueSet>;
+
 export interface SerializedAttribute {
   namespaceURL?: string | null;
   name: string;
@@ -230,7 +251,7 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
   private _name: string;
   private _value: NormalizedAttributeValue;
 
-  constructor(namespaceURL: string | null, name: string, value: AttributeValue = {unknown: true}) {
+  constructor(namespaceURL: string | null, name: string, value: AttributeValue = { unknown: true }) {
     this._namespaceURL = namespaceURL;
     this._name = name;
     this._value = value;
@@ -246,12 +267,108 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
     return this._value;
   }
 
+  /**
+   * Check whether the value is legal according to the attribute's value expression.
+   */
+  isLegal(value: string, condition?: NormalizedAttributeValue): boolean {
+    condition = condition || this.value;
+    if (condition.unknown) {
+      return true;
+    } else if (condition.unknownIdentifier) {
+      return !/\s/.test(value);
+    } else if (condition.absent) {
+      return value.length === 0;
+    } else if (condition.constant) {
+      return value === condition.constant;
+    } else if (condition.startsWith || condition.endsWith) {
+      let start = condition.startsWith || "";
+      let end = condition.endsWith || "";
+      let matches = value.startsWith(start) && value.endsWith(end);
+      if (!matches) return false;
+      let middle = value.substring(start.length, value.length - end.length);
+      return (condition.whitespace || !middle.match(/\s/));
+    } else if (condition.oneOf) {
+      return condition.oneOf.some(cond => this.isLegal(value, cond));
+    } else if (condition.allOf) {
+      let values = value.split(/\s+/);
+      // TODO: this is wrong because it allows some classes to be used more than
+      // once and others to not be used at all and also because some conditions
+      // may require multiple values.
+      //
+      // The algorithm should be something like:
+      // If there is a set value (`allOf`) we must remove all choice values
+      // (`oneOf`) by permuting the values into flat lists where each element
+      // must be legal against a single value of the split input. each value in
+      // split list must be tested against each condition. If there is a value
+      // that didn't test true return false for that permutation. If multiple
+      // values test true, ensure that there is a value that tests true for each
+      // condition once and only once. If there is a permutation that passes
+      // exit early and return true otherwise false. This feels like a case
+      // where we can apply dynamic programming. Perhaps something like:
+      // https://stackoverflow.com/questions/11376672/partial-subtree-matching-algorithm
+      //
+      // it's not clear if we need this yet, so I'm going to leave it broken for now.
+      return condition.allOf.every(cond => values.some(v => this.isLegal(v, cond)));
+    } else {
+      return false;
+    }
+  }
+
   willNotMatch(selector: CompoundSelector): boolean {
     // TODO
     if (selector) {
       return false;
     } else {
       return false;
+    }
+  }
+
+  flattenedValue(value: NormalizedAttributeValue = this.value): Array<FlattenedAttributeValue> {
+    if (value.allOf) {
+        let newSets = new Array<FlattenedAttributeValueSet>();
+        newSets.push({
+          allOf: new Array<FlattenedAttributeValueSetItem>()
+        });
+        value.allOf.forEach(v => {
+          if (v.oneOf) {
+            let res = this.flattenedValue(v);
+            let origLength = newSets.length;
+            for (let i = 0; i < res.length; i++) {
+              for (let j = 0; j < origLength; j++) {
+                if (res[i].allOf) {
+                  newSets.push({
+                    allOf: newSets[j].allOf.concat(res[i].allOf!)
+                  });
+                } else {
+                  newSets.push({
+                    allOf: newSets[j].allOf.concat(res[i])
+                  });
+                }
+              }
+            }
+            for (let j = 0; j < origLength; j++) {
+              newSets.shift();
+            }
+          } else {
+            newSets.forEach(newSet => {
+              newSet.allOf.push(v);
+            });
+          }
+        });
+        return newSets;
+    } else if (value.oneOf) {
+      let values = new Array<FlattenedAttributeValue>();
+      value.oneOf.forEach(v => {
+        if (v.allOf) {
+          let res = this.flattenedValue(v);
+          values = values.concat(res);
+        } else {
+          values.push(v);
+        }
+      });
+      return values;
+    } else {
+      return [value];
     }
   }
 
@@ -275,6 +392,8 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
         }
         return prev;
       }, new Array<string>()).join("|") + ")";
+    } else if (value.allOf) {
+      return value.allOf.map(v => this.valueToString(v)).join(" ");
     } else {
       return "";
     }
