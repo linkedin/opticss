@@ -1,7 +1,6 @@
 import { suite, test, skip, only } from "mocha-typescript";
 import { assert } from "chai";
 
-import { OptiCSS } from "../src/opticss";
 import {
   Tagname, TagnameNS, Attribute
 } from "../src/Styleable";

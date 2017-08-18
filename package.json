@@ -56,9 +56,11 @@
     "@types/debug": "0.0.29",
     "@types/source-map": "^0.5.0",
     "cheerio": "^0.22.0",
+    "concat-with-sourcemaps": "^1.0.4",
     "debug": "^2.6.8",
     "inline-source-map-comment": "^1.0.5",
     "object.values": "^1.0.4",
+    "postcss": "^5.2.17",
     "postcss-selector-parser": "^2.2.3",
     "regexpu-core": "^4.0.11",
     "source-map": "^0.5.6"
