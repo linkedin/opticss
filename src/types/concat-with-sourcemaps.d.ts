@@ -6,4 +6,5 @@ declare module "concat-with-sourcemaps" {
     constructor(generateSourceMap: boolean, fileName: string, separator?: string);
     add(fileName: string | null, content: string | Buffer, sourceMap: string | sourcemap.RawSourceMap): void;
   }
+  export = Concat;
 }

@@ -9,7 +9,7 @@ export {
  ErrorLocation
 } from "./errors";
 export {
-  OpticssOptions,
+  OptiCSSOptions,
   DEFAULT_OPTIONS
 } from "./OpticssOptions";
 export {

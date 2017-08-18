@@ -12,16 +12,11 @@ import { TemplateAnalysis } from "../src/TemplateAnalysis";
 import { Template } from "../src/TemplateInfo";
 import { SimpleAnalyzer } from "./util/SimpleAnalyzer";
 import { TestTemplate } from "./util/TestTemplate";
+import clean from "./util/clean";
 
 function selector(selector: string): CompoundSelector {
   let parsed = parseSelector(selector);
   return parsed[0].selector;
-}
-
-function clean(strings: TemplateStringsArray, ...expressions: string[]) {
-  let str = strings.reduce((prev, s, i) =>
-    prev + s + ((expressions.length > i) ? expressions[i].toString() : ''));
-  return str.split("\n").map(s => s.trim()).join("\n").trim();
 }
 
 @suite("Template Analysis")
