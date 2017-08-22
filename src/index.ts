@@ -19,7 +19,7 @@ export {
 export {
   default as parseSelector,
   ParsedSelector,
-  CompoundSelector
+  CompoundSelector,
 } from "./parseSelector";
 export {
   Attribute,
@@ -44,6 +44,8 @@ export {
   ValueStartsAndEndsWith,
   ValueStartsWith,
   ValueUnknown,
+  ElementInfo,
+  SerializedElementInfo,
 } from "./Styleable";
 export {
   BooleanExpression,
@@ -54,13 +56,13 @@ export {
   ClassMapping
 } from "./StyleMapping";
 export {
-  TemplateAnalysis,
-  SerializedTemplateAnalysis,
-  SerializedElementInfo,
   SourceLocation,
   SourcePosition,
-  ElementInfo,
-  POSITION_UNKNOWN
+  POSITION_UNKNOWN,
+} from "./SourceLocation";
+export {
+  TemplateAnalysis,
+  SerializedTemplateAnalysis,
 } from "./TemplateAnalysis";
 export {
   SerializedTemplateInfo,

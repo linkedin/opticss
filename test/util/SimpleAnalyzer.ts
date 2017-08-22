@@ -1,8 +1,9 @@
 import { Template, TemplateTypes, TemplateInfo } from "../../src/TemplateInfo";
-import { TemplateAnalysis, POSITION_UNKNOWN } from "../../src/TemplateAnalysis";
+import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import { Tagname, Attribute, AttributeValue } from "../../src/Styleable";
 import { AttributeValueParser } from "./AttributeValueParser";
 import { TestTemplate } from "./TestTemplate";
+import { POSITION_UNKNOWN } from "../../src/SourceLocation";
 
 export class SimpleAnalyzer {
   template: TestTemplate;

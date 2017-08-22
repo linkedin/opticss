@@ -1,4 +1,4 @@
-import { ElementInfo } from "./TemplateAnalysis";
+import { ElementInfo } from "./Styleable";
 
 export interface AndExpression<V> {
   and: Array<V | BooleanExpression<V>>;

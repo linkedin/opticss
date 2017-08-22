@@ -1,25 +1,8 @@
-import { TagnameBase, AttributeBase, SerializedTagname, SerializedAttribute } from "./Styleable";
+import { TagnameBase, AttributeBase } from "./Styleable";
 import { SerializedTemplateInfo, TemplateTypes, TemplateInfoFactory } from "./TemplateInfo";
 import * as errors from "./errors";
-
-export interface SourcePosition {
-  line: number;
-  column?: number;
-}
-export const POSITION_UNKNOWN: SourcePosition = { line: -1 };
-
-export interface SourceLocation {
-  start: SourcePosition;
-  end?: SourcePosition;
-}
-export interface ElementInfo<TagnameType = TagnameBase, AttributeType = AttributeBase> {
-  sourceLocation?: SourceLocation;
-  tagname: TagnameType;
-  attributes: Array<AttributeType>;
-  id?: string;
-}
-
-export type SerializedElementInfo = ElementInfo<SerializedTagname, SerializedAttribute>;
+import { ElementInfo, SerializedElementInfo } from "./Styleable";
+import { SourcePosition, POSITION_UNKNOWN} from "./SourceLocation";
 
 /*
  * This interface defines a JSON friendly serialization
@@ -42,10 +25,10 @@ export interface SerializedTemplateAnalysis<K extends keyof TemplateTypes> {
  * This class can be used while traversing a document or template AST to record
  * the style-relevant markup information.
  *
- * It also provides effecienty querying to decide if two selectors' key
+ * It also provides efficient querying to decide if two selectors' key
  * selector might match the same element. This analysis information makes no
- * attempt at recording the hierchical information of a document. Hierarchy
- * infomation is deemed unreliable to determine statically. We may revisit
+ * attempt at recording the hierarchical information of a document. Hierarchy
+ * information is deemed unreliable to determine statically. We may revisit
  * hierarchical analysis in the future.
  *
  * 1. Call [[startElement startElement(tagname)]] at the beginning of an new html element.
@@ -82,7 +65,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
    * If for some reason the code can't know the source position,
    * you should pass the `POSITION_UNKNOWN` constant value.
    *
-   * Allways call [[endElement]] before calling the next [[startElement]],
+   * Always call [[endElement]] before calling the next [[startElement]],
    * even if the elements are nested in the document.
    */
   startElement(tagname: TagnameBase, position: SourcePosition ): this {
@@ -117,7 +100,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
   /**
    * Add an attribute. Dynamic values are handled according to the value that is
    * given to the attribute. For instance imagine an element:
-   * `<div class="class1 $foo class3 $($cond ? 'class4' : 'class5') size-$size">`
+   * `<div class="class1 $foo class3 $($condition ? 'class4' : 'class5') size-$size">`
    *
    * Depending on what the analyzer can deduce about the dynamic values this could
    * end up represented by several different values.
@@ -125,7 +108,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
    * If the analyzer has no idea what `$foo` might be, then the value for this
    * attribute should simply be `{unknown: true}` because if any number of
    * class could be returned then there's no benefit to providing information
-   * about the other classes from the optimizers perspective. If however,
+   * about the other classes from the optimizer's perspective. If however,
    * there's a way of knowing that the unknown value is limited to a single
    * identifier, then there is some marginal value in recording it using the
    * `{unknownIdentifier: true}` value -- especially if it's used in a way where
@@ -144,7 +127,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
    *       {value: "class2"}
    *     ]}
    *     {value: "class3"},    // class3
-   *     {oneOf: [             // $($cond ? 'class4' : 'class5')
+   *     {oneOf: [             // $($condition ? 'class4' : 'class5')
    *       {value: "class4"},
    *       {value: "class5"}
    *     ]}

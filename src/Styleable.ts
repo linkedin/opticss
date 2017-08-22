@@ -1,9 +1,64 @@
 import { inspect } from "util";
-import { CompoundSelector } from "./parseSelector";
+import { CompoundSelector, ParsedSelector } from "./parseSelector";
 import * as SelectorParser from "postcss-selector-parser";
+import { SourceLocation } from "./SourceLocation";
+import assertNever from "./util/assertNever";
 
 // TODO: make styleables belong to a template. that template can have template-wide config associated to it.
 // E.g. namespace mappings.
+
+export enum Match {
+  /**
+   * The element will definitively match the selector or selector component in
+   * at least dynamic one state.
+   */
+  yes = 1,
+  /**
+   * The element may match the selector or selector component; information is
+   * ambiguous.
+   */
+  maybe = 2,
+  /** The element will not match the selector or selector component. */
+  no = 3,
+  /**
+   * The element is unrelated to the selector or selector component and no
+   * information about whether the element matches can be determined.
+   */
+  pass = 3
+}
+
+/**
+ * true => Match.yes
+ * false => Match.no
+ * null => Match.pass
+ * undefined => Match.maybe
+ */
+export function boolToMatch(value: boolean | null | undefined): Match {
+  if (value === true) {
+    return Match.yes;
+  } else if (value === false) {
+    return Match.no;
+  } else if (value === undefined) {
+    return Match.maybe;
+  } else {
+    return Match.pass;
+  }
+}
+
+export function matchToBool(match: Match): boolean | null | undefined {
+  switch(match) {
+    case Match.yes:
+      return true;
+    case Match.no:
+      return false;
+    case Match.maybe:
+      return undefined;
+    case Match.pass:
+      return null;
+    default:
+      return assertNever(match);
+  }
+}
 
 export interface Styleable {
   /**
@@ -14,7 +69,9 @@ export interface Styleable {
    * then it would return true. But it would return false for `.foo` because it might match
    * that selector.
    */
-  willNotMatch(selector: CompoundSelector): boolean;
+  matchSelector(selector: ParsedSelector): Match;
+  matchSelectorComponent(selector: CompoundSelector): Match;
+  matchSelectorNode(node: SelectorParser.Node): Match;
 }
 
 export interface HasNamespace {
@@ -314,13 +371,168 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
     }
   }
 
-  willNotMatch(selector: CompoundSelector): boolean {
-    // TODO
-    if (selector) {
+  /**
+   * Match an attribute against a single string value. This is used
+   * by the id selector and some attribute selectors.
+   *
+   * @param identifier The identifier in the selector to match against the
+   *   element's attribute value.
+   * @param [value=this.value] the attribute value to match against.
+   * @returns boolean if it matches or not
+   */
+  matchIdent(identifier: string, value: NormalizedAttributeValue = this.value): boolean {
+    if (value.absent) {
       return false;
+    } else if (value.unknown) {
+      return true;
+    } else if (value.unknownIdentifier) {
+      return true;
+    } else if (value.constant) {
+      if (value.constant === identifier) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (value.startsWith || value.endsWith) {
+      if (value.startsWith && !identifier.startsWith(value.startsWith)) {
+        return false;
+      }
+      if (value.endsWith && !identifier.endsWith(value.endsWith)) {
+        return false;
+      }
+      return true;
+    } else if (value.allOf) {
+      // This is a tricky case. There really shouldn't be an `allOf` used
+      // for an identifier match. In theory a regex could be constructed?
+      // I'm hesitant to throw an error here but maybe I should?
+      return false;
+    } else if (value.oneOf) {
+      if (value.oneOf.some(v => this.matchIdent(identifier, v) === true)) {
+        return true;
+      } else {
+        return false;
+      }
     } else {
-      return false;
+      throw new Error(`Unexpected value: ${inspect(value)}`);
     }
+  }
+
+  /**
+   * Match an attribute against an attribute value using space delimited
+   * matching semantics. This is used by the class selector and some attribute
+   * selectors.
+   * @param identifier The identifier in the selector to match against the
+   *   element's attribute value.
+   * @param [value=this.value] the attribute value to match against.
+   * @returns boolean if it matches
+   */
+  matchWhitespaceDelimited(identifier: string, value: NormalizedAttributeValue = this.value): boolean {
+    if (value.absent) {
+      return false;
+    } else if (value.unknown) {
+      return true;
+    } else if (value.unknownIdentifier) {
+      return true;
+    } else if (value.constant) {
+      return (value.constant === identifier);
+    } else if (value.startsWith || value.endsWith) {
+      if (value.whitespace) {
+        // the unknown part of the attribute can contain whitespace so we have
+        // to assume it matches.
+        return true;
+      }
+      if (value.startsWith && !identifier.startsWith(value.startsWith)) {
+        return false;
+      }
+      if (value.endsWith && !identifier.endsWith(value.endsWith)) {
+        return false;
+      }
+      return true;
+    } else if (value.allOf || value.oneOf) {
+      return (value.allOf || value.oneOf)!.some(v => this.matchIdent(identifier, v));
+    } else {
+      throw new Error(`Unexpected value: ${inspect(value)}`);
+    }
+  }
+
+  matchAttributeNode(node: SelectorParser.Node): Match {
+    // TODO
+    if (node) {
+      return Match.yes;
+    } else {
+      return Match.no;
+    }
+  }
+
+  matchSelectorNode(node: SelectorParser.Node): Match {
+    switch(node.type) {
+      case "string":
+      case "selector":
+      case "root":
+      case "comment":
+      case "combinator":
+      case "nesting":
+      case "pseudo":
+        return Match.pass;
+      case "tag":
+        return Match.no;
+      case "id":
+        if (this.name === "id" && this.namespaceURL === null) {
+          return boolToMatch(this.matchIdent(node.value));
+        } else {
+          return Match.no;
+        }
+      case "class":
+        if (this.name === "class" && this.namespaceURL === null) {
+          return boolToMatch(this.matchWhitespaceDelimited(node.value));
+        } else {
+          return Match.no;
+        }
+      case "attribute":
+        let a = <SelectorParser.Attribute>node;
+        // TODO: unclear whether this is the namespace url or prefix from
+        // postcss-selector-parser (it's probably the prefix so this is probably
+        // broken).
+        if (a.attribute === this.name && a.namespace === this.namespaceURL) {
+          return this.matchAttributeNode(node);
+        } else {
+          return Match.no;
+        }
+      case "universal":
+        return Match.yes;
+    }
+  }
+
+  matchSelectorComponent(selector: CompoundSelector): Match {
+    let no = false;
+    let maybe = false;
+    selector.nodes.forEach(node => {
+      let match = this.matchSelectorNode(node);
+      switch(match) {
+        case Match.no:
+          no = true;
+          break;
+        case Match.maybe:
+          maybe = true;
+          break;
+        case Match.yes:
+        case Match.pass:
+          break;
+        default:
+          assertNever(match);
+      }
+    });
+    if (no) {
+      return Match.no;
+    } else if (maybe) {
+      return Match.maybe;
+    } else {
+      return Match.yes;
+    }
+  }
+
+  matchSelector(selector: ParsedSelector): Match {
+    return matchSelector(this, selector);
   }
 
   flattenedValue(value: NormalizedAttributeValue = this.value): Array<FlattenedAttributeValue> {
@@ -466,6 +678,10 @@ export class Class extends Attribute {
   }
 }
 
+export type Attr = Attribute | AttributeNS | Identifier | Class;
+
+export type Tag = Tagname | TagnameNS;
+
 export interface TagnameValueChoice {
   oneOf: Array<string>;
 }
@@ -480,7 +696,7 @@ export type NormalizedTagnameValue =
   Partial<ValueConstant> &
   Partial<TagnameValueChoice>;
 
-function isTag(tag: SelectorParser.Node | undefined): tag is SelectorParser.Tag {
+function isTag(tag: {type: string} | undefined): tag is SelectorParser.Tag {
   if (tag) {
     return tag.type === SelectorParser.TAG;
   } else {
@@ -509,19 +725,44 @@ export abstract class TagnameBase implements Styleable, HasNamespace {
     return this._value;
   }
 
-  willNotMatch(selector: CompoundSelector): boolean {
-    if (this.value.unknown) return false;
-    let tag = selector.nodes.find((node) => isTag(node));
-    if (isTag(tag)) {
-      if (this.value.constant) {
-        return tag.value !== this.value.constant;
-      } else if (this.value.oneOf) {
-        return !this.value.oneOf.some(v => v === tag!.value);
+  getTag(selector: SelectorParser.Node | CompoundSelector): SelectorParser.Tag | undefined {
+    if (selector instanceof CompoundSelector) {
+      let node = selector.nodes.find((node) => isTag(node));
+      return node as SelectorParser.Tag;
+    } else {
+      if (isTag(selector)) {
+        return selector;
       } else {
-        return false;
+        return undefined;
+      }
+    }
+  }
+
+  matchSelector(selector: ParsedSelector): Match {
+    return matchSelector(this, selector);
+  }
+  matchSelectorComponent(selector: CompoundSelector): Match {
+    let tag = this.getTag(selector);
+    if (tag) {
+      return this.matchSelectorNode(tag);
+    } else {
+      return Match.no;
+    }
+  }
+
+  matchSelectorNode(node: SelectorParser.Node): Match {
+    if (isTag(node)) {
+      if (this.value.constant) {
+        return boolToMatch(node.value === this.value.constant);
+      } else if (this.value.oneOf) {
+        return boolToMatch(this.value.oneOf.some(v => v === node.value));
+      } else if (this.value.unknown) {
+        return Match.maybe;
+      } else {
+        return assertNever(<never>node);
       }
     } else {
-      return false;
+      return Match.pass;
     }
   }
 
@@ -572,5 +813,105 @@ export class TagnameNS extends TagnameBase {
 export class Tagname extends TagnameBase {
   constructor(value: TagnameValue) {
     super(null, value);
+  }
+}
+
+export interface ElementInfo<TagnameType = TagnameBase, AttributeType = AttributeBase> {
+  sourceLocation?: SourceLocation;
+  tagname: TagnameType;
+  attributes: Array<AttributeType>;
+  id?: string;
+}
+
+export type SerializedElementInfo = ElementInfo<SerializedTagname, SerializedAttribute>;
+
+export function willNotMatch(element: ElementInfo, selector: CompoundSelector): boolean {
+  for (let i = 0; i < selector.nodes.length; i++) {
+    let node = selector.nodes[i];
+    switch(node.type) {
+      case "comment":  // never matters
+      case "string":   // only used as a child of other selector nodes.
+      case "selector": // only used as a child of other selector nodes.
+        continue;
+      case "root":
+      case "nesting":
+      case "combinator":
+        // This is indicative of some sort of programming error.
+        throw new Error(`[Internal Error] Illegal selector node: ${inspect(node)}`);
+      case "pseudo":
+      case "universal":
+        // Both of these cases used in isolation are a match but we can't return
+        // false yet because it could be used with other nodes that exclude a
+        // match. The final return of false handles this case in isolation.
+        continue;
+      case "class":
+      case "id":
+        let idOrClass = attr(element, node.type);
+        if (idOrClass && idOrClass.matchSelectorNode(node) === Match.no || !idOrClass) {
+          return true;
+        }
+        break;
+      case "tag":
+        let tag = element.tagname;
+        if (tag.matchSelectorNode(node) === Match.no) {
+          return true;
+        }
+      case "attribute":
+        let anAttr = attr(element, (<SelectorParser.Attribute>node).attribute);
+        if (anAttr && anAttr.matchSelectorNode(node) === Match.no || !anAttr) {
+          return true;
+        }
+        break;
+      default:
+        assertNever(node.type);
+    }
+  }
+  return false;
+}
+
+/*
+function isNamespaceAttr(attr: AttributeBase | undefined): attr is AttributeNS {
+  if (attr && attr.namespaceURL) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function isAttr(attr: AttributeBase | undefined): attr is Attribute {
+  if (attr && attr.namespaceURL === null) {
+    return true;
+  } else {
+    return false;
+  }
+}
+*/
+
+function attr(element: ElementInfo, name: string, namespaceURL?: string): Attribute | AttributeNS | undefined {
+  let attr = element.attributes.find(attr => {
+    return attr.name === name &&
+           attr.namespaceURL === namespaceURL;
+  });
+  return attr;
+}
+
+function matchSelector(styleable: Styleable, parsedSelector: ParsedSelector, keySelector = false): Match {
+  let selector = keySelector ? parsedSelector.key : parsedSelector.selector;
+  let match: Match;
+  let maybe = false;
+  // tslint:disable-next-line:label-position
+  match_again: {
+    match = styleable.matchSelectorComponent(selector);
+    if (match === Match.no) return Match.no;
+    if (match === Match.maybe) maybe = true;
+    if (selector.next) {
+      selector = selector.next.selector;
+      break match_again;
+    }
+  }
+  if (maybe) {
+    return Match.maybe;
+  } else {
+    return Match.yes;
   }
 }

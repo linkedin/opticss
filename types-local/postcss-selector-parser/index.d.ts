@@ -59,6 +59,20 @@ declare namespace parser {
       constructor(input: ParserOptions);
       loop(): Root;
     }
+    interface NodeTypes {
+        tag: Tag,
+        string: String,
+        selector: Selector,
+        root: Root,
+        pseudo: Pseudo,
+        nesting: Nesting,
+        id: Identifier,
+        comment: Comment,
+        combinator: Combinator,
+        class: ClassName,
+        attribute: Attribute,
+        universal: Universal
+    }
     interface NodeSource {
         start?: {
             line: number,
@@ -77,25 +91,15 @@ declare namespace parser {
         }
         source?: NodeSource;
     }
-    interface AttributeOptions extends NodeOptions {
-        attribute: string;
-        operator: string;
-        insensitive?: boolean;
-        namespace?: string;
-        raws?: {
-          insensitive?: boolean;
-        };
-    }
-    class Node implements NodeOptions {
+    interface Node {
+        type: keyof NodeTypes;
         parent?: Selector;
-        type: string;
         value: string;
         spaces?: {
             before: string;
             after: string;
         }
         source?: NodeSource;
-        constructor(opts?: NodeOptions)
         remove(): Node;
         replaceWith(...nodes: Node[]): Node;
         next(): Node;
@@ -107,9 +111,8 @@ declare namespace parser {
     interface ContainerOptions extends NodeOptions {
         nodes?: Node[];
     }
-    class Container extends Node implements ContainerOptions {
+    interface Container extends Node {
         nodes: Node[];
-        constructor(opts?: ContainerOptions)
         append(selector: Selector): Container;
         prepend(selector: Selector): Container;
         at(index: number): Node;
@@ -141,25 +144,45 @@ declare namespace parser {
         sort(callback: (nodeA: Node, nodeB: Node) => number): Node[];
         toString(): string;
     }
-    interface RootOptions extends ContainerOptions { }
-    class Root extends Container implements RootOptions {
-        constructor(opts?: RootOptions)
-    }
-    interface SelectorOptions extends ContainerOptions { }
-    class Selector extends Container implements SelectorOptions {
-        constructor(opts?: SelectorOptions)
-    }
-    interface CombinatorOptions extends NodeOptions { }
-    class Combinator extends Node { }
+
     interface NamespaceOptions extends NodeOptions {
         ns?: string;
     }
-    class Namespace extends Node {
+    interface Namespace extends Node {
         readonly ns: string;
     }
-    interface ClassOptions extends NamespaceOptions { }
-    class ClassName extends Namespace implements ClassOptions { }
-    class Attribute extends Node implements AttributeOptions {
+
+    interface Root extends Container {
+        type: "root";
+    }
+    function root(opts: ContainerOptions): Root;
+
+    interface Selector extends Container {
+        type: "selector";
+    }
+    function selector(opts: ContainerOptions): Selector;
+
+    interface Combinator extends Node {
+        type: "combinator"
+    }
+    function combinator(opts: NodeOptions): Combinator;
+
+    interface ClassName extends Namespace {
+        type: "class";
+    }
+    function className(opts: NamespaceOptions): ClassName;
+
+    interface AttributeOptions extends NodeOptions {
+        attribute: string;
+        operator: string;
+        insensitive?: boolean;
+        namespace?: string;
+        raws?: {
+          insensitive?: boolean;
+        };
+    }
+    interface Attribute extends Node {
+        type: "attribute";
         attribute: string;
         operator: string;
         insensitive: boolean;
@@ -167,27 +190,42 @@ declare namespace parser {
         raws: {
           insensitive: boolean;
         };
-        constructor(opts?: AttributeOptions);
         toString(): string;
     }
-    interface PseudoOptions extends NodeOptions {
-    }
-    class Pseudo extends Container implements PseudoOptions {
-    }
-    interface TagOptions extends NodeOptions {
-    }
-    class Tag extends Node implements TagOptions {
-    }
     function attribute(opts: AttributeOptions): Attribute;
-    function className(opts: ClassOptions): ClassName;
-    function combinator(opts: CombinatorOptions): Combinator;
-    function pseudo(opts: PseudoOptions): Pseudo;
-    function tag(opts: TagOptions): Tag;
-    function comment(opts: any): any;
+
+    interface Pseudo extends Container {
+        type: "pseudo";
+    }
+    function pseudo(opts: ContainerOptions): Pseudo;
+
+    interface Tag extends Namespace {
+        type: "tag";
+    }
+    function tag(opts: NamespaceOptions): Tag;
+
+    interface Comment extends Node {
+        type: "comment";
+    }
+    function comment(opts: NodeOptions): Comment;
+
+    interface Identifier extends Node {
+        type: "id";
+    }
     function id(opts: any): any;
+
+    interface Nesting extends Node {
+        type: "nesting";
+    }
     function nesting(opts: any): any;
-    function root(opts: any): any;
-    function selector(opts: any): any;
-    function string(opts: any): any;
+
+    interface String extends Node {
+        type: "string";
+    }
+    function string(opts: NodeOptions): String;
+
+    interface Universal extends Node {
+        type: "universal";
+    }
     function universal(opts: any): any;
 }

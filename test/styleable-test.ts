@@ -2,7 +2,7 @@ import { suite, test, skip, only } from "mocha-typescript";
 import { assert } from "chai";
 
 import {
-  Tagname, TagnameNS, Attribute
+  Tagname, TagnameNS, Attribute, Match
 } from "../src/Styleable";
 import {
   default as parseSelector,
@@ -39,36 +39,36 @@ export class StyleableTagnameTest {
   }
   @test "when unknown matches any selector"() {
     let tagname = new Tagname({unknown: true});
-    assert.isFalse(tagname.willNotMatch(selector("span")));
+    assert.equal(tagname.matchSelectorComponent(selector("span")), Match.maybe);
   }
   @test "a constant value won't match a different specific selector"() {
     let tagname = new Tagname({constant: "span"});
-    assert.isTrue(tagname.willNotMatch(selector("div")));
+    assert.equal(tagname.matchSelectorComponent(selector("div")), Match.no);
   }
   @test "a constant value matches the same specific selector"() {
     let tagname = new Tagname({constant: "span"});
-    assert.isFalse(tagname.willNotMatch(selector("span")));
+    assert.equal(tagname.matchSelectorComponent(selector("span")), Match.yes);
   }
   @test "a choice won't match if the value isn't one of the values"() {
     let tagname = new Tagname({oneOf: ["div", "span"]});
-    assert.isTrue(tagname.willNotMatch(selector("input")));
+    assert.equal(tagname.matchSelectorComponent(selector("input")), Match.no);
   }
   @test "a choice matches if the value is one of the values"() {
     let tagname = new Tagname({oneOf: ["div", "span"]});
-    assert.isFalse(tagname.willNotMatch(selector("div")));
-    assert.isFalse(tagname.willNotMatch(selector("span")));
+    assert.equal(tagname.matchSelectorComponent(selector("div")), Match.yes);
+    assert.equal(tagname.matchSelectorComponent(selector("span")), Match.yes);
   }
-  @test "might match a class selector"() {
+  @test "passes matching a class selector"() {
     let tagname = new Tagname({constant: "div"});
-    assert.isFalse(tagname.willNotMatch(selector(".foo")));
+    assert.equal(tagname.matchSelectorComponent(selector(".foo")), Match.pass);
   }
   @test "might match a compound selector containing the tag"() {
     let tagname = new Tagname({constant: "div"});
-    assert.isFalse(tagname.willNotMatch(selector("div.foo")));
+    assert.equal(tagname.matchSelectorComponent(selector("div.foo")), Match.yes);
   }
   @test "won't match a compound selector not containing the tag"() {
     let tagname = new Tagname({constant: "div"});
-    assert.isTrue(tagname.willNotMatch(selector("span.foo")));
+    assert.equal(tagname.matchSelectorComponent(selector("span.foo")), Match.no);
   }
 }
 
