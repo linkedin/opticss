@@ -22,7 +22,14 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
     file.content.root!.walkRules((node) => {
       let parsedSelectors = cache.getParsedSelectors(node);
       let found = parsedSelectors.filter((value) => {
-         return elements.find((element) => matches(element.matchSelector(value)));
+        return value.eachCompoundSelector((selector) => {
+          let found = elements.find((element) => matches(element.matchSelectorComponent(selector)));
+          if (!found || selector === value.key) {
+            return found;
+          } else {
+            return;
+          }
+        });
       });
       if (found.length === 0) {
         node.remove();

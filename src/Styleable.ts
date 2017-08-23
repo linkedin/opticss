@@ -17,14 +17,14 @@ export enum Match {
    * The element may match the selector or selector component; information is
    * ambiguous.
    */
-  maybe = 2,
+  maybe,
   /** The element will not match the selector or selector component. */
-  no = 3,
+  no,
   /**
    * The element is unrelated to the selector or selector component and no
    * information about whether the element matches can be determined.
    */
-  pass = 3
+  pass
 }
 
 /**
@@ -924,22 +924,13 @@ function attr(element: ElementInfo, name: string, namespaceURL: string | null = 
 }
 
 function matchSelectorImpl(styleable: Styleable, parsedSelector: ParsedSelector, keySelectorOnly = true): Match {
-  let selector = keySelectorOnly ? parsedSelector.key : parsedSelector.selector;
-  let match: Match;
-  let maybe = false;
-  // tslint:disable-next-line:label-position
-  match_again: {
-    match = styleable.matchSelectorComponent(selector);
-    if (match === Match.no) return Match.no;
-    if (match === Match.maybe) maybe = true;
-    if (selector.next) {
-      selector = selector.next.selector;
-      break match_again;
-    }
-  }
-  if (maybe) {
-    return Match.maybe;
-  } else {
-    return Match.yes;
-  }
+  let maybe: Match | undefined = undefined;
+  let no = parsedSelector.eachCompoundSelector((selector) => {
+    if (selector !== parsedSelector.key && keySelectorOnly) return;
+    let match = styleable.matchSelectorComponent(selector);
+    if (match === Match.no) return match;
+    if (match === Match.maybe) maybe = match;
+    return;
+  });
+  return no || maybe || Match.yes;
 }

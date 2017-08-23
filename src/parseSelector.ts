@@ -203,6 +203,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
  * list and provides a number of convenience methods for interacting with it.
  */
 export class ParsedSelector {
+  private _key: CompoundSelector | undefined;
   selector: CompoundSelector;
 
   /**
@@ -210,6 +211,21 @@ export class ParsedSelector {
    */
   constructor(selector: CompoundSelector) {
     this.selector = selector;
+  }
+
+  eachCompoundSelector<EarlyReturnType>(callback: (sel: CompoundSelector) =>  EarlyReturnType | undefined): EarlyReturnType | undefined {
+    let selector: CompoundSelector = this.selector;
+    // tslint:disable-next-line:label-position
+    loop: {
+      let earlyReturn = callback(selector);
+      if (earlyReturn !== undefined) return earlyReturn;
+      let next = selector.next;
+      if (next) {
+        selector = next.selector;
+        break loop;
+      }
+    }
+    return;
   }
 
   /**
@@ -230,7 +246,10 @@ export class ParsedSelector {
    * @return Key selector.
    */
   get key(): CompoundSelector {
-    return this.selector.lastSibling;
+    if (this._key === undefined) {
+      this._key = this.selector.lastSibling;
+    }
+    return this._key;
   }
 
   /**
