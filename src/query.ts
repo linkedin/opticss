@@ -1,9 +1,9 @@
 import postcss = require("postcss");
 import parseSelector, { ParsedSelector } from "./parseSelector";
-import { ElementInfo, willNotMatch } from "./Styleable";
+import { Element, Match } from "./Styleable";
 
 export interface SelectorQuery {
-  execute(container: postcss.Container): ClassifiedParsedSelectors;
+  execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors;
 }
 
 export interface ParsedSelectorAndRule {
@@ -22,9 +22,73 @@ export interface SelectorFactory {
   getParsedSelectors(node: postcss.Rule): ParsedSelector[];
 }
 
+export class SelectorCache implements SelectorFactory {
+  _cache: WeakMap<postcss.Rule, ParsedSelector[]>;
+  constructor() {
+    this._cache = new WeakMap();
+  }
+  getParsedSelectors(rule: postcss.Rule): ParsedSelector[] {
+    if (this._cache.has(rule)) {
+      return this._cache.get(rule)!;
+    } else {
+      let selectors = parseSelector(rule.selector);
+      this._cache.set(rule, selectors);
+      return selectors;
+    }
+  }
+  clear(): void {
+    this._cache = new WeakMap();
+  }
+  reset(rule: postcss.Rule): void {
+    this._cache.delete(rule);
+  }
+}
+
+/**
+ * This query finds all selectors for which the selector references the given
+ * target elements in any compound selector.
+ *
+ * When negated, it finds all selectors that can be proven to never reference
+ * any of the target elements.
+ */
+export class QuerySelectorReferences implements SelectorQuery {
+  targets: Array<Element>;
+  negate: boolean;
+  constructor(elements: Array<Element>, negate?: boolean) {
+    this.targets = elements;
+    this.negate = !!negate;
+  }
+  execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors {
+    let matchedSelectors: ClassifiedParsedSelectors = {
+      main: [],
+      other: {}
+    };
+    container.walkRules((node) => {
+      let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node.selector);
+      let found = parsedSelectors.filter((value: ParsedSelector) => {
+         return this.targets.find((element) => {
+          let match = element.matchSelector(value, false);
+          return this.negate ? rejects(match) : matches(match);
+        }) !== undefined;
+      });
+      found.forEach((sel) => {
+        matchedSelectors.main.push({parsedSelector: sel, rule: node});
+      });
+    });
+    return matchedSelectors;
+  }
+}
+
+/**
+ * This query finds all selectors for which the key selector may match the
+ * given element in any of its possible dynamic states.
+ *
+ * The returned selectors may not actually match depending on the selector
+ * context and various combinators.
+ */
 export class QueryKeySelector implements SelectorQuery {
-  target: ElementInfo;
-  constructor(obj: ElementInfo) {
+  target: Element;
+  constructor(obj: Element) {
     this.target = obj;
   }
 
@@ -35,7 +99,7 @@ export class QueryKeySelector implements SelectorQuery {
     };
     container.walkRules((node) => {
       let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node.selector);
-      let found = parsedSelectors.filter((value: ParsedSelector) => !willNotMatch(this.target, value.key));
+      let found = parsedSelectors.filter((value: ParsedSelector) => matches(this.target.matchSelector(value)));
       found.forEach((sel) => {
         let key = sel.key;
         if (key.pseudoelement !== undefined) {
@@ -50,4 +114,12 @@ export class QueryKeySelector implements SelectorQuery {
     });
     return matchedSelectors;
   }
+}
+
+function matches(m: Match): boolean {
+  return m === Match.yes || m === Match.maybe;
+}
+
+function rejects(m: Match): boolean {
+  return m === Match.no;
 }

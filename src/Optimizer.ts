@@ -6,6 +6,7 @@ import { TemplateTypes } from "./TemplateInfo";
 import { optimizations, Optimization, SingleFileOptimization, MultiFileOptimization } from "./optimizations";
 import * as postcss from "postcss";
 import Concat = require("concat-with-sourcemaps");
+import { SelectorCache } from "./query";
 
 export interface OptimizationResult {
   output: CssFile;
@@ -57,6 +58,9 @@ export class Optimizer {
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
     this.singleFileOptimizations = [];
     this.multiFileOptimizations = [];
+    if (!this.options.enabled) {
+      return;
+    }
     Object.keys(optimizations).forEach((opt) => {
       if (this.options[opt]) {
         let Optimization = optimizations[opt];
@@ -79,32 +83,43 @@ export class Optimizer {
     this.analyses.push(analysis);
   }
 
-  private optimizeSingleFile(styleMapping: StyleMapping, source: CssFile): Promise<ParsedCssFile> {
+  private optimizeSingleFile(styleMapping: StyleMapping, source: CssFile, cache: SelectorCache): Promise<ParsedCssFile> {
     return parseCss(source).then(file => {
       this.singleFileOptimizations.forEach((optimization) => {
-        optimization.optimizeSingleFile(styleMapping, file);
+        optimization.optimizeSingleFile(styleMapping, file, this.analyses, cache);
       });
       return file;
     });
   }
 
-  private optimizeAllFiles(styleMapping: StyleMapping, files: Array<ParsedCssFile>): Promise<Array<ParsedCssFile>> {
+  private optimizeAllFiles(styleMapping: StyleMapping, files: Array<ParsedCssFile>, cache: SelectorCache): Promise<Array<ParsedCssFile>> {
     this.multiFileOptimizations.forEach((optimization) => {
-      optimization.optimizeAllFiles(styleMapping, files);
+      optimization.optimizeAllFiles(styleMapping, files, this.analyses, cache);
     });
     return Promise.resolve(files);
   }
 
   optimize(outputFilename: string): Promise<OptimizationResult> {
     let styleMapping = new StyleMapping();
-    let promises = this.sources.map(source => this.optimizeSingleFile(styleMapping, source));
+    let cache = new SelectorCache();
+    let promises = this.sources.map(source => this.optimizeSingleFile(styleMapping, source, cache));
 
     return Promise.all(promises).then(files => {
-      return this.optimizeAllFiles(styleMapping, files);
+      return this.optimizeAllFiles(styleMapping, files, cache);
     }).then((files) => {
       let output = new Concat(true, outputFilename, "\n");
       files.forEach(file => {
-        output.add(file.filename || "optimized.css", file.content.css, file.content.map && file.content.map.toJSON());
+        let resultOpts = {
+          to: outputFilename,
+          map: {
+            inline: false,
+            prev: file.content.map,
+            sourcesContent: true,
+            annotation: false
+          }
+        };
+        let result = file.content.root!.toResult(resultOpts);
+        output.add(file.filename || "optimized.css", result.css, result.map.toJSON());
       });
       return {
         output: {
@@ -121,12 +136,21 @@ export class Optimizer {
 function parseCss(file: CssFile): Promise<ParsedCssFile> {
   if (typeof file.content === "string") {
     return new Promise<postcss.Result>((resolve, reject) => {
-      // TODO get the source map passed in if there is one.
-      postcss().process(file.content, {from: file.filename}).then(resolve, reject);
+      let sourceMapOptions = {
+        inline: false,
+        prev: file.sourceMap,
+        sourcesContent: true,
+        annotation: false
+      };
+      let processOpts = {
+        from: file.filename,
+        map: sourceMapOptions
+      };
+      postcss().process(file.content, processOpts).then(resolve, reject);
     }).then(result => {
       return {
         content: result,
-        filename: file.filename
+        filename: file.filename,
       };
     });
   } else {

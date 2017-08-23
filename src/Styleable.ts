@@ -1,7 +1,7 @@
 import { inspect } from "util";
 import { CompoundSelector, ParsedSelector } from "./parseSelector";
 import * as SelectorParser from "postcss-selector-parser";
-import { SourceLocation } from "./SourceLocation";
+import { SourceLocation, POSITION_UNKNOWN } from "./SourceLocation";
 import assertNever from "./util/assertNever";
 
 // TODO: make styleables belong to a template. that template can have template-wide config associated to it.
@@ -61,15 +61,7 @@ export function matchToBool(match: Match): boolean | null | undefined {
 }
 
 export interface Styleable {
-  /**
-   * Returns true if the styleable can definitively prove that a compound
-   * selector will not match an element with this styleable.
-   *
-   * For instance if a selector was `a.foo` and the styleable was for a tag name `span`,
-   * then it would return true. But it would return false for `.foo` because it might match
-   * that selector.
-   */
-  matchSelector(selector: ParsedSelector): Match;
+  matchSelector(selector: ParsedSelector, keySelectorOnly: boolean): Match;
   matchSelectorComponent(selector: CompoundSelector): Match;
   matchSelectorNode(node: SelectorParser.Node): Match;
 }
@@ -83,8 +75,9 @@ export interface HasNamespace {
 // creation of nonsensical value data like `{unknown: true, value: "asdf"}`. But
 // when it comes time to read these values we have to read them off a data type
 // where any of the values might be present without introducing a bunch of
-// casting So the normalized types are a superset of the types that are exlusive
-// when passed as arguments. This keeps us from having to do a bunch of casting.
+// casting So the normalized types are a super set of the types that are
+// exclusive when passed as arguments. This keeps us from having to do a bunch
+// of casting.
 
 /**
  * A value that contains no dynamic component.
@@ -123,7 +116,7 @@ export interface ValueAbsent {
  * The only thing that is known about the value is a constant prefix.
  *
  * This might be used when a value is set to a constant value concatenated with a dynamic expression.
- * In some clases this is enough information to decide that a selector doesn't match.
+ * In some cases this is enough information to decide that a selector doesn't match.
  */
 export interface ValueStartsWith {
   startsWith: string;
@@ -134,7 +127,7 @@ export interface ValueStartsWith {
  * The only thing that is known about the value is a constant suffix.
  *
  * This might be used when a value is set to a constant value concatenated with a dynamic expression.
- * In some clases this is enough information to decide that a selector doesn't match.
+ * In some cases this is enough information to decide that a selector doesn't match.
  */
 export interface ValueEndsWith {
   endsWith: string;
@@ -145,7 +138,7 @@ export interface ValueEndsWith {
  * The only thing that is known about the value is a constant prefix and suffix.
  *
  * This might be used when a value has a dynamic expression embedded within a a constant value.
- * In some clases this is enough information to decide that a selector doesn't match.
+ * In some cases this is enough information to decide that a selector doesn't match.
  */
 export type ValueStartsAndEndsWith = ValueStartsWith & ValueEndsWith;
 
@@ -531,8 +524,8 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
     }
   }
 
-  matchSelector(selector: ParsedSelector): Match {
-    return matchSelector(this, selector);
+  matchSelector(selector: ParsedSelector, keySelectorOnly = true): Match {
+    return matchSelectorImpl(this, selector, keySelectorOnly);
   }
 
   flattenedValue(value: NormalizedAttributeValue = this.value): Array<FlattenedAttributeValue> {
@@ -725,28 +718,24 @@ export abstract class TagnameBase implements Styleable, HasNamespace {
     return this._value;
   }
 
-  getTag(selector: SelectorParser.Node | CompoundSelector): SelectorParser.Tag | undefined {
-    if (selector instanceof CompoundSelector) {
-      let node = selector.nodes.find((node) => isTag(node));
+  getTag(selector: CompoundSelector): SelectorParser.Tag | undefined {
+    let node = selector.nodes.find((node) => isTag(node));
+    if (node) {
       return node as SelectorParser.Tag;
     } else {
-      if (isTag(selector)) {
-        return selector;
-      } else {
-        return undefined;
-      }
+      return undefined;
     }
   }
 
-  matchSelector(selector: ParsedSelector): Match {
-    return matchSelector(this, selector);
+  matchSelector(selector: ParsedSelector, keySelectorOnly = true): Match {
+    return matchSelectorImpl(this, selector, keySelectorOnly);
   }
   matchSelectorComponent(selector: CompoundSelector): Match {
     let tag = this.getTag(selector);
     if (tag) {
       return this.matchSelectorNode(tag);
     } else {
-      return Match.no;
+      return Match.pass;
     }
   }
 
@@ -816,7 +805,7 @@ export class Tagname extends TagnameBase {
   }
 }
 
-export interface ElementInfo<TagnameType = TagnameBase, AttributeType = AttributeBase> {
+export interface ElementInfo<TagnameType = Tag, AttributeType = Attr> {
   sourceLocation?: SourceLocation;
   tagname: TagnameType;
   attributes: Array<AttributeType>;
@@ -825,14 +814,48 @@ export interface ElementInfo<TagnameType = TagnameBase, AttributeType = Attribut
 
 export type SerializedElementInfo = ElementInfo<SerializedTagname, SerializedAttribute>;
 
-export function willNotMatch(element: ElementInfo, selector: CompoundSelector): boolean {
-  for (let i = 0; i < selector.nodes.length; i++) {
-    let node = selector.nodes[i];
+export class Element implements ElementInfo, Styleable {
+  sourceLocation: SourceLocation;
+  tagname: Tag;
+  attributes: Array<Attr>;
+  id: string | undefined;
+  constructor(tagname: Tag, attributes: Array<Attr>, sourceLocation?: SourceLocation, id?: string) {
+    this.tagname = tagname;
+    this.attributes = attributes;
+    this.sourceLocation = sourceLocation || {start: POSITION_UNKNOWN};
+    this.id = id;
+  }
+
+  static fromElementInfo(info: ElementInfo): Element {
+    return new Element(info.tagname, info.attributes, info.sourceLocation, info.id);
+  }
+
+  matchSelector(selector: ParsedSelector, keySelectorOnly = true): Match {
+    return matchSelectorImpl(this, selector, keySelectorOnly);
+  }
+
+  matchSelectorComponent(selector: CompoundSelector): Match {
+    let maybe = false;
+    for (let i = 0; i < selector.nodes.length; i++) {
+      let match = this.matchSelectorNode(selector.nodes[i]);
+      if (match === Match.no) {
+        return match;
+      } else if (match === Match.maybe) {
+        maybe = true;
+      }
+    }
+    if (maybe) {
+      return Match.maybe;
+    } else {
+      return Match.yes;
+    }
+  }
+  matchSelectorNode(node: SelectorParser.Node): Match {
     switch(node.type) {
       case "comment":  // never matters
       case "string":   // only used as a child of other selector nodes.
       case "selector": // only used as a child of other selector nodes.
-        continue;
+        return Match.pass;
       case "root":
       case "nesting":
       case "combinator":
@@ -840,33 +863,38 @@ export function willNotMatch(element: ElementInfo, selector: CompoundSelector): 
         throw new Error(`[Internal Error] Illegal selector node: ${inspect(node)}`);
       case "pseudo":
       case "universal":
-        // Both of these cases used in isolation are a match but we can't return
-        // false yet because it could be used with other nodes that exclude a
-        // match. The final return of false handles this case in isolation.
-        continue;
+        return Match.yes;
       case "class":
       case "id":
-        let idOrClass = attr(element, node.type);
-        if (idOrClass && idOrClass.matchSelectorNode(node) === Match.no || !idOrClass) {
-          return true;
+        let idOrClass = attr(this, node.type);
+        if (idOrClass) {
+          return idOrClass.matchSelectorNode(node);
+        } else {
+          return Match.no;
         }
-        break;
       case "tag":
-        let tag = element.tagname;
-        if (tag.matchSelectorNode(node) === Match.no) {
-          return true;
-        }
+        return this.tagname.matchSelectorNode(node);
       case "attribute":
-        let anAttr = attr(element, (<SelectorParser.Attribute>node).attribute);
-        if (anAttr && anAttr.matchSelectorNode(node) === Match.no || !anAttr) {
-          return true;
+        let anAttr = attr(this, (<SelectorParser.Attribute>node).attribute);
+        if (anAttr) {
+          return anAttr.matchSelectorNode(node);
+        } else {
+          return Match.no;
         }
-        break;
       default:
-        assertNever(node.type);
+        return assertNever(node.type);
     }
   }
-  return false;
+  serialize(): SerializedElementInfo {
+    let e: SerializedElementInfo = {
+      tagname: this.tagname.toJSON(),
+      attributes: this.attributes.map(a => a.toJSON())
+    };
+    if (this.sourceLocation && this.sourceLocation.start.line >= 0) {
+      e.sourceLocation = this.sourceLocation;
+    }
+    return e;
+  }
 }
 
 /*
@@ -887,7 +915,7 @@ function isAttr(attr: AttributeBase | undefined): attr is Attribute {
 }
 */
 
-function attr(element: ElementInfo, name: string, namespaceURL?: string): Attribute | AttributeNS | undefined {
+function attr(element: ElementInfo, name: string, namespaceURL: string | null = null): Attribute | AttributeNS | undefined {
   let attr = element.attributes.find(attr => {
     return attr.name === name &&
            attr.namespaceURL === namespaceURL;
@@ -895,8 +923,8 @@ function attr(element: ElementInfo, name: string, namespaceURL?: string): Attrib
   return attr;
 }
 
-function matchSelector(styleable: Styleable, parsedSelector: ParsedSelector, keySelector = false): Match {
-  let selector = keySelector ? parsedSelector.key : parsedSelector.selector;
+function matchSelectorImpl(styleable: Styleable, parsedSelector: ParsedSelector, keySelectorOnly = true): Match {
+  let selector = keySelectorOnly ? parsedSelector.key : parsedSelector.selector;
   let match: Match;
   let maybe = false;
   // tslint:disable-next-line:label-position

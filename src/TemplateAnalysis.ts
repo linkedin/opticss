@@ -1,8 +1,8 @@
 import { TagnameBase, AttributeBase } from "./Styleable";
 import { SerializedTemplateInfo, TemplateTypes, TemplateInfoFactory } from "./TemplateInfo";
 import * as errors from "./errors";
-import { ElementInfo, SerializedElementInfo } from "./Styleable";
-import { SourcePosition, POSITION_UNKNOWN} from "./SourceLocation";
+import { Element, SerializedElementInfo, Attr, Tag } from "./Styleable";
+import { SourcePosition, POSITION_UNKNOWN, SourceLocation } from "./SourceLocation";
 
 /*
  * This interface defines a JSON friendly serialization
@@ -43,13 +43,13 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
    * A list of all the styles that are used together on the same element.
    * The current correlation is added to this list when [[endElement]] is called.
    */
-  elements: ElementInfo[];
+  elements: Element[];
 
   /**
    * The current element is created when calling [[startElement]].
    * The current element is unset after calling [[endElement]].
    */
-  currentElement?: ElementInfo;
+  currentElement?: Element;
 
   /**
    * @param template The template being analyzed.
@@ -68,18 +68,13 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
    * Always call [[endElement]] before calling the next [[startElement]],
    * even if the elements are nested in the document.
    */
-  startElement(tagname: TagnameBase, position: SourcePosition ): this {
+  startElement(tagname: Tag, position: SourcePosition ): this {
     if (this.currentElement) {
        throw new errors.OpticssError(`endElement wasn't called after a previous call to startElement`,
                                      {filename: this.template.identifier, ...position});
     }
-    this.currentElement = {
-      tagname,
-      attributes: new Array<AttributeBase>(),
-    };
-    if (position.line >= 0) {
-      this.currentElement.sourceLocation = {start: position};
-    }
+    let startPos: SourceLocation | undefined = (position.line >= 0) ? {start: position} : undefined;
+    this.currentElement = new Element(tagname, new Array<Attr>(), startPos);
     return this;
   }
 
@@ -93,7 +88,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
     return this;
   }
 
-  getElementInfo(id: string): ElementInfo | undefined {
+  getElement(id: string): Element | undefined {
     return this.elements.find(el => el.id === id); // consider using a map for performance?
   }
 
@@ -176,14 +171,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
   serialize(): SerializedTemplateAnalysis<K> {
     let elements = new Array<SerializedElementInfo>();
     this.elements.forEach((element) => {
-      let e: SerializedElementInfo = {
-        tagname: element.tagname.toJSON(),
-        attributes: element.attributes.map(a => a.toJSON())
-      };
-      if (element.sourceLocation) {
-        e.sourceLocation = element.sourceLocation;
-      }
-      elements.push(e);
+      elements.push(element.serialize());
     });
     return {
       template: this.template.serialize() as SerializedTemplateInfo<K>,
