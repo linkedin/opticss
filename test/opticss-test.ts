@@ -59,7 +59,7 @@ export class OptiCSSTest {
       assert.equal(optimized, `\n${css2}`);
     });
   }
-  @test "Removes unused class with used class in context selector"() {
+  @test "Removes used class with unused class in context selector"() {
     let css1 = `.a { color: red; }`;
     let css2 = `.a .b { width: 100%; }`;
     let template = new TestTemplate("test", clean`

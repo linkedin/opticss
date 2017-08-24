@@ -215,17 +215,12 @@ export class ParsedSelector {
 
   eachCompoundSelector<EarlyReturnType>(callback: (sel: CompoundSelector) =>  EarlyReturnType | undefined): EarlyReturnType | undefined {
     let selector: CompoundSelector = this.selector;
-    // tslint:disable-next-line:label-position
-    loop: {
-      let earlyReturn = callback(selector);
-      if (earlyReturn !== undefined) return earlyReturn;
-      let next = selector.next;
-      if (next) {
-        selector = next.selector;
-        break loop;
-      }
+    let earlyReturn = callback(selector);
+    while (earlyReturn === undefined && selector.next) {
+      selector = selector.next.selector;
+      earlyReturn = callback(selector);
     }
-    return;
+    return earlyReturn;
   }
 
   /**

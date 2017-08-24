@@ -1,6 +1,7 @@
 import postcss = require("postcss");
 import parseSelector, { ParsedSelector } from "./parseSelector";
-import { Element, Match } from "./Styleable";
+import { Element } from "./Styleable";
+import { rejects, matches } from "./Match";
 
 export interface SelectorQuery {
   execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors;
@@ -114,12 +115,4 @@ export class QueryKeySelector implements SelectorQuery {
     });
     return matchedSelectors;
   }
-}
-
-function matches(m: Match): boolean {
-  return m === Match.yes || m === Match.maybe;
-}
-
-function rejects(m: Match): boolean {
-  return m === Match.no;
 }

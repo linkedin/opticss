@@ -4,8 +4,9 @@ import { ParsedCssFile } from "../CssFile";
 import { OptiCSSOptions } from "../OpticssOptions";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { TemplateTypes } from "../TemplateInfo";
-import { Element, Match } from "../Styleable";
+import { Element } from "../Styleable";
 import { SelectorCache } from "../query";
+import { matches } from "../Match";
 
 export class RemoveUnusedStyles implements SingleFileOptimization {
   private options: OptiCSSOptions;
@@ -25,7 +26,7 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
         return value.eachCompoundSelector((selector) => {
           let found = elements.find((element) => matches(element.matchSelectorComponent(selector)));
           if (!found || selector === value.key) {
-            return found;
+            return !!found;
           } else {
             return;
           }
@@ -41,8 +42,4 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
       }
     });
   }
-}
-
-function matches(m: Match): boolean {
-  return m === Match.yes || m === Match.maybe;
 }

@@ -2,12 +2,13 @@ import { suite, test, skip, only } from "mocha-typescript";
 import { assert } from "chai";
 
 import {
-  Tagname, TagnameNS, Attribute, Match
+  Tagname, TagnameNS, Attribute
 } from "../src/Styleable";
 import {
   default as parseSelector,
   CompoundSelector,
 } from "../src/parseSelector";
+import { Match } from "../src/Match";
 
 function selector(selector: string): CompoundSelector {
   let parsed = parseSelector(selector);
