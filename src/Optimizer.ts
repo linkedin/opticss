@@ -7,10 +7,12 @@ import { optimizations, Optimization, SingleFileOptimization, MultiFileOptimizat
 import * as postcss from "postcss";
 import Concat = require("concat-with-sourcemaps");
 import { SelectorCache } from "./query";
+import { Actions } from "./Actions";
 
 export interface OptimizationResult {
   output: CssFile;
   styleMapping: StyleMapping;
+  actions: Actions;
 }
 
 function optimizesSingleFiles(optimization: Optimization): optimization is SingleFileOptimization {
@@ -83,18 +85,18 @@ export class Optimizer {
     this.analyses.push(analysis);
   }
 
-  private optimizeSingleFile(styleMapping: StyleMapping, source: CssFile, cache: SelectorCache): Promise<ParsedCssFile> {
+  private optimizeSingleFile(styleMapping: StyleMapping, source: CssFile, cache: SelectorCache, actions: Actions): Promise<ParsedCssFile> {
     return parseCss(source).then(file => {
       this.singleFileOptimizations.forEach((optimization) => {
-        optimization.optimizeSingleFile(styleMapping, file, this.analyses, cache);
+        optimization.optimizeSingleFile(styleMapping, file, this.analyses, cache, actions);
       });
       return file;
     });
   }
 
-  private optimizeAllFiles(styleMapping: StyleMapping, files: Array<ParsedCssFile>, cache: SelectorCache): Promise<Array<ParsedCssFile>> {
+  private optimizeAllFiles(styleMapping: StyleMapping, files: Array<ParsedCssFile>, cache: SelectorCache, actions: Actions): Promise<Array<ParsedCssFile>> {
     this.multiFileOptimizations.forEach((optimization) => {
-      optimization.optimizeAllFiles(styleMapping, files, this.analyses, cache);
+      optimization.optimizeAllFiles(styleMapping, files, this.analyses, cache, actions);
     });
     return Promise.resolve(files);
   }
@@ -102,10 +104,11 @@ export class Optimizer {
   optimize(outputFilename: string): Promise<OptimizationResult> {
     let styleMapping = new StyleMapping();
     let cache = new SelectorCache();
-    let promises = this.sources.map(source => this.optimizeSingleFile(styleMapping, source, cache));
+    let actions = new Actions();
+    let promises = this.sources.map(source => this.optimizeSingleFile(styleMapping, source, cache, actions));
 
     return Promise.all(promises).then(files => {
-      return this.optimizeAllFiles(styleMapping, files, cache);
+      return this.optimizeAllFiles(styleMapping, files, cache, actions);
     }).then((files) => {
       let output = new Concat(true, outputFilename, "\n");
       files.forEach(file => {
@@ -127,7 +130,8 @@ export class Optimizer {
           sourceMap: output.sourceMap,
           filename: outputFilename
         },
-        styleMapping
+        styleMapping,
+        actions
       };
     });
   }

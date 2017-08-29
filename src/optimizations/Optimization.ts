@@ -4,6 +4,7 @@ import { TemplateAnalysis } from "../TemplateAnalysis";
 import { OptiCSSOptions } from "../OpticssOptions";
 import { TemplateTypes } from "../TemplateInfo";
 import { SelectorCache } from "../query";
+import { Actions } from "../Actions";
 
 export interface OptimizationConstructor {
   new (options: OptiCSSOptions): Optimization;
@@ -14,7 +15,8 @@ export interface SingleFileOptimization {
     styleMapping: StyleMapping,
     file: ParsedCssFile,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
-    cache: SelectorCache): void;
+    cache: SelectorCache,
+    actions: Actions): void;
 }
 
 export interface MultiFileOptimization {
@@ -22,7 +24,8 @@ export interface MultiFileOptimization {
     styleMapping: StyleMapping,
     files: Array<ParsedCssFile>,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
-    cache: SelectorCache): void;
+    cache: SelectorCache,
+    actions: Actions): void;
 }
 
 export type Optimization = SingleFileOptimization

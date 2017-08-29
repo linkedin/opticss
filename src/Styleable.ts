@@ -436,13 +436,21 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
         // TODO: unclear whether this is the namespace url or prefix from
         // postcss-selector-parser (it's probably the prefix so this is probably
         // broken).
-        if (a.attribute === this.name && a.namespace === this.namespaceURL) {
+        if (a.attribute === this.name && this.sameNamespace(a.ns)) {
           return this.matchAttributeNode(node);
         } else {
           return Match.no;
         }
       case "universal":
         return Match.yes;
+    }
+  }
+
+  sameNamespace(namespace: string) {
+    if (this.namespaceURL === null && namespace === "") {
+      return true;
+    } else {
+      return this.namespaceURL === namespace;
     }
   }
 

@@ -7,6 +7,7 @@ import { TemplateTypes } from "../TemplateInfo";
 import { Element } from "../Styleable";
 import { SelectorCache } from "../query";
 import { matches } from "../Match";
+import { Actions, RemoveRule, ChangeSelector } from "../Actions";
 
 export class RemoveUnusedStyles implements SingleFileOptimization {
   private options: OptiCSSOptions;
@@ -14,7 +15,7 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
     this.options = options;
   }
   optimizeSingleFile(_styleMapping: StyleMapping, file: ParsedCssFile,
-    analyses: Array<TemplateAnalysis<keyof TemplateTypes>>, cache: SelectorCache): void
+    analyses: Array<TemplateAnalysis<keyof TemplateTypes>>, cache: SelectorCache, actions: Actions): void
   {
     let elements = analyses.reduce((elements, analysis) => {
       elements.push(...analysis.elements);
@@ -33,11 +34,10 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
         });
       });
       if (found.length === 0) {
-        node.remove();
+        actions.perform(new RemoveRule(node, cache));
       } else {
         if (found.length < parsedSelectors.length) {
-          node.selector = parsedSelectors.join(", ");
-          cache.reset(node);
+          actions.perform(new ChangeSelector(node, found.join(", "), cache));
         }
       }
     });
