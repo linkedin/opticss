@@ -5,6 +5,8 @@ import { Optimizer, OptimizationResult } from "../src/Optimizer";
 import { TestTemplate } from "./util/TestTemplate";
 import { SimpleAnalyzer } from "./util/SimpleAnalyzer";
 import clean from "./util/clean";
+import { RemoveRule, ChangeSelector } from "../src/Actions";
+import * as path from "path";
 
 function testRemoveUnusedStyles(stylesAndTemplates: Array<string | TestTemplate>, expectedOutput: string): Promise<OptimizationResult> {
   let optimizer = new Optimizer({
@@ -237,5 +239,24 @@ export class OptiCSSTest {
     `);
     let expectedCss = "";
     return testRemoveUnusedStyles([css, template], expectedCss);
+  }
+  @test "Can read actions performed after optimization"() {
+    let css = `#missing { width: 100%; }
+               #missing, .b { display: none; }`;
+    let template = new TestTemplate("test", clean`
+      <div class="b c"></div>
+    `);
+    let expectedCss = `.b { display: none; }`;
+    return testRemoveUnusedStyles([css, template], expectedCss).then(result => {
+      let ruleRemoved = <RemoveRule>result.actions.performed[0];
+      let selectorChanged = <ChangeSelector>result.actions.performed[1];
+      assert.equal(ruleRemoved.rule.selector, "#missing");
+      assert.equal(ruleRemoved.optimization, "removeUnusedStyles");
+      assert.equal(selectorChanged.oldSelector, "#missing, .b");
+      assert.equal(selectorChanged.newSelector, ".b");
+      assert.equal(selectorChanged.optimization, "removeUnusedStyles");
+      assert.equal(ruleRemoved.logString(), `${path.resolve("test1.css")}:1:1 [removeUnusedStyles] Removed rule with selector "#missing".`);
+      assert.equal(selectorChanged.logString(), `${path.resolve("test1.css")}:2:16 [removeUnusedStyles] Changed selector from "#missing, .b" to ".b".`);
+    });
   }
 }

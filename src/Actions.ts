@@ -1,5 +1,7 @@
 import * as postcss from "postcss";
 import { SelectorCache } from "./query";
+import { SourcePosition } from "./SourceLocation";
+import { Optimizations } from "./OpticssOptions";
 
 /**
  * Represents an action that can be performed by the optimizer.
@@ -8,7 +10,28 @@ import { SelectorCache } from "./query";
  * that was done. It can also be used to implement backtracking.
  */
 export abstract class Action {
+  optimization: string;
   abstract perform(): this;
+  abstract logString(): string;
+  abstract readonly sourcePosition: SourcePosition | undefined;
+  constructor(reason: keyof Optimizations) {
+    this.optimization = reason;
+  }
+  annotateLogMessage(message: string) {
+    if (this.sourcePosition) {
+      let prefix = "";
+      if (this.sourcePosition.filename) {
+        prefix += this.sourcePosition.filename + ":";
+      }
+      prefix += this.sourcePosition.line;
+      if (this.sourcePosition.column) {
+        prefix += ":" + this.sourcePosition.column;
+      }
+      return `${prefix} [${this.optimization}] ${message}`;
+    } else {
+      return message;
+    }
+  }
 }
 
 /**
@@ -32,17 +55,31 @@ export class ChangeSelector extends Action {
   oldSelector: string;
   newSelector: string;
   cache: SelectorCache;
-  constructor(rule: postcss.Rule, newSelector: string, cache: SelectorCache) {
-    super();
+  constructor(rule: postcss.Rule, newSelector: string, reason: keyof Optimizations, cache: SelectorCache) {
+    super(reason);
     this.rule = rule;
     this.oldSelector = rule.selector;
     this.newSelector = newSelector;
     this.cache = cache;
   }
+  get sourcePosition(): SourcePosition | undefined {
+    if (this.rule.source && this.rule.source.start) {
+      return {
+        filename: this.rule.source.input.file,
+        line: this.rule.source.start.line,
+        column: this.rule.source.start.column
+      };
+    } else {
+      return undefined;
+    }
+  }
   perform(): this {
     this.cache.reset(this.rule);
     this.rule.selector = this.newSelector;
     return this;
+  }
+  logString(): string {
+    return this.annotateLogMessage(`Changed selector from "${this.oldSelector}" to "${this.newSelector}".`);
   }
 }
 
@@ -55,8 +92,8 @@ export class RemoveRule extends Action {
   prevSibling: postcss.Node | undefined;
   rule: postcss.Rule;
   cache: SelectorCache;
-  constructor(rule: postcss.Rule, cache: SelectorCache) {
-    super();
+  constructor(rule: postcss.Rule, reason: keyof Optimizations, cache: SelectorCache) {
+    super(reason);
     this.parent = rule.parent;
     this.prevSibling = rule.prev();
     this.rule = rule;
@@ -66,5 +103,19 @@ export class RemoveRule extends Action {
     this.cache.reset(this.rule);
     this.rule.remove();
     return this;
+  }
+  logString(): string {
+    return this.annotateLogMessage(`Removed rule with selector "${this.rule.selector}".`);
+  }
+  get sourcePosition(): SourcePosition | undefined {
+    if (this.rule.source && this.rule.source.start) {
+      return {
+        filename: this.rule.source.input.file,
+        line: this.rule.source.start.line,
+        column: this.rule.source.start.column
+      };
+    } else {
+      return undefined;
+    }
   }
 }

@@ -34,10 +34,10 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
         });
       });
       if (found.length === 0) {
-        actions.perform(new RemoveRule(node, cache));
+        actions.perform(new RemoveRule(node, "removeUnusedStyles", cache));
       } else {
         if (found.length < parsedSelectors.length) {
-          actions.perform(new ChangeSelector(node, found.join(", "), cache));
+          actions.perform(new ChangeSelector(node, found.join(", "), "removeUnusedStyles", cache));
         }
       }
     });
