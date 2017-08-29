@@ -176,7 +176,7 @@ declare namespace parser {
         attribute: string;
         operator: string;
         insensitive?: boolean;
-        namespace?: string;
+        ns?: string;
         raws?: {
           insensitive?: boolean;
         };
@@ -186,7 +186,7 @@ declare namespace parser {
         attribute: string;
         operator: string;
         insensitive: boolean;
-        namespace: string;
+        ns: string;
         raws: {
           insensitive: boolean;
         };
