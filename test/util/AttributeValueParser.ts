@@ -1,4 +1,4 @@
-import { AttributeValue } from "../../src/Styleable";
+import { AttributeValue } from "../../src/Selectable";
 import * as nearley from "nearley";
 const grammar = require("./attrvalue");
 

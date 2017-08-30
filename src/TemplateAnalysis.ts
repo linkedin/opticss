@@ -1,7 +1,6 @@
-import { TagnameBase, AttributeBase } from "./Styleable";
 import { SerializedTemplateInfo, TemplateTypes, TemplateInfoFactory } from "./TemplateInfo";
 import * as errors from "./errors";
-import { Element, SerializedElementInfo, Attr, Tag } from "./Styleable";
+import { TagnameBase, AttributeBase, Element, SerializedElementInfo, Attr, Tag } from "./Selectable";
 import { SourcePosition, POSITION_UNKNOWN, SourceLocation } from "./SourceLocation";
 
 /*
@@ -136,7 +135,7 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
    * value or two unknown identifiers will have detrimental effects on the
    * ability to optimize the entire stylesheet.
    */
-  addAttribute(attr: AttributeBase): this {
+  addAttribute(attr: Attr): this {
     if (this.currentElement) {
       this.currentElement.attributes.push(attr);
     } else {

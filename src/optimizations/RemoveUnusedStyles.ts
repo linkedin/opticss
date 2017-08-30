@@ -4,7 +4,7 @@ import { ParsedCssFile } from "../CssFile";
 import { OptiCSSOptions } from "../OpticssOptions";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { TemplateTypes } from "../TemplateInfo";
-import { Element } from "../Styleable";
+import { Element } from "../Selectable";
 import { SelectorCache } from "../query";
 import { matches } from "../Match";
 import { Actions, RemoveRule, ChangeSelector } from "../Actions";

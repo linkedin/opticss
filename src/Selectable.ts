@@ -12,7 +12,7 @@ export interface HasNamespace {
   readonly namespaceURL: string | null;
 }
 
-export interface Styleable {
+export interface Selectable {
   matchSelector(selector: ParsedSelector, keySelectorOnly: boolean): Match;
   matchSelectorComponent(selector: HasSelectorNodes): Match;
   matchSelectorNode(node: SelectorParser.Node): Match;
@@ -248,7 +248,7 @@ export interface HasSelectorNodes {
  *   * [attr~=value] assumed to match the unspecified middle value.
  *   * [attr*=value] assumed to match the unspecified middle value.
  */
-export abstract class AttributeBase implements Styleable, HasNamespace {
+export abstract class AttributeBase implements Selectable, HasNamespace {
   private _namespaceURL: string | null;
   private _name: string;
   private _value: NormalizedAttributeValue;
@@ -402,6 +402,7 @@ export abstract class AttributeBase implements Styleable, HasNamespace {
     // TODO
     if (node) {
       return Match.yes;
+      // Error unless bare attribute selector
     } else {
       return Match.no;
     }
@@ -668,7 +669,7 @@ export interface SerializedTagname {
   value: NormalizedTagnameValue;
 }
 
-export abstract class TagnameBase implements Styleable, HasNamespace {
+export abstract class TagnameBase implements Selectable, HasNamespace {
   private _namespaceURL: string | null;
   private _value: NormalizedTagnameValue;
   constructor(namespaceURL: string | null, value: TagnameValue) {
@@ -780,7 +781,7 @@ export interface ElementInfo<TagnameType = Tag, AttributeType = Attr> {
 
 export type SerializedElementInfo = ElementInfo<SerializedTagname, SerializedAttribute>;
 
-export class Element implements ElementInfo, Styleable {
+export class Element implements ElementInfo, Selectable {
   sourceLocation: SourceLocation;
   tagname: Tag;
   attributes: Array<Attr>;
@@ -898,7 +899,7 @@ function attr(element: ElementInfo, name: string, namespaceURL: string | null = 
   return attr;
 }
 
-function matchSelectorImpl(styleable: Styleable, parsedSelector: ParsedSelector, keySelectorOnly = true): Match {
+function matchSelectorImpl(styleable: Selectable, parsedSelector: ParsedSelector, keySelectorOnly = true): Match {
   let maybe: Match | undefined = undefined;
   let no = parsedSelector.eachCompoundSelector((selector) => {
     if (selector !== parsedSelector.key && keySelectorOnly) return;

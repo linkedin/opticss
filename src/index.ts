@@ -32,7 +32,7 @@ export {
   NormalizedAttributeValue,
   NormalizedAttributeValueChoice,
   NormalizedTagnameValue,
-  Styleable,
+  Selectable,
   Tagname,
   TagnameBase,
   TagnameNS,
@@ -46,7 +46,7 @@ export {
   ValueUnknown,
   ElementInfo,
   SerializedElementInfo,
-} from "./Styleable";
+} from "./Selectable";
 export {
   BooleanExpression,
   AndExpression,

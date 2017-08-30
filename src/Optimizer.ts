@@ -57,6 +57,7 @@ export class Optimizer {
   constructor(options: Partial<OptiCSSOptions>) {
     this.sources = [];
     this.analyses = [];
+    // TODO: give an error if the options conflict with the template integration abilities?
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
     this.singleFileOptimizations = [];
     this.multiFileOptimizations = [];

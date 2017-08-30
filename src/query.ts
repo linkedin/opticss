@@ -1,6 +1,6 @@
 import postcss = require("postcss");
 import parseSelector, { ParsedSelector } from "./parseSelector";
-import { Element } from "./Styleable";
+import { Element } from "./Selectable";
 import { rejects, matches } from "./Match";
 
 export interface SelectorQuery {

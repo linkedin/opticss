@@ -1,4 +1,4 @@
-import { ElementInfo } from "./Styleable";
+import { ElementInfo } from "./Selectable";
 
 export interface AndExpression<V> {
   and: Array<V | BooleanExpression<V>>;
@@ -22,6 +22,9 @@ export interface ClassMapping {
    */
   staticClasses: string[];
 
+  /**
+   * The numbers in the boolean expression represents indexes into the inputClassnames array.
+   */
   dynamicClasses: {
     [classname: string]: BooleanExpression<number>;
   };

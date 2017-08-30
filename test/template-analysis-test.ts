@@ -3,7 +3,7 @@ import { assert } from "chai";
 
 import {
   Tagname, TagnameNS, Attribute, Class
-} from "../src/Styleable";
+} from "../src/Selectable";
 import {
   default as parseSelector,
   CompoundSelector,

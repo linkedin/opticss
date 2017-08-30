@@ -1,6 +1,6 @@
 import { Template, TemplateTypes, TemplateInfo } from "../../src/TemplateInfo";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
-import { Tagname, Attribute, AttributeValue } from "../../src/Styleable";
+import { Tagname, Attribute, AttributeValue } from "../../src/Selectable";
 import { AttributeValueParser } from "./AttributeValueParser";
 import { TestTemplate } from "./TestTemplate";
 import { POSITION_UNKNOWN } from "../../src/SourceLocation";
