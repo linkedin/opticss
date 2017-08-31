@@ -403,7 +403,7 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
       if (node.operator === undefined) {
         return Match.yes;
       } else {
-        // TODO
+        // TODO: Support for attribute operators
         throw new Error(`Unsupported Attribute selector: ${node.toString()}`);
       }
     } else {

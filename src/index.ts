@@ -53,7 +53,7 @@ export {
   OrExpression,
   NotExpression,
   StyleMapping,
-  ClassMapping
+  RewriteMapping
 } from "./StyleMapping";
 export {
   SourceLocation,

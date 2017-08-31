@@ -11,7 +11,7 @@ export interface NotExpression<V> {
 }
 export type BooleanExpression<V> = AndExpression<V> | OrExpression<V> | NotExpression<V>;
 
-export interface ClassMapping {
+export interface RewriteMapping {
   /**
    * class names as they appear in the source template.
    */
@@ -31,7 +31,7 @@ export interface ClassMapping {
 }
 
 export class StyleMapping {
-  classMapping(_element: ElementInfo): ClassMapping {
+  classMapping(_element: ElementInfo): RewriteMapping {
     return {
       inputClassnames: new Array<string>(),
       staticClasses: new Array<string>(),
