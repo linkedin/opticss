@@ -116,13 +116,13 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
    */
   mergeNodes(other: CompoundSelector): CompoundSelector {
     let foundNodes = new Set<string>();
-    let pseudos: selectorParser.Node[] = [];
+    let pseudos: selectorParser.Pseudo[] = [];
     let nodes: selectorParser.Node[] = [];
     let filterNodes = function(node: selectorParser.Node) {
       let nodeStr = node.toString();
       if (!foundNodes.has(nodeStr)) {
         foundNodes.add(nodeStr);
-        if (node.type === selectorParser.PSEUDO) {
+        if (isPseudo(node)) {
           pseudos.push(node);
         } else {
           nodes.push(node);
@@ -290,7 +290,7 @@ export class ParsedSelector {
  * @return Array of `selectorParser.Node` arrays.
  */
 function coerceRootToNodeList(root: selectorParser.Root): selectorParser.Node[][] {
-  return root.nodes.map<selectorParser.Node[]>(n => (<selectorParser.Container>n).nodes);
+  return root.nodes.map(n => (<selectorParser.Container>n).nodes);
 }
 
 /**

@@ -36,6 +36,23 @@ declare namespace parser {
     const ATTRIBUTE: string;
     const UNIVERSAL: string;
 
+    interface NodeTypes {
+        tag: Tag,
+        string: String,
+        selector: Selector,
+        root: Root,
+        pseudo: Pseudo,
+        nesting: Nesting,
+        id: Identifier,
+        comment: Comment,
+        combinator: Combinator,
+        class: ClassName,
+        attribute: Attribute,
+        universal: Universal
+    }
+
+    type Node = NodeTypes[keyof NodeTypes];
+
     interface Options {
         lossless: boolean;
     }
@@ -59,20 +76,6 @@ declare namespace parser {
       constructor(input: ParserOptions);
       loop(): Root;
     }
-    interface NodeTypes {
-        tag: Tag,
-        string: String,
-        selector: Selector,
-        root: Root,
-        pseudo: Pseudo,
-        nesting: Nesting,
-        id: Identifier,
-        comment: Comment,
-        combinator: Combinator,
-        class: ClassName,
-        attribute: Attribute,
-        universal: Universal
-    }
     interface NodeSource {
         start?: {
             line: number,
@@ -83,18 +86,18 @@ declare namespace parser {
             column: number
         }
     }
-    interface NodeOptions {
-        value: string;
+    interface NodeOptions<Value = string> {
+        value: Value;
         spaces?: {
             before: string;
             after: string;
         }
         source?: NodeSource;
     }
-    interface Node {
+    interface Base<Value = string> {
         type: keyof NodeTypes;
         parent?: Selector;
-        value: string;
+        value: Value;
         spaces?: {
             before: string;
             after: string;
@@ -109,10 +112,10 @@ declare namespace parser {
 
     }
     interface ContainerOptions extends NodeOptions {
-        nodes?: Node[];
+        nodes?: Array<Node>;
     }
-    interface Container extends Node {
-        nodes: Node[];
+    interface Container<Value = string> extends Base<Value> {
+        nodes: Array<Node>;
         append(selector: Selector): Container;
         prepend(selector: Selector): Container;
         at(index: number): Node;
@@ -148,7 +151,7 @@ declare namespace parser {
     interface NamespaceOptions extends NodeOptions {
         ns?: string;
     }
-    interface Namespace extends Node {
+    interface Namespace extends Base {
         readonly ns: string;
     }
 
@@ -162,7 +165,7 @@ declare namespace parser {
     }
     function selector(opts: ContainerOptions): Selector;
 
-    interface Combinator extends Node {
+    interface Combinator extends Base {
         type: "combinator"
     }
     function combinator(opts: NodeOptions): Combinator;
@@ -181,15 +184,16 @@ declare namespace parser {
           insensitive?: boolean;
         };
     }
-    interface Attribute extends Node {
+    interface Attribute extends Base<string | undefined> {
         type: "attribute";
         attribute: string;
-        operator: string;
-        insensitive: boolean;
+        operator: string | undefined;
+        insensitive?: boolean;
         ns: string;
         raws: {
-          insensitive: boolean;
+          insensitive?: boolean;
         };
+        value: string | undefined;
         toString(): string;
     }
     function attribute(opts: AttributeOptions): Attribute;
@@ -204,27 +208,27 @@ declare namespace parser {
     }
     function tag(opts: NamespaceOptions): Tag;
 
-    interface Comment extends Node {
+    interface Comment extends Base {
         type: "comment";
     }
     function comment(opts: NodeOptions): Comment;
 
-    interface Identifier extends Node {
+    interface Identifier extends Base {
         type: "id";
     }
     function id(opts: any): any;
 
-    interface Nesting extends Node {
+    interface Nesting extends Base {
         type: "nesting";
     }
     function nesting(opts: any): any;
 
-    interface String extends Node {
+    interface String extends Base {
         type: "string";
     }
     function string(opts: NodeOptions): String;
 
-    interface Universal extends Node {
+    interface Universal extends Base {
         type: "universal";
     }
     function universal(opts: any): any;
