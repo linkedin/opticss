@@ -5,7 +5,7 @@ import { SourceLocation, POSITION_UNKNOWN } from "./SourceLocation";
 import assertNever from "./util/assertNever";
 import { Match, matches, boolToMatch, negate as negateMatch } from "./Match";
 
-// TODO: make styleables belong to a template. that template can have template-wide config associated to it.
+// TODO: make selectables belong to a template. that template can have template-wide config associated to it.
 // E.g. namespace mappings.
 
 export interface HasNamespace {
