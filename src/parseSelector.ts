@@ -5,13 +5,18 @@ import selectorParser = require("postcss-selector-parser");
  * @param node Node to check if is a pseudo element
  * @return True or false if a pseudo element
  */
-function isPseudoelement(node: selectorParser.Node) {
-  return node && node.type === selectorParser.PSEUDO &&
+function isPseudoelement(node: selectorParser.Node | undefined): node is selectorParser.Pseudo {
+  return !!node && node.type === selectorParser.PSEUDO &&
     (
+      node.value &&
       node.value.startsWith("::") ||
       node.value === ":before" ||
       node.value === ":after"
     );
+}
+
+function isPseudo(node: selectorParser.Node | undefined): node is selectorParser.Pseudo {
+  return !!node && node.type === selectorParser.PSEUDO;
 }
 
 export interface CombinatorAndSelector<SelectorType> {

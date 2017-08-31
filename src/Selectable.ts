@@ -399,10 +399,13 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
   }
 
   matchAttributeNode(node: SelectorParser.Node): Match {
-    // TODO
-    if (node) {
-      return Match.yes;
-      // Error unless bare attribute selector
+    if (isAttrNode(node)) {
+      if (node.operator === undefined) {
+        return Match.yes;
+      } else {
+        // TODO
+        throw new Error(`Unsupported Attribute selector: ${node.toString()}`);
+      }
     } else {
       return Match.no;
     }
@@ -858,7 +861,7 @@ export class Element implements ElementInfo, Selectable {
           return Match.no;
         }
       default:
-        return assertNever(node.type);
+        return assertNever(node);
     }
   }
   serialize(): SerializedElementInfo {
@@ -890,6 +893,14 @@ function isAttr(attr: AttributeBase | undefined): attr is Attribute {
   }
 }
 */
+
+function isAttrNode(node: SelectorParser.Node): node is SelectorParser.Attribute {
+  if (node.type === SelectorParser.ATTRIBUTE) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 function attr(element: ElementInfo, name: string, namespaceURL: string | null = null): Attribute | AttributeNS | undefined {
   let attr = element.attributes.find(attr => {
