@@ -15,8 +15,8 @@ function selector(selector: string): CompoundSelector {
   return parsed[0].selector;
 }
 
-@suite("Styleable Tagname")
-export class StyleableTagnameTest {
+@suite("Selectable Tagname")
+export class SelectableTagnameTest {
   @test "can be unknown"() {
     let tagname = new Tagname({unknown: true});
     assert.equal(tagname.value.unknown, true);
@@ -73,8 +73,8 @@ export class StyleableTagnameTest {
   }
 }
 
-@suite("Styleable Attribute")
-export class StyleableAttributeTest {
+@suite("Selectable Attribute")
+export class SelectableAttributeTest {
   @test "can be unknown"() {
     let attr = new Attribute("class", {unknown: true});
     assert.equal(attr.value.unknown, true);

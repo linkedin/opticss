@@ -910,14 +910,54 @@ function attr(element: ElementInfo, name: string, namespaceURL: string | null = 
   return attr;
 }
 
-function matchSelectorImpl(styleable: Selectable, parsedSelector: ParsedSelector, keySelectorOnly = true): Match {
+function matchSelectorImpl(selectable: Selectable, parsedSelector: ParsedSelector, keySelectorOnly = true): Match {
   let maybe: Match | undefined = undefined;
   let no = parsedSelector.eachCompoundSelector((selector) => {
     if (selector !== parsedSelector.key && keySelectorOnly) return;
-    let match = styleable.matchSelectorComponent(selector);
+    let match = selectable.matchSelectorComponent(selector);
     if (match === Match.no) return match;
     if (match === Match.maybe) maybe = match;
     return;
   });
   return no || maybe || Match.yes;
+}
+
+export function isAbsent(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueAbsent {
+  return !!value.absent;
+}
+
+export function isUnknown(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueUnknown {
+  return !!value.unknown;
+}
+
+export function isUnknownIdentifier(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueUnknownIdentifier {
+  return !!value.unknownIdentifier;
+}
+
+export function isConstant(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueConstant {
+  return !!value.constant;
+}
+
+export function isStartsWith(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueStartsWith {
+  return !!value.startsWith && !value.endsWith;
+}
+
+export function isEndsWith(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueEndsWith {
+  return !!value.endsWith && !value.startsWith;
+}
+
+export function isStartsAndEndsWith(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueStartsAndEndsWith {
+  return !!value.endsWith && !!value.startsWith;
+}
+
+export function isChoice(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueStartsAndEndsWith {
+  return !!(value as AttributeValueChoice).oneOf;
+}
+
+export function isSet(value: NormalizedAttributeValue): value is AttributeValueSet {
+  return !!value.allOf;
+}
+
+export function isFlattenedSet(value: FlattenedAttributeValue): value is FlattenedAttributeValueSet {
+  return !!value.allOf;
 }
