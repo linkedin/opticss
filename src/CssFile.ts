@@ -11,7 +11,7 @@ export interface CssFile {
 
   /**
    * The path to the file's contents. This is used for debugging purposes the
-   * contents are not read from the filename's location.
+   * contents are not read from the file name's location.
    */
   filename?: string;
 
@@ -28,7 +28,7 @@ export interface ParsedCssFile {
 
   /**
    * The path to the file's contents. This is used for debugging purposes the
-   * contents are not read from the filename's location.
+   * contents are not read from the file name's location.
    */
   filename?: string;
 }

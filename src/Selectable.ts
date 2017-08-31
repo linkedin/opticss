@@ -290,7 +290,7 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
       let middle = value.substring(start.length, value.length - end.length);
       return (condition.whitespace || !middle.match(/\s/));
     } else if (condition.oneOf) {
-      return condition.oneOf.some(cond => this.isLegal(value, cond));
+      return condition.oneOf.some(c => this.isLegal(value, c));
     } else if (condition.allOf) {
       let values = value.split(/\s+/);
       // TODO: this is wrong because it allows some classes to be used more than
@@ -310,7 +310,7 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
       // https://stackoverflow.com/questions/11376672/partial-subtree-matching-algorithm
       //
       // it's not clear if we need this yet, so I'm going to leave it broken for now.
-      return condition.allOf.every(cond => values.some(v => this.isLegal(v, cond)));
+      return condition.allOf.every(c => values.some(v => this.isLegal(v, c)));
     } else {
       return false;
     }

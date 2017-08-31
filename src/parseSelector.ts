@@ -332,7 +332,7 @@ function toNodes(selector: Selectorish): selectorParser.Node[][] {
  * @return Array of `CompoundSelector` objects.
  */
 export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[] {
-  let compoundSels: CompoundSelector[] = [];
+  let compoundSelectors: CompoundSelector[] = [];
 
   // For each selector in this rule, convert to a `CompoundSelector` linked list.
   toNodes(selector).forEach((nodes) => {
@@ -363,11 +363,11 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
 
     // Save in running list of compound selectors if not empty
     if (firstCompoundSel.nodes.length > 0) {
-      compoundSels.push(firstCompoundSel);
+      compoundSelectors.push(firstCompoundSel);
     }
   });
 
-  return compoundSels;
+  return compoundSelectors;
 }
 
 /**
@@ -379,6 +379,6 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
  * @return Array of `ParsedSelector` objects.
  */
 export default function parseSelector(selector: Selectorish): ParsedSelector[] {
-  let compoundSels = parseCompoundSelectors(selector);
-  return compoundSels.map(cs => new ParsedSelector(cs));
+  let compoundSelectors = parseCompoundSelectors(selector);
+  return compoundSelectors.map(cs => new ParsedSelector(cs));
 }
