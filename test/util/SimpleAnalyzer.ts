@@ -10,6 +10,12 @@ export class SimpleAnalyzer {
   includeSourceInformation: boolean;
   valueParser: AttributeValueParser;
   idMap: WeakMap<CheerioElement, string>;
+  /**
+   * Creates an instance of SimpleAnalyzer.
+   * @param template The template to be analyzed.
+   * @param [includeSourceInformation=false] Whether to record source positions
+   *   for elements in the analysis.
+   */
   constructor(template: TestTemplate, includeSourceInformation = false) {
     this.template = template;
     this.includeSourceInformation = includeSourceInformation;

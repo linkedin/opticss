@@ -68,7 +68,7 @@ export interface ValueAbsent {
  */
 export interface ValueStartsWith {
   startsWith: string;
-  whitespace: boolean;
+  whitespace?: boolean;
 }
 
 /**
@@ -79,7 +79,7 @@ export interface ValueStartsWith {
  */
 export interface ValueEndsWith {
   endsWith: string;
-  whitespace: boolean;
+  whitespace?: boolean;
 }
 
 /**
@@ -89,6 +89,7 @@ export interface ValueEndsWith {
  * In some cases this is enough information to decide that a selector doesn't match.
  */
 export type ValueStartsAndEndsWith = ValueStartsWith & ValueEndsWith;
+export type ValueStartsAndOrEndsWith = Partial<ValueStartsAndEndsWith>;
 
 export type AttributeValueChoiceOption =
   ValueAbsent |
@@ -98,24 +99,12 @@ export type AttributeValueChoiceOption =
   ValueStartsAndEndsWith |
   AttributeValueSet;
 
-export type NormalizedAttributeValueChoiceOption =
-  Partial<ValueAbsent> &
-  Partial<ValueConstant> &
-  Partial<ValueStartsWith> &
-  Partial<ValueEndsWith> &
-  Partial<ValueStartsAndEndsWith> &
-  Partial<NormalizedAttributeValueSet>;
-
 /**
  * The value may have one of several values.
  * Assumed to match if any of the choices matches.
  */
 export interface AttributeValueChoice {
   oneOf: Array<AttributeValueChoiceOption>;
-}
-
-export interface NormalizedAttributeValueChoice {
-  oneOf: Array<NormalizedAttributeValueChoiceOption>;
 }
 
 export type AttributeValueSetItem =
@@ -126,24 +115,12 @@ export type AttributeValueSetItem =
   ValueStartsAndEndsWith |
   AttributeValueChoice;
 
-export type NormalizedAttributeValueSetItem =
-  Partial<ValueUnknownIdentifier> &
-  Partial<ValueConstant> &
-  Partial<ValueStartsWith> &
-  Partial<ValueEndsWith> &
-  Partial<ValueStartsAndEndsWith> &
-  Partial<NormalizedAttributeValueChoice>;
-
 /**
  * An attribute value set represents a space delimited set of values
  * like you would expect to find in an html class attribute.
  */
 export interface AttributeValueSet {
   allOf: Array<AttributeValueSetItem>;
-}
-
-export interface NormalizedAttributeValueSet {
-  allOf: Array<NormalizedAttributeValueSetItem>;
 }
 
 export type AttributeValue =
@@ -157,42 +134,31 @@ export type AttributeValue =
   AttributeValueChoice |
   AttributeValueSet;
 
-export type NormalizedAttributeValue =
-  Partial<ValueAbsent> &
-  Partial<ValueUnknown> &
-  Partial<ValueUnknownIdentifier> &
-  Partial<ValueConstant> &
-  Partial<ValueStartsWith> &
-  Partial<ValueEndsWith> &
-  Partial<ValueStartsAndEndsWith> &
-  Partial<NormalizedAttributeValueChoice> &
-  Partial<NormalizedAttributeValueSet>;
-
 export type FlattenedAttributeValueSetItem =
-  Partial<ValueUnknownIdentifier> &
-  Partial<ValueConstant> &
-  Partial<ValueStartsWith> &
-  Partial<ValueEndsWith> &
-  Partial<ValueStartsAndEndsWith>;
+  ValueUnknownIdentifier |
+  ValueConstant |
+  ValueStartsWith |
+  ValueEndsWith |
+  ValueStartsAndEndsWith;
 
 export interface FlattenedAttributeValueSet {
   allOf: Array<FlattenedAttributeValueSetItem>;
 }
 
 export type FlattenedAttributeValue =
-  Partial<ValueAbsent> &
-  Partial<ValueUnknown> &
-  Partial<ValueUnknownIdentifier> &
-  Partial<ValueConstant> &
-  Partial<ValueStartsWith> &
-  Partial<ValueEndsWith> &
-  Partial<ValueStartsAndEndsWith> &
-  Partial<FlattenedAttributeValueSet>;
+  ValueAbsent |
+  ValueUnknown |
+  ValueUnknownIdentifier |
+  ValueConstant |
+  ValueStartsWith |
+  ValueEndsWith |
+  ValueStartsAndEndsWith |
+  FlattenedAttributeValueSet;
 
 export interface SerializedAttribute {
   namespaceURL?: string | null;
   name: string;
-  value: NormalizedAttributeValue;
+  value: AttributeValue;
 }
 
 export interface HasSelectorNodes {
@@ -251,7 +217,7 @@ export interface HasSelectorNodes {
 export abstract class AttributeBase implements Selectable, HasNamespace {
   private _namespaceURL: string | null;
   private _name: string;
-  private _value: NormalizedAttributeValue;
+  private _value: AttributeValue;
 
   constructor(namespaceURL: string | null, name: string, value: AttributeValue = { unknown: true }) {
     this._namespaceURL = namespaceURL;
@@ -265,33 +231,45 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
   get name(): string {
     return this._name;
   }
-  get value(): NormalizedAttributeValue {
+  get value(): AttributeValue {
     return this._value;
   }
 
   /**
    * Check whether the value is legal according to the attribute's value expression.
    */
-  isLegal(value: string, condition?: NormalizedAttributeValue): boolean {
+  isLegal(value: string, condition?: AttributeValue): boolean {
     condition = condition || this.value;
-    if (condition.unknown) {
+    if (isUnknown(condition)) {
       return true;
-    } else if (condition.unknownIdentifier) {
+    } else if (isUnknownIdentifier(condition)) {
       return !/\s/.test(value);
-    } else if (condition.absent) {
+    } else if (isAbsent(condition)) {
       return value.length === 0;
-    } else if (condition.constant) {
+    } else if (isConstant(condition)) {
       return value === condition.constant;
-    } else if (condition.startsWith || condition.endsWith) {
-      let start = condition.startsWith || "";
-      let end = condition.endsWith || "";
+    } else if (isStartsWith(condition)) {
+      let start = condition.startsWith;
+      let matches = value.startsWith(start);
+      if (!matches) return false;
+      let suffix = value.substring(start.length, value.length);
+      return (condition.whitespace || !suffix.match(/\s/));
+    } else if (isEndsWith(condition)) {
+      let ending = condition.endsWith;
+      let matches = value.endsWith(ending);
+      if (!matches) return false;
+      let prefix = value.substring(0, value.length - ending.length);
+      return (!!condition.whitespace || !prefix.match(/\s/));
+    } else if (isStartsAndEndsWith(condition)) {
+      let start = condition.startsWith;
+      let end = condition.endsWith;
       let matches = value.startsWith(start) && value.endsWith(end);
       if (!matches) return false;
       let middle = value.substring(start.length, value.length - end.length);
       return (condition.whitespace || !middle.match(/\s/));
-    } else if (condition.oneOf) {
+    } else if (isChoice(condition)) {
       return condition.oneOf.some(c => this.isLegal(value, c));
-    } else if (condition.allOf) {
+    } else if (isSet(condition)) {
       let values = value.split(/\s+/);
       // TODO: this is wrong because it allows some classes to be used more than
       // once and others to not be used at all and also because some conditions
@@ -312,7 +290,7 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
       // it's not clear if we need this yet, so I'm going to leave it broken for now.
       return condition.allOf.every(c => values.some(v => this.isLegal(v, c)));
     } else {
-      return false;
+      return assertNever(condition);
     }
   }
 
@@ -325,37 +303,36 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
    * @param [value=this.value] the attribute value to match against.
    * @returns boolean if it matches or not
    */
-  matchIdent(identifier: string, value: NormalizedAttributeValue = this.value): Match {
-    if (value.absent) {
+  matchIdent(identifier: string, value: AttributeValue = this.value): Match {
+    if (isAbsent(value)) {
       return Match.no;
-    } else if (value.unknown) {
+    } else if (isUnknown(value)) {
       return Match.maybe;
-    } else if (value.unknownIdentifier) {
+    } else if (isUnknownIdentifier(value)) {
       return Match.maybe;
-    } else if (value.constant) {
+    } else if (isConstant(value)) {
       if (value.constant === identifier) {
         return Match.yes;
       } else {
         return Match.no;
       }
-    } else if (value.startsWith || value.endsWith) {
-      if (value.startsWith && !identifier.startsWith(value.startsWith)) {
-        return Match.no;
-      }
-      if (value.endsWith && !identifier.endsWith(value.endsWith)) {
-        return Match.no;
-      }
-      return Match.yes;
-    } else if (value.allOf) {
+    } else if (isStartsWith(value)) {
+      return boolToMatch(identifier.startsWith(value.startsWith));
+    } else if (isEndsWith(value)) {
+      return boolToMatch(identifier.endsWith(value.endsWith));
+    } else if (isStartsAndEndsWith(value)) {
+      return boolToMatch(identifier.startsWith(value.startsWith) &&
+                         identifier.endsWith(value.endsWith));
+    } else if (isSet(value)) {
       // This is a tricky case. There really shouldn't be an `allOf` used
       // for an identifier match. In theory a regex could be constructed?
       // I'm hesitant to throw an error here but maybe I should?
       return Match.no;
-    } else if (value.oneOf) {
+    } else if (isChoice(value)) {
       return boolToMatch(value.oneOf.some(v =>
         matches(this.matchIdent(identifier, v))));
     } else {
-      throw new Error(`Unexpected value: ${inspect(value)}`);
+      return assertNever(value);
     }
   }
 
@@ -368,31 +345,32 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
    * @param [value=this.value] the attribute value to match against.
    * @returns boolean if it matches
    */
-  matchWhitespaceDelimited(identifier: string, value: NormalizedAttributeValue = this.value): boolean {
-    if (value.absent) {
+  matchWhitespaceDelimited(identifier: string, value: AttributeValue = this.value): boolean {
+    if (isAbsent(value)) {
       return false;
-    } else if (value.unknown) {
+    } else if (isUnknown(value)) {
       return true;
-    } else if (value.unknownIdentifier) {
+    } else if (isUnknownIdentifier(value)) {
       return true;
-    } else if (value.constant) {
+    } else if (isConstant(value)) {
       return (value.constant === identifier);
-    } else if (value.startsWith || value.endsWith) {
+    } else if (isStartsWith(value) || isEndsWith(value) || isStartsAndEndsWith(value)) {
       if (value.whitespace) {
         // the unknown part of the attribute can contain whitespace so we have
         // to assume it matches.
         return true;
       }
-      if (value.startsWith && !identifier.startsWith(value.startsWith)) {
+      if ((isStartsWith(value) || isStartsAndEndsWith(value)) && !identifier.startsWith(value.startsWith)) {
         return false;
       }
-      if (value.endsWith && !identifier.endsWith(value.endsWith)) {
+      if ((isEndsWith(value) || isStartsAndEndsWith(value)) && !identifier.endsWith(value.endsWith)) {
         return false;
       }
       return true;
-    } else if (value.allOf || value.oneOf) {
-      return (value.allOf || value.oneOf)!.some(v =>
-        matches(this.matchIdent(identifier, v)));
+    } else if (isChoice(value)) {
+      return value.oneOf.some(v => matches(this.matchIdent(identifier, v)));
+    } else if (isSet(value)) {
+      return value.allOf.some(v => matches(this.matchIdent(identifier, v)));
     } else {
       throw new Error(`Unexpected value: ${inspect(value)}`);
     }
@@ -490,25 +468,30 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
     return matchSelectorImpl(this, selector, keySelectorOnly);
   }
 
-  flattenedValue(value: NormalizedAttributeValue = this.value): Array<FlattenedAttributeValue> {
-    if (value.allOf) {
+  flattenedValue(value: AttributeValue = this.value): Array<FlattenedAttributeValue> {
+    if (isSet(value)) {
         let newSets = new Array<FlattenedAttributeValueSet>();
         newSets.push({
           allOf: new Array<FlattenedAttributeValueSetItem>()
         });
         value.allOf.forEach(v => {
-          if (v.oneOf) {
+          if (isChoice(v)) {
             let res = this.flattenedValue(v);
             let origLength = newSets.length;
             for (let i = 0; i < res.length; i++) {
               for (let j = 0; j < origLength; j++) {
-                if (res[i].allOf) {
+                let vi = res[i];
+                if (isFlattenedSet(vi)) {
                   newSets.push({
-                    allOf: newSets[j].allOf.concat(res[i].allOf!)
+                    allOf: newSets[j].allOf.concat(vi.allOf)
                   });
+                } else if (isAbsent(vi)) {
+                  // TODO
+                } else if (isUnknown(vi)) {
+                  // TODO
                 } else {
                   newSets.push({
-                    allOf: newSets[j].allOf.concat(res[i])
+                    allOf: newSets[j].allOf.concat(vi)
                   });
                 }
               }
@@ -523,10 +506,10 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
           }
         });
         return newSets;
-    } else if (value.oneOf) {
+    } else if (isChoice(value)) {
       let values = new Array<FlattenedAttributeValue>();
       value.oneOf.forEach(v => {
-        if (v.allOf) {
+        if (isSet(v)) {
           let res = this.flattenedValue(v);
           values = values.concat(res);
         } else {
@@ -539,38 +522,36 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
     }
   }
 
-  valueToString(value: NormalizedAttributeValue): string {
-    if (value.unknown) {
+  valueToString(value: AttributeValue): string {
+    if (isAbsent(value)) {
+      return "---";
+    } else if (isUnknown(value)) {
       return "???";
-    } else if (value.unknownIdentifier) {
+    } else if (isUnknownIdentifier(value)) {
       return "?";
-    } else if (value.constant) {
+    } else if (isConstant(value)) {
       return `${value.constant}`;
-    } else if (value.startsWith && value.endsWith) {
+    } else if (isStartsAndEndsWith(value)) {
       return value.startsWith + "*" + value.endsWith;
-    } else if (value.startsWith) {
+    } else if (isStartsWith(value)) {
       return value.startsWith + "*";
-    } else if (value.endsWith) {
+    } else if (isEndsWith(value)) {
       return "*" + value.endsWith;
-    } else if (value.oneOf) {
+    } else if (isChoice(value)) {
       return "(" + value.oneOf.reduce((prev, v) => {
-        if (v.absent) {
-          prev.push("---");
-        } else {
-          prev.push(this.valueToString(v));
-        }
+        prev.push(this.valueToString(v));
         return prev;
       }, new Array<string>()).join("|") + ")";
-    } else if (value.allOf) {
+    } else if (isSet(value)) {
       return value.allOf.map(v => this.valueToString(v)).join(" ");
     } else {
-      throw new Error(`INTERNAL ERROR: Missing case for: ${inspect(value)}`);
+      return assertNever(value);
     }
   }
 
   toString() {
     let plainAttr;
-    if (this.value.absent) {
+    if (isAbsent(this.value)) {
       plainAttr = `${this.name}`;
     } else {
       plainAttr = `${this.name}="${this.valueToString(this.value)}"`;
@@ -646,11 +627,6 @@ export type TagnameValue =
   ValueConstant |
   TagnameValueChoice;
 
-export type NormalizedTagnameValue =
-  Partial<ValueUnknown> &
-  Partial<ValueConstant> &
-  Partial<TagnameValueChoice>;
-
 function isTag(tag: {type: string} | undefined): tag is SelectorParser.Tag {
   if (tag) {
     return tag.type === SelectorParser.TAG;
@@ -669,12 +645,12 @@ function isSelector(node: {type: string} | undefined): node is SelectorParser.Se
 
 export interface SerializedTagname {
   namespaceURL?: string | null;
-  value: NormalizedTagnameValue;
+  value: TagnameValue;
 }
 
 export abstract class TagnameBase implements Selectable, HasNamespace {
   private _namespaceURL: string | null;
-  private _value: NormalizedTagnameValue;
+  private _value: TagnameValue;
   constructor(namespaceURL: string | null, value: TagnameValue) {
     this._namespaceURL = namespaceURL || null;
     this._value = value;
@@ -684,7 +660,7 @@ export abstract class TagnameBase implements Selectable, HasNamespace {
     return this._namespaceURL;
   }
 
-  get value(): NormalizedTagnameValue {
+  get value(): TagnameValue {
     return this._value;
   }
 
@@ -711,11 +687,11 @@ export abstract class TagnameBase implements Selectable, HasNamespace {
 
   matchSelectorNode(node: SelectorParser.Node): Match {
     if (isTag(node)) {
-      if (this.value.constant) {
+      if (isConstant(this.value)) {
         return boolToMatch(node.value === this.value.constant);
-      } else if (this.value.oneOf) {
+      } else if (isTagChoice(this.value)) {
         return boolToMatch(this.value.oneOf.some(v => v === node.value));
-      } else if (this.value.unknown) {
+      } else if (isUnknown(this.value)) {
         return Match.maybe;
       } else {
         return assertNever(<never>node);
@@ -726,14 +702,14 @@ export abstract class TagnameBase implements Selectable, HasNamespace {
   }
 
   valueToString(): string {
-    if (this.value.unknown) {
+    if (isUnknown(this.value)) {
       return "???";
-    } else if (this.value.constant) {
+    } else if (isConstant(this.value)) {
       return this.value.constant;
-    } else if (this.value.oneOf) {
+    } else if (isTagChoice(this.value)) {
       return this.value.oneOf.join("|");
     } else {
-      throw new Error(`Malformed tagname value: ${inspect(this.value)}`);
+      return assertNever(this.value);
     }
   }
 
@@ -922,42 +898,46 @@ function matchSelectorImpl(selectable: Selectable, parsedSelector: ParsedSelecto
   return no || maybe || Match.yes;
 }
 
-export function isAbsent(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueAbsent {
-  return !!value.absent;
+export function isAbsent(value: FlattenedAttributeValue | AttributeValue): value is ValueAbsent {
+  return !!(<ValueAbsent>value).absent;
 }
 
-export function isUnknown(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueUnknown {
-  return !!value.unknown;
+export function isUnknown(value: FlattenedAttributeValue | AttributeValue | TagnameValue): value is ValueUnknown {
+  return !!(<ValueUnknown>value).unknown;
 }
 
-export function isUnknownIdentifier(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueUnknownIdentifier {
-  return !!value.unknownIdentifier;
+export function isUnknownIdentifier(value: FlattenedAttributeValue | AttributeValue): value is ValueUnknownIdentifier {
+  return !!(<ValueUnknownIdentifier>value).unknownIdentifier;
 }
 
-export function isConstant(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueConstant {
-  return !!value.constant;
+export function isConstant(value: FlattenedAttributeValue | AttributeValue | TagnameValue): value is ValueConstant {
+  return !!(<ValueConstant>value).constant;
 }
 
-export function isStartsWith(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueStartsWith {
-  return !!value.startsWith && !value.endsWith;
+export function isStartsWith(value: FlattenedAttributeValue | AttributeValue): value is ValueStartsWith {
+  return !!(<ValueStartsWith>value).startsWith && !(<ValueStartsAndEndsWith>value).endsWith;
 }
 
-export function isEndsWith(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueEndsWith {
-  return !!value.endsWith && !value.startsWith;
+export function isEndsWith(value: FlattenedAttributeValue | AttributeValue): value is ValueEndsWith {
+  return !!(<ValueEndsWith>value).endsWith && !(<ValueStartsAndEndsWith>value).startsWith;
 }
 
-export function isStartsAndEndsWith(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueStartsAndEndsWith {
-  return !!value.endsWith && !!value.startsWith;
+export function isStartsAndEndsWith(value: FlattenedAttributeValue | AttributeValue): value is ValueStartsAndEndsWith {
+  return !!(<ValueStartsAndEndsWith>value).endsWith && !!(<ValueStartsAndEndsWith>value).startsWith;
 }
 
-export function isChoice(value: FlattenedAttributeValue | NormalizedAttributeValue): value is ValueStartsAndEndsWith {
-  return !!(value as AttributeValueChoice).oneOf;
+export function isChoice(value: FlattenedAttributeValue | AttributeValue): value is AttributeValueChoice {
+  return !!(<AttributeValueChoice>value).oneOf;
 }
 
-export function isSet(value: NormalizedAttributeValue): value is AttributeValueSet {
-  return !!value.allOf;
+export function isTagChoice(value: TagnameValue): value is TagnameValueChoice {
+  return !!(<TagnameValueChoice>value).oneOf;
+}
+
+export function isSet(value: AttributeValue): value is AttributeValueSet {
+  return !!(<AttributeValueSet>value).allOf;
 }
 
 export function isFlattenedSet(value: FlattenedAttributeValue): value is FlattenedAttributeValueSet {
-  return !!value.allOf;
+  return !!(<FlattenedAttributeValueSet>value).allOf;
 }

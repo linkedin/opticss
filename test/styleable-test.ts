@@ -2,7 +2,7 @@ import { suite, test, skip, only } from "mocha-typescript";
 import { assert } from "chai";
 
 import {
-  Tagname, TagnameNS, Attribute
+  Tagname, TagnameNS, Attribute, isUnknown, isConstant, isChoice, isTagChoice, isAbsent, isStartsWith, isEndsWith, isStartsAndEndsWith, isSet
 } from "../src/Selectable";
 import {
   default as parseSelector,
@@ -19,22 +19,22 @@ function selector(selector: string): CompoundSelector {
 export class SelectableTagnameTest {
   @test "can be unknown"() {
     let tagname = new Tagname({unknown: true});
-    assert.equal(tagname.value.unknown, true);
+    assert.isTrue(isUnknown(tagname.value));
     assert.equal(tagname.toString(), "???");
   }
   @test "can be a constant"() {
     let tagname = new Tagname({constant: "span"});
-    assert.equal(tagname.value.constant, "span");
+    assert.isTrue(isConstant(tagname.value));
     assert.equal(tagname.toString(), "span");
   }
   @test "can be a choice"() {
     let tagname = new Tagname({oneOf: ["div", "span"]});
-    assert.deepEqual(tagname.value.oneOf, ["div", "span"]);
+    assert.isTrue(isTagChoice(tagname.value));
     assert.equal(tagname.toString(), "div|span");
   }
   @test "can have a namespace"() {
     let tagname = new TagnameNS("https://www.w3.org/2000/svg", {constant: "svg"});
-    assert.deepEqual(tagname.value.constant, "svg");
+    assert.deepEqual(isConstant(tagname.value) && tagname.value.constant, "svg");
     assert.equal(tagname.namespaceURL, "https://www.w3.org/2000/svg");
     assert.equal(tagname.toString(), "https://www.w3.org/2000/svg:svg");
   }
@@ -77,21 +77,21 @@ export class SelectableTagnameTest {
 export class SelectableAttributeTest {
   @test "can be unknown"() {
     let attr = new Attribute("class", {unknown: true});
-    assert.equal(attr.value.unknown, true);
+    assert.isTrue(isUnknown(attr.value));
     assert.equal(attr.toString(), 'class="???"');
     assert.equal(attr.isLegal("asdf"), true);
     assert.equal(attr.isLegal("asdf qwert"), true);
   }
   @test "can be absent"() {
     let attr = new Attribute("class", {absent: true});
-    assert.equal(attr.value.absent, true);
+    assert.isTrue(isAbsent(attr.value));
     assert.equal(attr.toString(), "class");
     assert.equal(attr.isLegal(""), true);
     assert.equal(attr.isLegal("asdf"), false);
   }
   @test "can have a constant value"() {
     let attr = new Attribute("class", {constant: "asdf"});
-    assert.equal(attr.value.constant, "asdf");
+    assert.equal(isConstant(attr.value) && attr.value.constant, "asdf");
     assert.equal(attr.toString(), 'class="asdf"');
     assert.equal(attr.isLegal("asdf"), true);
     assert.equal(attr.isLegal("asdd"), false);
@@ -103,7 +103,7 @@ export class SelectableAttributeTest {
         {constant: "foo"}
       ]
     });
-    assert.deepEqual(attr.value.oneOf,
+    assert.deepEqual(isChoice(attr.value) && attr.value.oneOf,
                      [{constant: "asdf"},
                       {constant: "foo"}]);
     assert.equal(attr.toString(), 'class="(asdf|foo)"');
@@ -113,22 +113,22 @@ export class SelectableAttributeTest {
   }
   @test "can have a startsWith value"() {
     let attr = new Attribute("class", {startsWith: "asdf", whitespace: false});
-    assert.equal(attr.value.startsWith, "asdf");
+    assert.equal(isStartsWith(attr.value) && attr.value.startsWith, "asdf");
     assert.equal(attr.toString(), 'class="asdf*"');
     assert.equal(attr.isLegal("asdffa"), true);
     assert.equal(attr.isLegal("asdffa qwer"), false);
   }
   @test "can have an endsWith value"() {
     let attr = new Attribute("class", {endsWith: "asdf", whitespace: false});
-    assert.equal(attr.value.endsWith, "asdf");
+    assert.equal(isEndsWith(attr.value) && attr.value.endsWith, "asdf");
     assert.equal(attr.toString(), 'class="*asdf"');
     assert.equal(attr.isLegal("poiuasdf"), true);
     assert.equal(attr.isLegal("po iuasdf"), false);
   }
   @test "can have startsWith and endsWith values"() {
     let attr = new Attribute("class", {startsWith: "qwer", endsWith: "asdf", whitespace: false});
-    assert.equal(attr.value.startsWith, "qwer");
-    assert.equal(attr.value.endsWith, "asdf");
+    assert.equal(isStartsAndEndsWith(attr.value) && attr.value.startsWith, "qwer");
+    assert.equal(isStartsAndEndsWith(attr.value) && attr.value.endsWith, "asdf");
     assert.equal(attr.toString(), 'class="qwer*asdf"');
   }
   @test "can have a choice of different values"() {
@@ -141,7 +141,7 @@ export class SelectableAttributeTest {
         {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
       ]
     });
-    assert.deepEqual(attr.value.oneOf,
+    assert.deepEqual(isChoice(attr.value) && attr.value.oneOf,
                      [{absent: true},
                       {constant: "asdf"},
                       {startsWith: "foo", whitespace: false},
@@ -159,7 +159,7 @@ export class SelectableAttributeTest {
         {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
       ]
     });
-    assert.deepEqual(attr.value.allOf,
+    assert.deepEqual(isSet(attr.value) && attr.value.allOf,
                      [{constant: "asdf"},
                       {startsWith: "foo", whitespace: false},
                       {endsWith: "bar", whitespace: false},
