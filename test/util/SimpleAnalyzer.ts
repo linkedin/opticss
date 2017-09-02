@@ -1,15 +1,20 @@
+import * as parse5 from "parse5";
 import { Template, TemplateTypes, TemplateInfo } from "../../src/TemplateInfo";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
-import { Tagname, Attribute, AttributeValue } from "../../src/Selectable";
+import { Tagname, Attribute, AttributeValue, AttributeNS } from "../../src/Selectable";
 import { AttributeValueParser } from "./AttributeValueParser";
 import { TestTemplate } from "./TestTemplate";
 import { POSITION_UNKNOWN } from "../../src/SourceLocation";
+import * as util from "util";
+
+export interface HasAnalysisId {
+  analysisId: string;
+}
 
 export class SimpleAnalyzer {
   template: TestTemplate;
   includeSourceInformation: boolean;
   valueParser: AttributeValueParser;
-  idMap: WeakMap<CheerioElement, string>;
   /**
    * Creates an instance of SimpleAnalyzer.
    * @param template The template to be analyzed.
@@ -20,25 +25,35 @@ export class SimpleAnalyzer {
     this.template = template;
     this.includeSourceInformation = includeSourceInformation;
     this.valueParser = new AttributeValueParser();
-    this.idMap = new WeakMap();
   }
   private attrValue(valueStr: string, whitespaceDelimited = false): AttributeValue {
     return this.valueParser.parse(valueStr, whitespaceDelimited);
   }
-  analyze(): TemplateAnalysis<"TestTemplate"> {
+  analyze(): Promise<TemplateAnalysis<"TestTemplate">> {
     let nextId = 1;
     let analysis = new TemplateAnalysis<"TestTemplate">(this.template);
-    this.template.ast("*").each((i, el) => {
-      analysis.startElement(new Tagname({constant: el.name}), this.includeSourceInformation ? {line: i + 1} : POSITION_UNKNOWN);
-      let id = (nextId++).toString();
-      this.idMap.set(el, id);
-      analysis.setId(id);
-      let attrs = Object.keys(el.attribs);
+    const parser = new parse5.SAXParser({ locationInfo: this.includeSourceInformation });
+    parser.on("startTag", (name, attrs, _selfClosing, location) => {
+      let startLocation = location ? {line: location.line, column: location.col} : POSITION_UNKNOWN;
+      let endLocation = location ? {line: location.line, column: location.col + location.endOffset} : POSITION_UNKNOWN;
+      analysis.startElement(new Tagname({constant: name}), startLocation);
       attrs.forEach(attr => {
-        analysis.addAttribute(new Attribute(attr, this.attrValue(el.attribs[attr], attr === "class")));
+        if (attr.namespace) {
+          analysis.addAttribute(new AttributeNS(attr.namespace, attr.name, this.attrValue(attr.value)));
+        } else {
+          analysis.addAttribute(new Attribute(attr.name, this.attrValue(attr.value, attr.name === "class")));
+        }
       });
-      analysis.endElement();
+      analysis.endElement(endLocation);
     });
-    return analysis;
+    return new Promise((resolve, reject) => {
+      parser.write(this.template.contents, (err: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(analysis);
+        }
+      });
+    });
   }
 }
