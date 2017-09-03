@@ -88,6 +88,7 @@ export class ElementStyle {
       });
     }
   }
+  // TODO: accept argument for pseudostates
   compute(): ComputedStyle {
     this.clean();
     let style: ComputedStyle = {};
