@@ -5,14 +5,16 @@ import { Optimizer, OptimizationResult } from "../src/Optimizer";
 import { TestTemplate } from "./util/TestTemplate";
 import { SimpleAnalyzer } from "./util/SimpleAnalyzer";
 import clean from "./util/clean";
-import { RemoveRule, ChangeSelector } from "../src/Actions";
 import * as path from "path";
 import { TemplateAnalysis } from "../src/TemplateAnalysis";
+import { RemoveRule } from "../src/actions/RemoveRule";
+import { ChangeSelector } from "../src/actions/ChangeSelector";
 
 function testRemoveUnusedStyles(stylesAndTemplates: Array<string | TestTemplate>, expectedOutput: string): Promise<OptimizationResult> {
   let optimizer = new Optimizer({
     only: ["removeUnusedStyles"]
-  });
+  },
+  { rewriteIdents: { id: false, class: true }});
   let nCss = 1;
   let analysisPromises = new Array<Promise<TemplateAnalysis<"TestTemplate">>>();
   stylesAndTemplates.forEach(styleOrTemplate => {
@@ -119,7 +121,7 @@ export class RemoveUnusedStylesTest {
     let analysis = analyzer.analyze();
     let optimizer = new Optimizer({
       only: ["removeUnusedStyles"]
-    });
+    },{ rewriteIdents: { id: false, class: true }});
     let expectedCss = css;
     return testRemoveUnusedStyles([css, template], expectedCss);
   }

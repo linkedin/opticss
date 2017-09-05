@@ -1,13 +1,14 @@
 import { ParsedCssFile } from "../CssFile";
 import { StyleMapping } from "../StyleMapping";
 import { TemplateAnalysis } from "../TemplateAnalysis";
-import { OptiCSSOptions } from "../OpticssOptions";
+import { OptiCSSOptions, TemplateIntegrationOptions } from "../OpticssOptions";
 import { TemplateTypes } from "../TemplateInfo";
 import { SelectorCache } from "../query";
 import { Actions } from "../Actions";
 
 export interface OptimizationConstructor {
-  new (options: OptiCSSOptions): Optimization;
+  new (options: OptiCSSOptions,
+       templateOptions: TemplateIntegrationOptions): Optimization;
 }
 
 export interface SingleFileOptimization {

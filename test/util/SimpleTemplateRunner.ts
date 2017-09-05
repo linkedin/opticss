@@ -46,16 +46,6 @@ export class SimpleTemplateRunner {
     }
     this.random = new Random(engine);
   }
-  private walkElements(parent: ParentNode, cb: (node: HtmlElement) => void): void {
-    parent.childNodes.forEach((node) => {
-      if (isElement(node)) {
-        cb(node);
-      }
-      if (isParentNode(node)) {
-        this.walkElements(node, cb);
-      }
-    });
-  }
   prepareDocument(): PreparedDocument {
     const valueParser = new AttributeValueParser();
     let document = parse5.parse(this.template.contents, {
@@ -64,7 +54,7 @@ export class SimpleTemplateRunner {
 
     let variableAttrs = new Array<VariableAttribute>();
 
-    this.walkElements(document, (element) => {
+    walkElements(document, (element) => {
       element.attrs.forEach(attr => {
         let value = valueParser.parse(attr.value, attr.namespace === undefined && attr.name === "class");
         let attribute: Attribute | AttributeNS = attr.namespace ? new Attribute(attr.name, value) : new AttributeNS(attr.namespace!, attr.name, value);
@@ -175,7 +165,7 @@ export class SimpleTemplateRunner {
   }
 }
 
-function bodyContents(document: Document): string {
+export function bodyContents(document: Document): string {
   let html = document.childNodes[0];
   if (isParentNode(html)) {
     let body = (<ParentNode>html).childNodes[1];
@@ -199,3 +189,22 @@ function isParentNode(node: parse5.AST.Default.Node | parse5.AST.Default.ParentN
     return false;
   }
 }
+
+export function allElements(parent: ParentNode): Array<HtmlElement> {
+  let els = new Array<HtmlElement>();
+  walkElements(parent, (el) => {
+    els.push(el);
+  });
+  return els;
+}
+
+export function walkElements(parent: ParentNode, cb: (node: HtmlElement) => void): void {
+  parent.childNodes.forEach((node) => {
+    if (isElement(node)) {
+      cb(node);
+    }
+    if (isParentNode(node)) {
+      walkElements(node, cb);
+    }
+  });
+  }

@@ -5,7 +5,7 @@ import selectorParser = require("postcss-selector-parser");
  * @param node Node to check if is a pseudo element
  * @return True or false if a pseudo element
  */
-function isPseudoelement(node: selectorParser.Node | undefined): node is selectorParser.Pseudo {
+export function isPseudoelement(node: selectorParser.Node | undefined): node is selectorParser.Pseudo {
   return !!node && node.type === selectorParser.PSEUDO &&
     (
       node.value &&
@@ -15,8 +15,20 @@ function isPseudoelement(node: selectorParser.Node | undefined): node is selecto
     );
 }
 
-function isPseudo(node: selectorParser.Node | undefined): node is selectorParser.Pseudo {
+export function isPseudo(node: selectorParser.Node | undefined): node is selectorParser.Pseudo {
   return !!node && node.type === selectorParser.PSEUDO;
+}
+
+export function isSelector(node: selectorParser.Node | undefined): node is selectorParser.Selector {
+  return !!node && node.type === selectorParser.SELECTOR;
+}
+
+export function isIdentifier(node: selectorParser.Node | undefined): node is selectorParser.Identifier {
+  return !!node && node.type === selectorParser.ID;
+}
+
+export function isClass(node: selectorParser.Node | undefined): node is selectorParser.ClassName {
+  return !!node && node.type === selectorParser.CLASS;
 }
 
 export interface CombinatorAndSelector<SelectorType> {
@@ -203,6 +215,17 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
   }
 }
 
+function isContainer(
+  node: selectorParser.Node | selectorParser.Container
+): node is selectorParser.Container
+{
+  if ((<selectorParser.Container>node).walk) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 /**
  * `ParsedSelector` serves as a container object for a `CompoundSelector` linked
  * list and provides a number of convenience methods for interacting with it.
@@ -226,6 +249,38 @@ export class ParsedSelector {
       earlyReturn = callback(selector);
     }
     return earlyReturn;
+  }
+
+  eachSelectorNode<EarlyReturnType>(callback: (node: selectorParser.Node) =>  EarlyReturnType | undefined): EarlyReturnType | undefined {
+    return this.eachCompoundSelector((sel) => {
+      for (let i = 0; i < sel.nodes.length; i++) {
+        const node = sel.nodes[i];
+        let earlyReturn = callback(node);
+        if (earlyReturn !== undefined) {
+          return earlyReturn;
+        }
+        if (isContainer(node)) {
+          let earlyReturn: EarlyReturnType | undefined;
+          try {
+            // walk doesn't have an early return mechanism so we have to create
+            // one with exception handling.
+            node.walk((n) => {
+              earlyReturn = callback(n);
+              if (earlyReturn !== undefined) {
+                throw earlyReturn;
+              }
+            });
+          } catch (e) {
+            if (e === earlyReturn) {
+              return earlyReturn;
+            } else {
+              throw e;
+            }
+          }
+        }
+      }
+      return;
+    });
   }
 
   /**

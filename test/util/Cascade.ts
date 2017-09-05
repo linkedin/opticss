@@ -154,16 +154,9 @@ export class Cascade {
     this.stylesheet = stylesheet;
     this.html = html;
   }
-  private elements(): Array<HtmlElement> {
-    let all = new Array<HtmlElement>();
-    walkElements(this.html, (element) => {
-      all.push(element);
-    });
-    return all;
-  }
   perform(): Promise<Map<HtmlElement, ElementStyle>> {
     let map = new Map<HtmlElement, ElementStyle>();
-    let elements = this.elements();
+    let elements = allElements(this.html);
     let selectOpts: { strict: true };
     return parseStylesheet(this.stylesheet).then(result => {
       result.root!.walkRules(rule => {
@@ -187,6 +180,14 @@ export class Cascade {
       return map;
     });
   }
+}
+
+export function allElements(parent: ParentNode): Array<HtmlElement> {
+  let els = new Array<HtmlElement>();
+  walkElements(parent, (el) => {
+    els.push(el);
+  });
+  return els;
 }
 
 export function walkElements(parent: ParentNode, cb: (node: HtmlElement) => void): void {

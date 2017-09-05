@@ -1,6 +1,6 @@
 import { CssFile, ParsedCssFile } from "./CssFile";
 import { StyleMapping } from "./StyleMapping";
-import { OptiCSSOptions, DEFAULT_OPTIONS } from "./OpticssOptions";
+import { OptiCSSOptions, DEFAULT_OPTIONS, TemplateIntegrationOptions } from "./OpticssOptions";
 import { TemplateAnalysis } from "./TemplateAnalysis";
 import { TemplateTypes } from "./TemplateInfo";
 import { optimizations, Optimization, SingleFileOptimization, MultiFileOptimization } from "./optimizations";
@@ -40,6 +40,7 @@ export class Optimizer {
   analyses: Array<TemplateAnalysis<keyof TemplateTypes>>;
 
   options: OptiCSSOptions;
+  templateOptions: TemplateIntegrationOptions;
 
   private singleFileOptimizations: Array<SingleFileOptimization>;
   private multiFileOptimizations: Array<MultiFileOptimization>;
@@ -54,20 +55,28 @@ export class Optimizer {
    *   those conflicts must be resolvable by having analysis information that proves
    *   they don't conflict or by having selectors that unambiguously resolve the conflict.
    */
-  constructor(options: Partial<OptiCSSOptions>) {
+  constructor(options: Partial<OptiCSSOptions>, templateOptions: TemplateIntegrationOptions) {
     this.sources = [];
     this.analyses = [];
     // TODO: give an error if the options conflict with the template integration abilities?
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
+    this.templateOptions = templateOptions;
     this.singleFileOptimizations = [];
     this.multiFileOptimizations = [];
     if (!this.options.enabled) {
       return;
     }
-    Object.keys(optimizations).forEach((opt) => {
+    Object.keys(optimizations).forEach(opt => {
+      // TODO using any here because of a typescript type resolution bug of some sort.
+      if (this.options.only && this.options.only.indexOf(<any>opt) === -1) {
+        return;
+      }
+      if (this.options.except && this.options.except.indexOf(<any>opt) >= 0) {
+        return;
+      }
       if (this.options[opt]) {
         let Optimization = optimizations[opt];
-        let optimization = new Optimization(this.options);
+        let optimization = new Optimization(this.options, this.templateOptions);
         if (optimizesSingleFiles(optimization)) {
           this.singleFileOptimizations.push(optimization);
         }

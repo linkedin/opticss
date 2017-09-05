@@ -7,7 +7,9 @@ import { TemplateTypes } from "../TemplateInfo";
 import { Element } from "../Selectable";
 import { SelectorCache } from "../query";
 import { matches } from "../Match";
-import { Actions, RemoveRule, ChangeSelector } from "../Actions";
+import { Actions } from "../Actions";
+import { RemoveRule } from "../actions/RemoveRule";
+import { ChangeSelector } from "../actions/ChangeSelector";
 
 export class RemoveUnusedStyles implements SingleFileOptimization {
   private options: OptiCSSOptions;
