@@ -49,7 +49,7 @@
     "perfectionist": "^2.4.0",
     "random-js": "^1.0.8",
     "remap-istanbul": "^0.9.5",
-    "source-map-support": "^0.4.15",
+    "source-map-support": "^0.4.17",
     "tslint": "^5.1.0",
     "typedoc": "^0.7.1",
     "typescript": "^2.4.1"
