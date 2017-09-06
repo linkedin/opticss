@@ -94,7 +94,7 @@ export class RewriteRuleIdents extends Action {
   }
 
   logString(): string {
-    return this.annotateLogMessage(`Rewrote idents from "${this.oldSelector}" to "${this.newSelector}".`);
+    return this.annotateLogMessage(`Rewrote selector's idents from "${this.oldSelector}" to "${this.newSelector}".`);
   }
 
   // TODO use analyses to exclude generated idents

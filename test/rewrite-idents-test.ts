@@ -1,5 +1,6 @@
 import { suite, test, skip, only } from "mocha-typescript";
 import { assert } from "chai";
+import * as path from "path";
 
 import { OptimizationResult } from "../src/Optimizer";
 import { TestTemplate } from "./util/TestTemplate";
@@ -50,6 +51,8 @@ export class RemoveUnusedStylesTest {
       <div class="(--- | thing2 | thing4)" id="id3"></div>
     `);
     return testRewriteIdents({id: true, class: true}, css1, template).then(result => {
+      let logString = result.optimization.actions.performed[0].logString();
+      assert.equal(logString, `${path.resolve("test1.css")}:2:7 [rewriteIdents] Rewrote selector's idents from "#id3" to "#a".`);
       let replaced = Object.keys(result.optimization.styleMapping.replacedAttributes);
       assert.equal(replaced.length, 7);
       // debugResult(css1, result);
@@ -131,6 +134,7 @@ function indentString(str: string, indent = "  ") {
 }
 
 function debugResult(inputCSS: string, result: CascadeTestResult) {
+  console.log(result.optimization.actions.performed.map(a => a.logString()).join("\n"));
   console.log("Input CSS:", "\n" + indentString(inputCSS));
   console.log("Optimized CSS:", "\n" + indentString(result.optimization.output.content.toString()));
   result.templateResults.forEach(templateResult => {
