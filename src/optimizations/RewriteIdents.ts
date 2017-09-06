@@ -52,7 +52,7 @@ function rewriteOptions(
   if (appOptions === false) {
     mergeIntoOpts(combined, {id: false, class: false});
   } else if (appOptions === true) {
-    // pass
+    mergeIntoOpts(combined, templateOptions);
   } else {
     mergeIntoOpts(combined, appOptions);
     mergeIntoOpts(combined, templateOptions);

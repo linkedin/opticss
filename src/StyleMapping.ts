@@ -76,6 +76,8 @@ export class StyleMapping {
       let rwc = this.getRewriteOf({name: "class", value: icn});
       if (rwc) {
         dynamicClasses[rwc.value] = {and: [i]};
+      } else {
+        dynamicClasses[icn] = {and: [i]};
       }
     });
     return {

@@ -52,12 +52,12 @@ export function assertSameCascade(
         try {
           assert.deepEqual(optiComputed, origComputed);
         } catch (e) {
-          let templateStr = parse5.serialize(templateElement, { treeAdapter: parse5.treeAdapters.htmlparser2 });
-          console.warn("template element:",  templateElement.tagName, templateStr);
-          let origStr = parse5.serialize(originalElement, { treeAdapter: parse5.treeAdapters.htmlparser2 });
-          console.warn("original element:",  originalElement.tagName, origStr);
-          let optiStr = parse5.serialize(optimizedElement, { treeAdapter: parse5.treeAdapters.htmlparser2 });
-          console.warn("optimized element:",  optimizedElement.tagName, optiStr);
+          let templateStr = debugElement(templateElement);
+          console.warn("template element:", templateStr);
+          let origStr = debugElement(originalElement);
+          console.warn("original element:", origStr);
+          let optiStr = debugElement(optimizedElement);
+          console.warn("optimized element:", optiStr);
           if (origComputed) {
             console.warn("original cascade:", origStyle && origStyle.debug());
             console.warn("original computed styles:", origComputed);
@@ -161,4 +161,16 @@ function parseHtml(html: string): Document {
   return parse5.parse(html, {
     treeAdapter: parse5.treeAdapters.htmlparser2
   }) as Document;
+}
+
+function debugElement(element: parse5.AST.HtmlParser2.Element): string {
+  let tagName = element.name;
+  let attrs = Object.keys(element.attribs).reduce((s, a, i) => {
+    if (i > 0) {
+      s += " ";
+    }
+    s += `${a}="${element.attribs[a]}"`;
+    return s;
+  }, "");
+  return `<${tagName} ${attrs}>`;
 }
