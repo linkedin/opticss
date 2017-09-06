@@ -99,6 +99,31 @@ export class RemoveUnusedStylesTest {
       assert.isUndefined(thing1rw);
     });
   }
+  @test "won't rewrite to existing idents"() {
+    let css1 = `
+      #id3 { border-width: 2px; }
+      #a { color: blue; }
+      .a { color: red; }
+      #id2 { width: 50%; }
+      .thing2 { border: 1px solid blue; }
+      .thing3 { background: red; }
+      div { background-color: white; }
+      #id3.thing4 { border-color: black; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="(thing3 | a)" id="(a | id2)"></div>
+      <div class="(--- | thing2 | thing4)" id="id3"></div>
+    `);
+    return testRewriteIdents({id: true, class: true}, css1, template).then(result => {
+      let replacements = result.optimization.styleMapping.replacedAttributes;
+      let rewrites = Object.keys(replacements);
+      console.log(rewrites);
+      assert.equal(rewrites.length, 7);
+      rewrites.forEach(rw => {
+        assert.notEqual(replacements[rw].value, "a");
+      });
+    });
+  }
 }
 
 function indentString(str: string, indent = "  ") {
