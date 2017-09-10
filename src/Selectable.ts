@@ -971,45 +971,45 @@ function matchSelectorImpl(selectable: Selectable, parsedSelector: ParsedSelecto
 }
 
 export function isAbsent(value: FlattenedAttributeValue | AttributeValue): value is ValueAbsent {
-  return !!(<ValueAbsent>value).absent;
+  return (<ValueAbsent>value).absent !== undefined;
 }
 
 export function isUnknown(value: FlattenedAttributeValue | AttributeValue | TagnameValue): value is ValueUnknown {
-  return !!(<ValueUnknown>value).unknown;
+  return (<ValueUnknown>value).unknown !== undefined;
 }
 
 export function isUnknownIdentifier(value: FlattenedAttributeValue | AttributeValue): value is ValueUnknownIdentifier {
-  return !!(<ValueUnknownIdentifier>value).unknownIdentifier;
+  return (<ValueUnknownIdentifier>value).unknownIdentifier !== undefined;
 }
 
 export function isConstant(value: FlattenedAttributeValue | AttributeValue | TagnameValue): value is ValueConstant {
-  return !!(<ValueConstant>value).constant;
+  return (<ValueConstant>value).constant !== undefined;
 }
 
 export function isStartsWith(value: FlattenedAttributeValue | AttributeValue): value is ValueStartsWith {
-  return !!(<ValueStartsWith>value).startsWith && !(<ValueStartsAndEndsWith>value).endsWith;
+  return (<ValueStartsWith>value).startsWith !== undefined && (<ValueStartsAndEndsWith>value).endsWith === undefined;
 }
 
 export function isEndsWith(value: FlattenedAttributeValue | AttributeValue): value is ValueEndsWith {
-  return !!(<ValueEndsWith>value).endsWith && !(<ValueStartsAndEndsWith>value).startsWith;
+  return (<ValueEndsWith>value).endsWith !== undefined && (<ValueStartsAndEndsWith>value).startsWith === undefined;
 }
 
 export function isStartsAndEndsWith(value: FlattenedAttributeValue | AttributeValue): value is ValueStartsAndEndsWith {
-  return !!(<ValueStartsAndEndsWith>value).endsWith && !!(<ValueStartsAndEndsWith>value).startsWith;
+  return (<ValueStartsAndEndsWith>value).endsWith !== undefined && (<ValueStartsAndEndsWith>value).startsWith !== undefined;
 }
 
 export function isChoice(value: FlattenedAttributeValue | AttributeValue): value is AttributeValueChoice {
-  return !!(<AttributeValueChoice>value).oneOf;
+  return (<AttributeValueChoice>value).oneOf !== undefined;
 }
 
 export function isTagChoice(value: TagnameValue): value is TagnameValueChoice {
-  return !!(<TagnameValueChoice>value).oneOf;
+  return (<TagnameValueChoice>value).oneOf !== undefined;
 }
 
 export function isSet(value: AttributeValue): value is AttributeValueSet {
-  return !!(<AttributeValueSet>value).allOf;
+  return (<AttributeValueSet>value).allOf !== undefined;
 }
 
 export function isFlattenedSet(value: FlattenedAttributeValue): value is FlattenedAttributeValueSet {
-  return !!(<FlattenedAttributeValueSet>value).allOf;
+  return (<FlattenedAttributeValueSet>value).allOf !== undefined;
 }
