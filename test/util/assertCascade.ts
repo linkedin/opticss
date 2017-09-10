@@ -5,11 +5,17 @@ import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import { OptiCSSOptions, TemplateIntegrationOptions } from "../../src/OpticssOptions";
 import { OptimizationResult, Optimizer } from "../../src/Optimizer";
 
-import { Cascade, walkElements, allElements } from "./Cascade";
+import { Cascade, walkElements, allElements, parseHtml, debugElement, bodyElement, serializeElement } from "./Cascade";
 import { SimpleTemplateRunner } from "./SimpleTemplateRunner";
 import { SimpleAnalyzer } from "./SimpleAnalyzer";
 import { TestTemplate } from "./TestTemplate";
 import { SimpleTemplateRewriter } from "./SimpleTemplateRewriter";
+import { inspect } from "util";
+
+export interface TestedMarkup {
+  originalBody: string;
+  optimizedBody: string;
+}
 
 export function assertSameCascade(
   originalCss: string,
@@ -17,7 +23,7 @@ export function assertSameCascade(
   templateHtml: string,
   originalHtml: string,
   optimizedHtml: string
-): Promise<void> {
+): Promise<TestedMarkup> {
   // console.log("template HTML:", templateHtml);
   // console.log("original HTML:", originalHtml);
   // console.log("optimized HTML:", optimizedHtml);
@@ -30,9 +36,18 @@ export function assertSameCascade(
   let optimizedCascadePromise = optimizedCascade.perform();
   let cascades = [originalCascadePromise, optimizedCascadePromise];
   return Promise.all(cascades).then(([origCascade, optiCascade]) => {
-    let templateElements = allElements(templateDoc);
-    let originalElements = allElements(originalDoc);
-    let optimizedElements = allElements(optimizedDoc);
+    let templateBody = bodyElement(templateDoc)!;
+    let templateElements = allElements(templateBody);
+    let originalBody = bodyElement(originalDoc)!;
+    let originalElements = allElements(originalBody);
+    let optimizedBody = bodyElement(optimizedDoc)!;
+    let optimizedElements = allElements(optimizedBody);
+    if (originalElements.length !== templateElements.length) {
+      let commonLength = Math.min(originalElements.length, templateElements.length);
+      for (let i = 0; i < commonLength; i++) {
+        console.log(`${debugElement(originalElements[i])} | ${debugElement(templateElements[i])}`);
+      }
+    }
     assert.equal(originalElements.length,
                  templateElements.length,
                  "original document doesn't match template");
@@ -70,18 +85,30 @@ export function assertSameCascade(
         }
       }
     }
+    return {
+      originalBody: serializeElement(originalBody),
+      optimizedBody: serializeElement(optimizedBody)
+    };
   });
 }
 
-export interface TemplateRewrites {
-  template: string;
-  rewrites: string[];
+export interface CascadeAssertionResults {
+  template: TestTemplate;
+  testedMarkups: Array<TestedMarkup>;
 }
 
 export interface CascadeTestResult {
   optimization: OptimizationResult;
-  templateResults: Array<TemplateRewrites>;
+  testedTemplates: CascadeAssertionResults[];
 }
+
+export interface CascadeTestErrorDetails {
+  optimization: OptimizationResult;
+  template: TestTemplate;
+  rewrittenHtml: string;
+}
+
+export type CascadeTestError = Error & CascadeTestErrorDetails;
 
 export function testOptimizationCascade(
   options: Partial<OptiCSSOptions>,
@@ -110,35 +137,37 @@ export function testOptimizationCascade(
   }).then(() => {
     return optimizer.optimize("optimized.css").then(optimization => {
       let rewriter = new SimpleTemplateRewriter(optimization.styleMapping);
-      let allTemplateRuns = new Array<Promise<TemplateRewrites>>();
+      let allTemplateRuns = new Array<Promise<CascadeAssertionResults>>();
       templates.forEach(template => {
         let runner = new SimpleTemplateRunner(template);
         let promise = runner.runAll().then(result => {
-          let cascadeAssertions = new Array<Promise<string>>();
+          let cascadeAssertions = new Array<Promise<TestedMarkup>>();
           result.forEach((html) => {
-            let rewrittenHtml = rewriter.rewrite(template.contents, html);
+            let rewrittenHtml = rewriter.rewrite(template, html);
             cascadeAssertions.push(
               assertSameCascade(originalCss,
                                 optimizationToCss(optimization),
                                 template.contents,
                                 html,
-                                rewrittenHtml).then(() => {
-                                  return rewrittenHtml;
+                                rewrittenHtml).catch((e: any) => {
+                                  Object.assign(e, {
+                                    optimization,
+                                    template,
+                                    rewrittenHtml
+                                  });
+                                  throw e;
                                 }));
           });
-          return Promise.all(cascadeAssertions).then(rewrites => {
-            return {
-              template: template.contents,
-              rewrites
-            };
+          return Promise.all(cascadeAssertions).then(testedMarkups => {
+            return {template, testedMarkups};
           });
         });
         allTemplateRuns.push(promise);
       });
-      return Promise.all(allTemplateRuns).then((templateResults) => {
+      return Promise.all(allTemplateRuns).then((testedTemplates) => {
         return {
           optimization,
-          templateResults
+          testedTemplates
         };
       });
     });
@@ -155,22 +184,43 @@ function optimizationToCss(opt: OptimizationResult): string {
   }
 }
 
-type Document = parse5.AST.HtmlParser2.Document;
-
-function parseHtml(html: string): Document {
-  return parse5.parse(html, {
-    treeAdapter: parse5.treeAdapters.htmlparser2
-  }) as Document;
+export function logOptimizations(optimization: OptimizationResult) {
+  optimization.actions.performed.forEach(a => {
+    console.log(a.logString());
+  });
 }
 
-function debugElement(element: parse5.AST.HtmlParser2.Element): string {
-  let tagName = element.name;
-  let attrs = Object.keys(element.attribs).reduce((s, a, i) => {
-    if (i > 0) {
-      s += " ";
-    }
-    s += `${a}="${element.attribs[a]}"`;
-    return s;
-  }, "");
-  return `<${tagName} ${attrs}>`;
+export function debugResult(inputCSS: string, result: CascadeTestResult) {
+  const optimized = result.optimization.output.content.toString();
+  logOptimizations(result.optimization);
+  console.log("Input CSS:", "\n" + indentString(inputCSS));
+  console.log("Optimized CSS:", "\n" + indentString(optimized));
+  result.testedTemplates.forEach(testedTemplate => {
+    console.log("Template:", "\n" + indentString(testedTemplate.template.contents));
+    testedTemplate.testedMarkups.forEach(markup => {
+      console.log("Rewritten to:", "\n" + indentString(markup.optimizedBody));
+    });
+  });
+}
+
+export function debugError(inputCSS: string, error: CascadeTestError) {
+  console.error(error);
+  console.log("Input CSS:", "\n" + indentString(inputCSS));
+  console.log("==============================================================");
+  if (error.optimization) {
+    console.log(error.optimization.actions.performed.map(a => a.logString()).join("\n"));
+    console.log("==============================================================");
+    console.log("Optimized CSS:", "\n" + indentString(error.optimization.output.content.toString()));
+    console.log("==============================================================");
+  } else {
+    console.log("No optimization occurred before error was raised.");
+  }
+  console.log("Template:", "\n" + indentString(error.template.contents));
+  console.log("==============================================================");
+  console.log("Template Rewrite:", "\n" + indentString(error.rewrittenHtml));
+  console.log("==============================================================");
+}
+
+function indentString(str: string, indent = "  ") {
+ return indent + str.split("\n").join("\n" + indent);
 }

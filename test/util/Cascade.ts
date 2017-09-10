@@ -3,12 +3,17 @@ import * as postcss from "postcss";
 import * as CSSselect from "css-select";
 import * as specificity from "specificity";
 import * as propParser from "css-property-parser";
+import { inspect } from "util";
 import { walkRules } from "../../src/optimizations/util";
 
 type Document = parse5.AST.HtmlParser2.Document;
 type Node = parse5.AST.HtmlParser2.Node;
 type ParentNode = parse5.AST.HtmlParser2.ParentNode;
 type HtmlElement = parse5.AST.HtmlParser2.Element;
+type BodyElement = HtmlElement & ParentNode & {
+  nodeName: "body";
+  tagName: "body";
+};
 
 export interface PseudoStates {
   /**
@@ -168,6 +173,7 @@ export class Cascade {
           rule.selectors.forEach(selector => {
             let s = specificity.calculate(selector)[0];
             // TODO: handle pseudo states and classes here before selecting.
+            try{
             let matchedElements = CSSselect(selector, elements, selectOpts);
             // console.log(`selector "${selector}" matched ${matchedElements.length} elements`);
             matchedElements.forEach(e => {
@@ -178,6 +184,13 @@ export class Cascade {
               }
               style.add(selector, rule, s);
             });
+          } catch (e) {
+            if (e.message && e.message.match(/unmatched pseudo-(class|element)/)) {
+              // pass
+            } else {
+              throw e;
+            }
+          }
           });
         }
       });
@@ -194,18 +207,18 @@ export function allElements(parent: ParentNode): Array<HtmlElement> {
   return els;
 }
 
-export function walkElements(parent: ParentNode, cb: (node: HtmlElement) => void): void {
-  parent.childNodes.forEach((node) => {
-    if (isElement(node)) {
-      cb(node);
-    }
-    if (isParentNode(node)) {
+export function walkElements(node: Node | ParentNode, cb: (node: HtmlElement) => void): void {
+  if (isElement(node)) {
+    cb(node);
+  }
+  if (isParentNode(node)) {
+    node.childNodes.forEach((node) => {
       walkElements(node, cb);
-    }
-  });
+    });
+  }
 }
 
-function isElement(node: Node): node is HtmlElement {
+export function isElement(node: Node): node is HtmlElement {
   if ((<HtmlElement>node).tagName) {
     return true;
   } else {
@@ -213,7 +226,7 @@ function isElement(node: Node): node is HtmlElement {
   }
 }
 
-function isParentNode(node: Node | ParentNode): node is ParentNode {
+export function isParentNode(node: Node | ParentNode): node is ParentNode {
   if ((<ParentNode>node).childNodes) {
     return true;
   } else {
@@ -225,4 +238,38 @@ function parseStylesheet(content: string): Promise<postcss.Result> {
   return new Promise<postcss.Result>((resolve, reject) => {
     postcss().process(content, {from: "stylesheet.css"}).then(resolve, reject);
   });
+}
+
+export function parseHtml(html: string): Document {
+  return parse5.parse(html, {
+    treeAdapter: parse5.treeAdapters.htmlparser2
+  }) as Document;
+}
+
+export function bodyElement(document: Document): BodyElement | undefined {
+  let html = document.childNodes.find(child => isElement(child) && child.tagName === "html");
+  if (html && isParentNode(html)) {
+    return html.childNodes.find(child => isElement(child) && child.tagName === "body") as BodyElement | undefined;
+  } else {
+    return;
+  }
+}
+
+export function serializeElement(element: HtmlElement): string {
+  return parse5.serialize({children: [element]}, {treeAdapter: parse5.treeAdapters.htmlparser2});
+}
+
+export function debugElement(element: parse5.AST.HtmlParser2.Element): string {
+  if (!element || !element.attribs) {
+    return inspect(element);
+  }
+  let tagName = element.name;
+  let attrs = Object.keys(element.attribs).reduce((s, a, i) => {
+    if (i > 0) {
+      s += " ";
+    }
+    s += `${a}="${element.attribs[a]}"`;
+    return s;
+  }, "");
+  return `<${tagName} ${attrs}>`;
 }

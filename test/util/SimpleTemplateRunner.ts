@@ -12,6 +12,10 @@ type ParentNode = parse5.AST.Default.ParentNode;
 type Node = parse5.AST.Default.Node;
 type HtmlElement = parse5.AST.Default.Element;
 type HtmlAttribute = parse5.AST.Default.Attribute;
+type BodyElement = HtmlElement & ParentNode & {
+  nodeName: "body";
+  tagName: "body";
+};
 
 interface VariableAttribute {
   element: HtmlElement;
@@ -48,16 +52,16 @@ export class SimpleTemplateRunner {
     this.random = new Random(engine);
   }
   prepareDocument(): PreparedDocument {
-    const valueParser = new AttributeValueParser();
+    const valueParser = new AttributeValueParser(this.template.plainHtml);
     let document = parse5.parse(this.template.contents, {
       treeAdapter: parse5.treeAdapters.default
-    }) as parse5.AST.Default.Document;
+    }) as Document;
 
     let variableAttrs = new Array<VariableAttribute>();
 
     walkElements(document, (element) => {
       element.attrs.forEach(attr => {
-        let value = valueParser.parse(attr.value, attr.namespace === undefined && attr.name === "class");
+        let value = valueParser.parse(attr.namespace, attr.name, attr.value);
         let attribute: Attribute | AttributeNS = attr.namespace ? new Attribute(attr.name, value) : new AttributeNS(attr.namespace!, attr.name, value);
         let flattened = attribute.flattenedValue();
         if (flattened.length > 1) {
@@ -166,25 +170,33 @@ export class SimpleTemplateRunner {
   }
 }
 
-export function bodyContents(document: Document): string {
-  let html = document.childNodes[0];
-  if (isParentNode(html)) {
-    let body = (<ParentNode>html).childNodes[1];
-    return parse5.serialize(body);
+export function bodyElement(document: Document): BodyElement | undefined {
+  let html = document.childNodes.find(child => isElement(child) && child.tagName === "html");
+  if (html && isParentNode(html)) {
+    return html.childNodes.find(child => isElement(child) && child.nodeName === "body") as BodyElement | undefined;
   } else {
-    return assertNever(<never>html);
+    return;
   }
 }
 
-function isElement(node: parse5.AST.Default.Node): node is parse5.AST.Default.Element {
-  if ((<parse5.AST.Default.Element>node).tagName) {
+export function bodyContents(document: Document): string {
+  let body = bodyElement(document);
+  if (body) {
+    return parse5.serialize({childNodes: [body]});
+  } else {
+    return "";
+  }
+}
+
+function isElement(node: Node | ParentNode): node is HtmlElement {
+  if ((<HtmlElement>node).tagName) {
     return true;
   } else {
     return false;
   }
 }
-function isParentNode(node: parse5.AST.Default.Node | parse5.AST.Default.ParentNode): node is parse5.AST.Default.ParentNode {
-  if ((<parse5.AST.Default.ParentNode>node).childNodes) {
+function isParentNode(node: Node | ParentNode): node is ParentNode {
+  if ((<ParentNode>node).childNodes) {
     return true;
   } else {
     return false;
@@ -199,13 +211,16 @@ export function allElements(parent: ParentNode): Array<HtmlElement> {
   return els;
 }
 
-export function walkElements(parent: ParentNode, cb: (node: HtmlElement) => void): void {
-  parent.childNodes.forEach((node) => {
-    if (isElement(node)) {
-      cb(node);
-    }
-    if (isParentNode(node)) {
-      walkElements(node, cb);
-    }
-  });
+export function walkElements(node: Node | ParentNode, cb: (node: HtmlElement) => void): void {
+  if (node === undefined) {
+    console.log("wut");
   }
+  if (isElement(node)) {
+    cb(node);
+  }
+  if (isParentNode(node)) {
+    node.childNodes.forEach((node) => {
+      walkElements(node, cb);
+    });
+  }
+}

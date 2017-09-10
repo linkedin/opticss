@@ -24,10 +24,10 @@ export class SimpleAnalyzer {
   constructor(template: TestTemplate, includeSourceInformation = false) {
     this.template = template;
     this.includeSourceInformation = includeSourceInformation;
-    this.valueParser = new AttributeValueParser();
+    this.valueParser = new AttributeValueParser(template.plainHtml);
   }
-  private attrValue(valueStr: string, whitespaceDelimited = false): AttributeValue {
-    return this.valueParser.parse(valueStr, whitespaceDelimited);
+  private attrValue(attrNamespace: string | null | undefined, attrName: string, valueStr: string): AttributeValue {
+    return this.valueParser.parse(attrNamespace, attrName, valueStr);
   }
   analyze(): Promise<TemplateAnalysis<"TestTemplate">> {
     let nextId = 1;
@@ -39,9 +39,9 @@ export class SimpleAnalyzer {
       analysis.startElement(new Tagname({constant: name}), startLocation);
       attrs.forEach(attr => {
         if (attr.namespace) {
-          analysis.addAttribute(new AttributeNS(attr.namespace, attr.name, this.attrValue(attr.value)));
+          analysis.addAttribute(new AttributeNS(attr.namespace, attr.name, this.attrValue(attr.namespace, attr.name, attr.value)));
         } else {
-          analysis.addAttribute(new Attribute(attr.name, this.attrValue(attr.value, attr.name === "class")));
+          analysis.addAttribute(new Attribute(attr.name, this.attrValue(attr.namespace, attr.name, attr.value)));
         }
       });
       analysis.endElement(endLocation);

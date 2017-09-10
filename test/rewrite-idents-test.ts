@@ -5,7 +5,7 @@ import * as path from "path";
 import { OptimizationResult } from "../src/Optimizer";
 import { TestTemplate } from "./util/TestTemplate";
 import clean from "./util/clean";
-import { testOptimizationCascade, CascadeTestResult } from "./util/assertCascade";
+import { testOptimizationCascade, CascadeTestResult, debugResult } from "./util/assertCascade";
 import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOptions";
 import { IdentGenerator } from "../src/util/IdentGenerator";
 
@@ -118,29 +118,13 @@ export class RemoveUnusedStylesTest {
       <div class="(--- | thing2 | thing4)" id="id3"></div>
     `);
     return testRewriteIdents({id: true, class: true}, css1, template).then(result => {
+      // debugResult(css1, result);
       let replacements = result.optimization.styleMapping.replacedAttributes;
       let rewrites = Object.keys(replacements);
-      console.log(rewrites);
       assert.equal(rewrites.length, 7);
       rewrites.forEach(rw => {
         assert.notEqual(replacements[rw].value, "a");
       });
     });
   }
-}
-
-function indentString(str: string, indent = "  ") {
- return indent + str.split("\n").join("\n" + indent);
-}
-
-function debugResult(inputCSS: string, result: CascadeTestResult) {
-  console.log(result.optimization.actions.performed.map(a => a.logString()).join("\n"));
-  console.log("Input CSS:", "\n" + indentString(inputCSS));
-  console.log("Optimized CSS:", "\n" + indentString(result.optimization.output.content.toString()));
-  result.templateResults.forEach(templateResult => {
-    console.log("Template:", "\n" + indentString(templateResult.template));
-    templateResult.rewrites.forEach(rewrite => {
-      console.log("Rewritten to:", "\n" + indentString(rewrite));
-    });
-  });
 }

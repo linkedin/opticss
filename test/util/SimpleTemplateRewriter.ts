@@ -1,33 +1,33 @@
 import * as parse5 from "parse5";
 
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
-import { allElements, bodyContents } from "./SimpleTemplateRunner";
+import { allElements, bodyContents, bodyElement } from "./SimpleTemplateRunner";
 import { StyleMapping, RewriteMapping, AndExpression, OrExpression, NotExpression } from "../../src/StyleMapping";
 import { AttributeValueParser } from "./AttributeValueParser";
 import { Tagname, Element, Attr, AttributeNS, Attribute } from "../../src/Selectable";
 import { POSITION_UNKNOWN } from "../../src/SourceLocation";
 import { BooleanExpression } from "../../src/index";
 import assertNever from "../../src/util/assertNever";
+import { TestTemplate } from "./TestTemplate";
 
 export class SimpleTemplateRewriter {
-  valueParser: AttributeValueParser;
   styleMapping: StyleMapping;
 
   constructor(styleMapping: StyleMapping) {
     this.styleMapping = styleMapping;
-    this.valueParser = new AttributeValueParser();
   }
 
-  rewrite(template: string, html: string) {
-    let templateDoc = parse5.parse(template, {
+  rewrite(template: TestTemplate, html: string) {
+    let valueParser = new AttributeValueParser(template.plainHtml);
+    let templateDoc = parse5.parse(template.contents, {
       treeAdapter: parse5.treeAdapters.default
     }) as parse5.AST.Default.Document;
     let document = parse5.parse(html, {
       treeAdapter: parse5.treeAdapters.default
     }) as parse5.AST.Default.Document;
 
-    let templateElements = allElements(templateDoc);
-    let htmlElements = allElements(document);
+    let templateElements = allElements(bodyElement(templateDoc)!);
+    let htmlElements = allElements(bodyElement(document)!);
     if (templateElements.length !== htmlElements.length) {
       throw new Error("template and html don't match");
     }
@@ -36,7 +36,7 @@ export class SimpleTemplateRewriter {
       let element = htmlElements[i];
       let tagname = new Tagname({constant: templateElement.tagName});
       let attrs: Array<Attr> = templateElement.attrs.map(attr => {
-        let value = this.valueParser.parse(attr.value, isWhitespaceAttr(attr));
+        let value = valueParser.parse(attr.namespace, attr.name, attr.value);
         if (attr.namespace) {
           return new AttributeNS(attr.namespace, attr.name, value);
         } else {
