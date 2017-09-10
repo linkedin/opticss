@@ -651,9 +651,9 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
     if (json.namespaceURL) {
       return new AttributeNS(json.namespaceURL, json.name, json.value as ValueConstant);
     } else {
-      if (name === "id") {
+      if (json.name === "id") {
         return new Identifier(json.value as ValueConstant);
-      } else if (name === "class") {
+      } else if (json.name === "class") {
         return new Class(json.value as ValueConstant);
       } else {
         return new Attribute(json.name, json.value as ValueConstant);

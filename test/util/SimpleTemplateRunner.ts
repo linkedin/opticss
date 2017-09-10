@@ -9,6 +9,7 @@ import { AttributeValueParser } from "./AttributeValueParser";
 
 type Document = parse5.AST.Default.Document;
 type ParentNode = parse5.AST.Default.ParentNode;
+type Node = parse5.AST.Default.Node;
 type HtmlElement = parse5.AST.Default.Element;
 type HtmlAttribute = parse5.AST.Default.Attribute;
 

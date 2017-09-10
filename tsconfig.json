@@ -20,6 +20,19 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "es2016"
+    ],
+    "types": [
+      "@types/chai",
+      "@types/debug",
+      "@types/fs-extra",
+      "@types/handlebars",
+      "@types/mocha",
+      "@types/nearley",
+      "@types/source-map"
+    ],
 
     // output options
     "newLine": "LF",
