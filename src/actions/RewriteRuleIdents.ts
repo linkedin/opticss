@@ -2,10 +2,9 @@ import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { Action, stripNL } from "./Action";
 import { SourcePosition } from "../SourceLocation";
-import { SelectorCache } from "../query";
 import { IdentGenerator } from "../util/IdentGenerator";
 import { ParsedSelector, isClass, isIdentifier } from "../parseSelector";
-import { StyleMapping } from "../StyleMapping";
+import { OptimizationPass } from "../Optimizer";
 
 export type IdentNode = selectorParser.Identifier | selectorParser.ClassName;
 
@@ -13,11 +12,6 @@ export interface RuleIdents {
   rule: postcss.Rule;
   selectors: ParsedSelector[];
   idents: IdentNode[];
-}
-
-export interface IdentGenerators {
-  id: IdentGenerator;
-  class: IdentGenerator;
 }
 
 export interface KnownIdents {
@@ -31,26 +25,20 @@ export interface KnownIdents {
 export class RewriteRuleIdents extends Action {
   newSelector: string;
   oldSelector: string | undefined;
-  cache: SelectorCache;
-  generators: IdentGenerators;
   ident: RuleIdents;
   knownIdents: KnownIdents;
-  styleMapping: StyleMapping;
+  pass: OptimizationPass;
 
   constructor(
-    styleMapping: StyleMapping,
+    pass: OptimizationPass,
     ident: RuleIdents,
     knownIdents: KnownIdents,
-    generators: IdentGenerators,
-    cache: SelectorCache,
     reason = "rewriteIdents")
   {
     super(reason);
-    this.styleMapping = styleMapping;
+    this.pass = pass;
     this.ident = ident;
     this.knownIdents = knownIdents;
-    this.generators = generators;
-    this.cache = cache;
     this.oldSelector = undefined;
   }
   get sourcePosition(): SourcePosition | undefined {
@@ -65,7 +53,7 @@ export class RewriteRuleIdents extends Action {
     }
   }
   perform(): this {
-    this.cache.reset(this.ident.rule);
+    this.pass.cache.reset(this.ident.rule);
     this.oldSelector = this.ident.rule.selector;
     this.ident.idents.forEach(node => {
       if (isClass(node)) {
@@ -82,13 +70,13 @@ export class RewriteRuleIdents extends Action {
   rewriteNode(type: keyof KnownIdents, node: selectorParser.ClassName | selectorParser.Identifier) {
     let oldValue = node.value;
     let fromAttr = { name: type, value: oldValue };
-    let toAttr = this.styleMapping.getRewriteOf(fromAttr);
+    let toAttr = this.pass.styleMapping.getRewriteOf(fromAttr);
     if (!toAttr) {
       toAttr = {
         name: type,
         value: this.nextIdent(type)
       };
-      this.styleMapping.rewriteAttribute(fromAttr, toAttr);
+      this.pass.styleMapping.rewriteAttribute(fromAttr, toAttr);
     }
     node.value = toAttr.value;
   }
@@ -101,7 +89,7 @@ export class RewriteRuleIdents extends Action {
   private nextIdent(
     type: keyof KnownIdents
   ): string {
-    let generator = this.generators[type];
+    let generator = this.pass.identGenerators.get(type);
     let known = this.knownIdents[type];
     let nextId = generator.nextIdent();
     while (known.has(nextId)) {

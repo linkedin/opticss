@@ -21,11 +21,16 @@ function increment(counters: Array<number>, i: number) {
 
 export class IdentGenerator {
   lastIdent: string;
+  returnedIdents: Array<string>;
   private counters: Array<number>;
   constructor() {
     this.counters = [0];
+    this.returnedIdents = [];
   }
   nextIdent(): string {
+    if (this.returnedIdents.length > 0) {
+      return this.returnedIdents.pop()!;
+    }
     this.lastIdent = this.counters.map(identChar).join("");
     let carry = false;
     for (let i = this.counters.length - 1; i >= 0; i--) {
@@ -34,5 +39,38 @@ export class IdentGenerator {
     }
     if (carry) this.counters.push(0);
     return this.lastIdent;
+  }
+  /**
+   * When a generated ident is no longer in use, it should be returned
+   * so it can be re-used.
+   */
+  returnIdent(ident: string) {
+    this.returnedIdents.push(ident);
+  }
+}
+
+export class IdentGenerators<Namespace extends string = string> {
+  namespaces: {
+    [name: string]: IdentGenerator;
+  };
+  constructor(...namespaces: Array<Namespace>) {
+    this.namespaces = {};
+    namespaces.forEach(ns => {
+      this.namespaces[ns] = new IdentGenerator();
+    });
+  }
+  get(namespace: Namespace): IdentGenerator {
+    let generator = this.namespaces[namespace];
+    if (generator) {
+      return generator;
+    } else {
+      throw new Error("unknown ident namespace: " + namespace);
+    }
+  }
+  nextIdent(namespace: Namespace) {
+    return this.get(namespace).nextIdent();
+  }
+  returnIdent(namespace: Namespace, ident: string) {
+    this.get(namespace).returnIdent(ident);
   }
 }

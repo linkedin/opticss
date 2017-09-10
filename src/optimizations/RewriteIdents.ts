@@ -1,20 +1,15 @@
 import * as postcss from "postcss";
 import { MultiFileOptimization } from "./Optimization";
-import { StyleMapping } from "../StyleMapping";
 import { ParsedCssFile } from "../CssFile";
 import { OptiCSSOptions, RewritableIdents, TemplateIntegrationOptions } from "../OpticssOptions";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { TemplateTypes } from "../TemplateInfo";
-// import { Element } from "../Selectable";
 import { SelectorCache } from "../query";
-// import { matches } from "../Match";
-// import { Actions, RemoveRule, ChangeSelector } from "../Actions";
-import { Actions } from "../Actions";
 import { ParsedSelector, isIdentifier, isClass } from "../parseSelector";
-import { IdentGenerator } from "../util/IdentGenerator";
 import assertNever from "../util/assertNever";
-import { KnownIdents, IdentGenerators, RuleIdents, RewriteRuleIdents, IdentNode } from "../actions/RewriteRuleIdents";
+import { KnownIdents, RuleIdents, RewriteRuleIdents, IdentNode } from "../actions/RewriteRuleIdents";
 import { walkRules } from "./util";
+import { OptimizationPass } from "../Optimizer";
 
 export interface NormalizedRewriteOptions {
   id: boolean;
@@ -78,17 +73,15 @@ export class RewriteIdents implements MultiFileOptimization {
     };
     return knownIdents;
   }
-  optimizeAllFiles(styleMapping: StyleMapping, files: ParsedCssFile[],
-    _analyses: Array<TemplateAnalysis<keyof TemplateTypes>>, cache: SelectorCache, actions: Actions): void
+  optimizeAllFiles(
+    pass: OptimizationPass,
+    _analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
+    files: ParsedCssFile[]): void
   {
     let knownIdents = this.initKnownIdents();
-    let generators: IdentGenerators = {
-      id: new IdentGenerator(),
-      class: new IdentGenerator()
-    };
     let allIdents = new Array<RuleIdents>();
     let currentIdents: RuleIdents | undefined = undefined;
-    this.eachIdent(files, cache, (rule, selector, node) => {
+    this.eachIdent(files, pass.cache, (rule, selector, node) => {
       if (isClass(node)) {
         knownIdents.class.add(node.value);
       } else if (isIdentifier(node)) {
@@ -119,9 +112,7 @@ export class RewriteIdents implements MultiFileOptimization {
     }
 
     allIdents.forEach(ident => {
-      actions.perform(
-        new RewriteRuleIdents(styleMapping, ident, knownIdents,
-                              generators, cache));
+      pass.actions.perform(new RewriteRuleIdents(pass, ident, knownIdents));
     });
   }
 

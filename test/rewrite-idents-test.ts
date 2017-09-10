@@ -7,7 +7,7 @@ import { TestTemplate } from "./util/TestTemplate";
 import clean from "./util/clean";
 import { testOptimizationCascade, CascadeTestResult, debugResult } from "./util/assertCascade";
 import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOptions";
-import { IdentGenerator } from "../src/util/IdentGenerator";
+import { IdentGenerator, IdentGenerators } from "../src/util/IdentGenerator";
 
 function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -35,6 +35,32 @@ export class RemoveUnusedStylesTest {
     }
     assert.equal(idGen.nextIdent(), "a00");
   }
+
+  @test "can return an ident"() {
+    const idGen = new IdentGenerator();
+    assert.equal(idGen.nextIdent(), "a");
+    idGen.returnIdent("a");
+    assert.equal(idGen.nextIdent(), "a");
+  }
+
+  @test "ident generator set"() {
+    const idGens = new IdentGenerators("id", "class", "state");
+    assert.equal(idGens.nextIdent("id"), "a");
+    assert.equal(idGens.nextIdent("class"), "a");
+    assert.equal(idGens.nextIdent("state"), "a");
+    idGens.returnIdent("id", "a");
+    assert.equal(idGens.nextIdent("id"), "a");
+    assert.equal(idGens.nextIdent("class"), "b");
+    assert.equal(idGens.nextIdent("state"), "b");
+    try {
+      const errorProneGen = new IdentGenerators<string>("id", "class", "state");
+      errorProneGen.nextIdent("foo");
+      assert.fail("error expected");
+    } catch (e) {
+      assert.equal(e.message, "unknown ident namespace: foo");
+    }
+  }
+
   @test "rewrites idents"() {
     let css1 = `
       #id3 { border-width: 2px; }

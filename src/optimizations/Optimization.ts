@@ -1,10 +1,8 @@
 import { ParsedCssFile } from "../CssFile";
-import { StyleMapping } from "../StyleMapping";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { OptiCSSOptions, TemplateIntegrationOptions } from "../OpticssOptions";
 import { TemplateTypes } from "../TemplateInfo";
-import { SelectorCache } from "../query";
-import { Actions } from "../Actions";
+import { OptimizationPass } from "../Optimizer";
 
 export interface OptimizationConstructor {
   new (options: OptiCSSOptions,
@@ -13,20 +11,16 @@ export interface OptimizationConstructor {
 
 export interface SingleFileOptimization {
   optimizeSingleFile(
-    styleMapping: StyleMapping,
-    file: ParsedCssFile,
+    pass: OptimizationPass,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
-    cache: SelectorCache,
-    actions: Actions): void;
+    file: ParsedCssFile): void;
 }
 
 export interface MultiFileOptimization {
   optimizeAllFiles(
-    styleMapping: StyleMapping,
-    files: Array<ParsedCssFile>,
+    pass: OptimizationPass,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
-    cache: SelectorCache,
-    actions: Actions): void;
+    files: Array<ParsedCssFile>): void;
 }
 
 export type Optimization = SingleFileOptimization
