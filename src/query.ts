@@ -2,6 +2,7 @@ import postcss = require("postcss");
 import parseSelector, { ParsedSelector } from "./parseSelector";
 import { Element } from "./Selectable";
 import { rejects, matches } from "./Match";
+import { walkRules } from "./optimizations/util";
 
 export interface SelectorQuery {
   execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors;
@@ -64,7 +65,7 @@ export class QuerySelectorReferences implements SelectorQuery {
       main: [],
       other: {}
     };
-    container.walkRules((node) => {
+    walkRules(container, (node) => {
       let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node.selector);
       let found = parsedSelectors.filter((value: ParsedSelector) => {
          return this.targets.find((element) => {
@@ -98,7 +99,7 @@ export class QueryKeySelector implements SelectorQuery {
       main: [],
       other: {}
     };
-    container.walkRules((node) => {
+    walkRules(container, (node) => {
       let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node.selector);
       let found = parsedSelectors.filter((value: ParsedSelector) => matches(this.target.matchSelector(value)));
       found.forEach((sel) => {

@@ -10,6 +10,7 @@ import { matches } from "../Match";
 import { Actions } from "../Actions";
 import { RemoveRule } from "../actions/RemoveRule";
 import { ChangeSelector } from "../actions/ChangeSelector";
+import { walkRules } from "./util";
 
 export class RemoveUnusedStyles implements SingleFileOptimization {
   private options: OptiCSSOptions;
@@ -23,7 +24,7 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
       elements.push(...analysis.elements);
       return elements;
     }, new Array<Element>());
-    file.content.root!.walkRules((node) => {
+    walkRules(file.content.root!, (node) => {
       let parsedSelectors = cache.getParsedSelectors(node);
       let reason: string | undefined = undefined;
       let found = parsedSelectors.filter((value) => {

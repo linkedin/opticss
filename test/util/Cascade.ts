@@ -3,6 +3,7 @@ import * as postcss from "postcss";
 import * as CSSselect from "css-select";
 import * as specificity from "specificity";
 import * as propParser from "css-property-parser";
+import { walkRules } from "../../src/optimizations/util";
 
 type Document = parse5.AST.HtmlParser2.Document;
 type Node = parse5.AST.HtmlParser2.Node;
@@ -159,8 +160,11 @@ export class Cascade {
     let elements = allElements(this.html);
     let selectOpts: { strict: true };
     return parseStylesheet(this.stylesheet).then(result => {
-      result.root!.walkRules(rule => {
+      walkRules(result.root!, rule => {
         if (rule.selectors) {
+          if (rule.parent.type === "atrule" && (<postcss.AtRule>rule.parent).name.includes("keyframes")) {
+            return;
+          }
           rule.selectors.forEach(selector => {
             let s = specificity.calculate(selector)[0];
             // TODO: handle pseudo states and classes here before selecting.

@@ -14,6 +14,7 @@ import { ParsedSelector, isIdentifier, isClass } from "../parseSelector";
 import { IdentGenerator } from "../util/IdentGenerator";
 import assertNever from "../util/assertNever";
 import { KnownIdents, IdentGenerators, RuleIdents, RewriteRuleIdents, IdentNode } from "../actions/RewriteRuleIdents";
+import { walkRules } from "./util";
 
 export interface NormalizedRewriteOptions {
   id: boolean;
@@ -137,7 +138,7 @@ export class RewriteIdents implements MultiFileOptimization {
   }
   private eachSelector(files: ParsedCssFile[], cache: SelectorCache, cb: (rule: postcss.Rule, sel: ParsedSelector) => void) {
     files.forEach(file => {
-      file.content.root!.walkRules((rule) => {
+      walkRules(file.content.root!, (rule) => {
         cache.getParsedSelectors(rule).forEach(sel => {
           cb(rule, sel);
         });
