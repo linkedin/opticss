@@ -184,10 +184,11 @@ declare namespace parser {
           insensitive?: boolean;
         };
     }
+    type AttributeOperator = "=" | "~=" | "|=" | "^=" | "$=" | "*=";
     interface Attribute extends Base<string | undefined> {
         type: "attribute";
         attribute: string;
-        operator: string | undefined;
+        operator: AttributeOperator | undefined;
         insensitive?: boolean;
         ns: string;
         raws: {

@@ -1,4 +1,5 @@
 import { inspect } from "util";
+import { Memoize } from 'typescript-memoize';
 import { ParsedSelector } from "./parseSelector";
 import * as SelectorParser from "postcss-selector-parser";
 import { SourceLocation, POSITION_UNKNOWN } from "./SourceLocation";
@@ -377,15 +378,86 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
   }
 
   matchAttributeNode(node: SelectorParser.Node): Match {
-    if (isAttrNode(node)) {
-      if (node.operator === undefined) {
-        return Match.yes;
-      } else {
-        // TODO: Support for attribute operators
-        throw new Error(`Unsupported Attribute selector: ${node.toString()}`);
-      }
-    } else {
+    if (!isAttrNode(node)) {
       return Match.no;
+    }
+    let caseInsensitive = !!node.insensitive;
+    if (node.operator === undefined) {
+      return Match.yes;
+    } else {
+      if (this.value === undefined) return Match.no;
+      switch (node.operator) {
+        case "=":
+          let attrRegex = this.regexForAttrEq(caseInsensitive);
+          if (attrRegex.test(node.value!)) {
+            if (this.isAmbiguous()) {
+              return Match.maybe;
+            } else {
+              return Match.yes;
+            }
+          } else {
+            return Match.no;
+          }
+        default:
+          // TODO: Support for attribute operators
+          throw new Error(`Unsupported Attribute selector: ${node.toString()}`);
+      }
+    }
+  }
+
+  isAmbiguous(condition = this.value): boolean {
+    if (isUnknown(condition)) {
+      return true;
+    } else if (isUnknownIdentifier(condition)) {
+      return true;
+    } else if (isAbsent(condition)) {
+      return false;
+    } else if (isConstant(condition)) {
+      return false;
+    } else if (isStartsWith(condition)) {
+      return true;
+    } else if (isEndsWith(condition)) {
+      return true;
+    } else if (isStartsAndEndsWith(condition)) {
+      return true;
+    } else if (isChoice(condition)) {
+      return condition.oneOf.some(c => this.isAmbiguous(c));
+    } else if (isSet(condition)) {
+      return condition.allOf.some(c => this.isAmbiguous(c));
+    } else {
+      return assertNever(condition);
+    }
+  }
+
+  @Memoize()
+  regexForAttrEq(caseInsensitive: boolean): RegExp {
+    return new RegExp("^" + this.regexPatternForAttr(this.value) + "$", caseInsensitive ? "i" : undefined);
+  }
+  @Memoize()
+  regexPatternForAttr(condition: AttributeValue): string {
+    if (isUnknown(condition)) {
+      return "*";
+    } else if (isUnknownIdentifier(condition)) {
+      return "[^\\s]+";
+    } else if (isAbsent(condition)) {
+      return "";
+    } else if (isConstant(condition)) {
+      return condition.constant;
+    } else if (isStartsWith(condition)) {
+      let unknownPattern = condition.whitespace ? "*" : "[^\\s]*";
+      return `${condition.startsWith}${unknownPattern}`;
+    } else if (isEndsWith(condition)) {
+      let unknownPattern = condition.whitespace ? "*" : "[^\\s]*";
+      return `${unknownPattern}${condition.endsWith}`;
+    } else if (isStartsAndEndsWith(condition)) {
+      let unknownPattern = condition.whitespace ? "*" : "[^\\s]*";
+      return `${condition.startsWith}${unknownPattern}${condition.endsWith}`;
+    } else if (isChoice(condition)) {
+      return `(?:${condition.oneOf.map(c => this.regexPatternForAttr(c)).join("|")})`;
+    } else if (isSet(condition)) {
+      return condition.allOf.map(c => this.regexPatternForAttr(c)).join("\\s+");
+    } else {
+      return assertNever(condition);
     }
   }
 

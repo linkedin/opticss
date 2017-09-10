@@ -67,7 +67,8 @@
     "postcss-selector-parser": "^2.2.3",
     "regexpu-core": "^4.0.11",
     "source-map": "^0.5.6",
-    "specificity": "^0.3.1"
+    "specificity": "^0.3.1",
+    "typescript-memoize": "^1.0.0-alpha.3"
   },
   "engines": {
     "node": ">=8.0.0"
