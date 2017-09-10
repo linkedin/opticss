@@ -1,5 +1,5 @@
 import * as postcss from "postcss";
-import { Action } from "./Action";
+import { Action, stripNL } from "./Action";
 import { SourcePosition } from "../SourceLocation";
 import { Optimizations } from "../OpticssOptions";
 import { SelectorCache } from "../query";
@@ -8,12 +8,14 @@ import { SelectorCache } from "../query";
  * Changes a Rule's selector string.
  */
 export class ChangeSelector extends Action {
+  reason: string;
   rule: postcss.Rule;
   oldSelector: string;
   newSelector: string;
   cache: SelectorCache;
-  constructor(rule: postcss.Rule, newSelector: string, reason: keyof Optimizations, cache: SelectorCache) {
-    super(reason);
+  constructor(rule: postcss.Rule, newSelector: string, optimization: keyof Optimizations, reason: string, cache: SelectorCache) {
+    super(optimization);
+    this.reason = reason;
     this.rule = rule;
     this.oldSelector = rule.selector;
     this.newSelector = newSelector;
@@ -36,6 +38,6 @@ export class ChangeSelector extends Action {
     return this;
   }
   logString(): string {
-    return this.annotateLogMessage(`Changed selector from "${this.oldSelector}" to "${this.newSelector}".`);
+    return this.annotateLogMessage(`Changed selector from "${stripNL(this.oldSelector)}" to "${stripNL(this.newSelector)}" because ${this.reason}.`);
   }
 }

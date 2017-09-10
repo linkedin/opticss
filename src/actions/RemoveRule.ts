@@ -1,5 +1,5 @@
 import * as postcss from "postcss";
-import { Action } from "./Action";
+import { Action, stripNL } from "./Action";
 import { SourcePosition } from "../SourceLocation";
 import { Optimizations } from "../OpticssOptions";
 import { SelectorCache } from "../query";
@@ -9,12 +9,14 @@ import { SelectorCache } from "../query";
  * Keeps track of the parent to which it belonged and the prev sibling.
  */
 export class RemoveRule extends Action {
+  reason: string;
   parent: postcss.Container;
   prevSibling: postcss.Node | undefined;
   rule: postcss.Rule;
   cache: SelectorCache;
-  constructor(rule: postcss.Rule, reason: keyof Optimizations, cache: SelectorCache) {
-    super(reason);
+  constructor(rule: postcss.Rule, optimization: keyof Optimizations, reason: string, cache: SelectorCache) {
+    super(optimization);
+    this.reason = reason;
     this.parent = rule.parent;
     this.prevSibling = rule.prev();
     this.rule = rule;
@@ -25,8 +27,11 @@ export class RemoveRule extends Action {
     this.rule.remove();
     return this;
   }
+  get oldSelector() {
+    return this.rule.selector;
+  }
   logString(): string {
-    return this.annotateLogMessage(`Removed rule with selector "${this.rule.selector}".`);
+    return this.annotateLogMessage(`Removed rule with selector "${stripNL(this.oldSelector)}" because ${this.reason}.`);
   }
   get sourcePosition(): SourcePosition | undefined {
     if (this.rule.source && this.rule.source.start) {

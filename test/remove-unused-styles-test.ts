@@ -252,8 +252,8 @@ export class RemoveUnusedStylesTest {
       assert.equal(selectorChanged.oldSelector, "#missing, .b");
       assert.equal(selectorChanged.newSelector, ".b");
       assert.equal(selectorChanged.optimization, "removeUnusedStyles");
-      assert.equal(ruleRemoved.logString(), `${path.resolve("test1.css")}:1:1 [removeUnusedStyles] Removed rule with selector "#missing".`);
-      assert.equal(selectorChanged.logString(), `${path.resolve("test1.css")}:2:16 [removeUnusedStyles] Changed selector from "#missing, .b" to ".b".`);
+      assert.equal(ruleRemoved.logString(), `${path.resolve("test1.css")}:1:1 [removeUnusedStyles] Removed rule with selector "#missing" because no element found that matches #missing.`);
+      assert.equal(selectorChanged.logString(), `${path.resolve("test1.css")}:2:16 [removeUnusedStyles] Changed selector from "#missing, .b" to ".b" because no element found that matches #missing.`);
     });
   }
 }

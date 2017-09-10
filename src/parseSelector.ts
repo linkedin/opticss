@@ -202,12 +202,12 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
    * Stringify this `CompoundSelector` list back into CSS.
    * @return The selector string.
    */
-  toString(): string {
+  toString(shallow = false): string {
     let s = this.nodes.map(n => n.clone({spaces: {before: '', after: ''}})).join('');
    if (this.pseudoelement) {
       s += this.pseudoelement.toString();
     }
-    if (this.next) {
+    if (this.next && !shallow) {
       s += this.next.combinator.toString();
       s += this.next.selector.toString();
     }

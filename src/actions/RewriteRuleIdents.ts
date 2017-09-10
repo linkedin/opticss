@@ -1,6 +1,6 @@
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
-import { Action } from "./Action";
+import { Action, stripNL } from "./Action";
 import { SourcePosition } from "../SourceLocation";
 import { SelectorCache } from "../query";
 import { IdentGenerator } from "../util/IdentGenerator";
@@ -94,7 +94,7 @@ export class RewriteRuleIdents extends Action {
   }
 
   logString(): string {
-    return this.annotateLogMessage(`Rewrote selector's idents from "${this.oldSelector}" to "${this.newSelector}".`);
+    return this.annotateLogMessage(`Rewrote selector's idents from "${stripNL(this.oldSelector!)}" to "${stripNL(this.newSelector)}".`);
   }
 
   // TODO use analyses to exclude generated idents

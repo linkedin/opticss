@@ -12,8 +12,8 @@ export abstract class Action {
   abstract perform(): this;
   abstract logString(): string;
   abstract readonly sourcePosition: SourcePosition | undefined;
-  constructor(reason: keyof Optimizations) {
-    this.optimization = reason;
+  constructor(optimization: keyof Optimizations) {
+    this.optimization = optimization;
   }
   annotateLogMessage(message: string) {
     if (this.sourcePosition) {
@@ -30,4 +30,8 @@ export abstract class Action {
       return message;
     }
   }
+}
+
+export function stripNL(str: string): string {
+  return str.replace(/[\r\n\s]+/gm, " ");
 }

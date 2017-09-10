@@ -25,10 +25,14 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
     }, new Array<Element>());
     file.content.root!.walkRules((node) => {
       let parsedSelectors = cache.getParsedSelectors(node);
+      let reason: string | undefined = undefined;
       let found = parsedSelectors.filter((value) => {
         return value.eachCompoundSelector((selector) => {
           let found = elements.find((element) => matches(element.matchSelectorComponent(selector)));
           if (!found || selector === value.key) {
+            if (!found) {
+              reason = `no element found that matches ${selector.toString(true)}`;
+            }
             return !!found;
           } else {
             return;
@@ -36,10 +40,10 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
         });
       });
       if (found.length === 0) {
-        actions.perform(new RemoveRule(node, "removeUnusedStyles", cache));
+        actions.perform(new RemoveRule(node, "removeUnusedStyles", reason!, cache));
       } else {
         if (found.length < parsedSelectors.length) {
-          actions.perform(new ChangeSelector(node, found.join(", "), "removeUnusedStyles", cache));
+          actions.perform(new ChangeSelector(node, found.join(", "), "removeUnusedStyles", reason!, cache));
         }
       }
     });
