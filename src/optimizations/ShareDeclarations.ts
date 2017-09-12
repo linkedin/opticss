@@ -13,8 +13,6 @@ import { ParsedSelector } from "../parseSelector";
 import { Element } from "../Selectable";
 import { MergeDeclarations, Declaration } from "../actions/MergeDeclarations";
 
-type UniqueDecl = [string, string, boolean];
-
 interface SelectorInfo {
   /** The original rule node for eventual manipulation */
   rule: postcss.Rule;
@@ -49,7 +47,7 @@ interface SelectorInfo {
    * when the rule set assigns the same property multiple times as is often done
    * for progressive enhancement.
    */
-  declarations: Dictionary<UniqueDecl, postcss.Declaration>;
+  declarations: MultiDictionary<string,[string, boolean, postcss.Declaration]>;
 }
 
 interface DeclarationInfo {
@@ -80,14 +78,13 @@ class OptimizationContext {
    * the selector information that references them. The multi-mapped values
    * are in the order of selector precedence. (XXX should we resolve !important right away?)
    */
-  declarationInfoMap: MultiDictionary<UniqueDecl, DeclarationInfo>;
-  declarations: MultiDictionary<postcss.Declaration, UniqueDecl>;
+  declarationMap: Dictionary<string, MultiDictionary<string, DeclarationInfo>>;
 
   constructor(key: string, scope: RuleScope, selectorContext: string | undefined) {
     this.key = key;
     this.scopes = [scope];
     this.selectorContext = selectorContext;
-    this.declarationInfoMap = uniqDeclMultiMap();
+    this.declarationMap = new Dictionary<string, MultiDictionary<string, DeclarationInfo>>();
   }
 }
 
@@ -157,23 +154,23 @@ class DeclarationMapper {
         sourceIndex++;
         let selectors = pass.cache.getParsedSelectors(rule);
         /** all the declarations of this rule after expanding longhand properties. */
-        let declarations  = uniqDeclMultiMap<postcss.Declaration>();
+        let declarations = new MultiDictionary<string,[string, boolean, postcss.Declaration]>(undefined, undefined, true);
         rule.walkDecls(decl => {
           if (propParser.isShorthandProperty(decl.prop)) {
             let shorthandDeclarations: {[prop: string]: string} = {};
-            propParser.getShorthandComputedProperties(decl.prop).forEach(p => {
+            for (let p of allLongHands(decl.prop)) {
               shorthandDeclarations[p] = "initial"; // TODO: get the real initial value
-            });
+            }
             // TODO: normalize values
             Object.assign(
               shorthandDeclarations,
               propParser.expandShorthandProperty(decl.prop, decl.value, true));
             Object.keys(shorthandDeclarations).forEach(prop => {
-              declarations.setValue([prop, shorthandDeclarations[prop], decl.important], decl);
+              declarations.setValue(prop, [shorthandDeclarations[prop], decl.important, decl]);
             });
           } else {
             // TODO: normalize values. E.g colors of different formats, etc.
-            declarations.setValue([decl.prop, decl.value, decl.important], decl);
+            declarations.setValue(decl.prop, [decl.value, decl.important, decl]);
           }
         });
         selectors.forEach(selector => {
@@ -211,19 +208,14 @@ class DeclarationMapper {
       });
       // map properties to selector info
       let context = this.contexts.getContext(selectorInfo.scope, selectorInfo.selector.toContextString());
-      selectorInfo.declarations.keys().forEach((uniqueDecl) => {
-        let declInfo: Array<DeclarationInfo>;
-        if (context.declarationInfoMap.containsKey(uniqueDecl)) {
-          declInfo = context.declarationInfoMap.getValue(uniqueDecl);
+      selectorInfo.declarations.keys().forEach(prop => {
+        let valueInfo: MultiDictionary<string, DeclarationInfo>;
+        if (context.declarationMap.containsKey(prop)) {
+          valueInfo = context.declarationMap.getValue(prop);
         } else {
-          let di: DeclarationInfo =  {
-            selectorInfo,
-            decl: selectorInfo.declarations.getValue(uniqueDecl),
-            important: uniqueDecl[2],
-          };
-          declInfo = 
-          context.declarationInfoMap.setValue(uniqueDecl, );
-        
+          valueInfo = new MultiDictionary<string, DeclarationInfo>();
+          context.declarationMap.setValue(prop, valueInfo);
+        }
         let values = selectorInfo.declarations.getValue(prop);
         values.forEach(value => {
           valueInfo.setValue(value[0], {
@@ -239,6 +231,16 @@ class DeclarationMapper {
   }
 }
 
+interface Mergable {
+  context: OptimizationContext;
+  decls: DeclarationInfo[];
+  decl: {
+    prop: string;
+    value: string;
+    important: boolean;
+  };
+}
+
 export class ShareDeclarations implements MultiFileOptimization {
   private options: OptiCSSOptions;
   private templateOptions: TemplateIntegrationOptions;
@@ -252,19 +254,30 @@ export class ShareDeclarations implements MultiFileOptimization {
     files: Array<ParsedCssFile>
   ): void {
     let mapper = new DeclarationMapper(pass, analyses, files);
+    let mergables: Mergable[] = [];
     for (let context of mapper.contexts) {
-      for (let decl of context.declarationInfoMap.keys()) {
-        let [prop, value, important] = decl;
-        let infos = context.declarationInfoMap.getValue(decl);
-        if (infos.length > 1) {
-          this.mergeDeclarations(pass, context, infos, { prop, value, important: true });
+      for (let prop of context.declarationMap.keys()) {
+        let values = context.declarationMap.getValue(prop);
+        for (let value of values.keys()) {
+          let decls = values.getValue(value);
+          let importantDecls = decls.filter(d => d.important);
+          let normalDecls = decls.filter(d => !d.important);
+          if (importantDecls.length > 1) {
+            mergables.push({
+              context,
+              decls: importantDecls,
+              decl: { prop, value, important: true }
+            });
+          }
+          if (normalDecls.length > 1) {
+            mergables.push({
+              context,
+              decls: normalDecls,
+              decl: { prop, value, important: false }
+            });
+          }
         }
       }
-    }
-  }
-  private isDeclMergable(mapper: DeclarationMapper, info: DeclarationInfo) {
-    for (decl of info.selectorInfo.declarations.keys()) {
-      mapper. decl
     }
   }
   private mergeDeclarations(
@@ -285,22 +298,13 @@ export class ShareDeclarations implements MultiFileOptimization {
   }
 }
 
-function declToString(decl: UniqueDecl | postcss.Declaration) {
-  let prop: string, value: string, important: boolean;
-  if (Array.isArray(decl)) {
-    [prop, value, important] = decl;
-  } else {
-    prop = decl.prop;
-    value = decl.value;
-    important = decl.important;
+function allLongHands(prop: string): string[] {
+  let props = propParser.getShorthandComputedProperties(prop);
+  while (props.find(p => propParser.isShorthandProperty(p))) {
+    props = props.reduce((prev, p) => {
+      prev.splice(prev.length, 0, ...propParser.getShorthandComputedProperties(p));
+      return prev;
+    }, []);
   }
-  return `${prop}:${value}${important ? ' !important' : ''}`;
-}
-
-function uniqDeclMultiMap<T>(equals?: (a: T, b: T) => boolean, allowDuplicates?: boolean): MultiDictionary<UniqueDecl, T> {
-  return new MultiDictionary<UniqueDecl, T>(uniq => declToString(uniq), equals, allowDuplicates);
-}
-
-function declNodeMultiMap<T>(equals?: (a: T, b: T) => boolean, allowDuplicates?: boolean): MultiDictionary<postcss.Declaration, T> {
-  return new MultiDictionary<postcss.Declaration, T>(uniq => declToString(uniq), equals, allowDuplicates);
+  return props;
 }

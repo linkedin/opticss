@@ -4,6 +4,12 @@ import { OptiCSSOptions, TemplateIntegrationOptions } from "../OpticssOptions";
 import { TemplateTypes } from "../TemplateInfo";
 import { OptimizationPass } from "../Optimizer";
 
+// Optimizations TODO:
+//   * normalize values
+//   * convert initial to initial value
+//   * combine selectors that are always applied to the same elements.
+//   * combine long-hands into shorthands (sometimes add a de-opt for shared prop)
+
 export interface OptimizationConstructor {
   new (options: OptiCSSOptions,
        templateOptions: TemplateIntegrationOptions): Optimization;
