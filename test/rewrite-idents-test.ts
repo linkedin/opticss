@@ -17,7 +17,7 @@ function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTe
 }
 
 @suite("Rewrite idents")
-export class RemoveUnusedStylesTest {
+export class RewriteIdentsTest {
   @test "has an ident generator"() {
     const idGen = new IdentGenerator();
     assert.equal(idGen.nextIdent(), "a");

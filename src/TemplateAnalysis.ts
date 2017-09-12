@@ -2,6 +2,8 @@ import { SerializedTemplateInfo, TemplateTypes, TemplateInfoFactory } from "./Te
 import * as errors from "./errors";
 import { TagnameBase, AttributeBase, Element, SerializedElementInfo, Attr, Tag } from "./Selectable";
 import { SourcePosition, POSITION_UNKNOWN, SourceLocation } from "./SourceLocation";
+import { ParsedSelector } from "./parseSelector";
+import { matches } from "./Match";
 
 /*
  * This interface defines a JSON friendly serialization
@@ -162,6 +164,10 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
       this.currentElement = undefined;
     }
     return this;
+  }
+
+  querySelector(selector: ParsedSelector): Array<Element> {
+    return this.elements.filter(e => matches(e.matchSelector(selector)));
   }
 
   /**

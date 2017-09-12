@@ -336,6 +336,30 @@ export class ParsedSelector {
   toString() {
     return this.selector.toString();
   }
+
+  /**
+   * Same as toString() but having omitted the key selector.
+   * Includes the final combinator prior to the key selector.
+   */
+  toContextString() {
+    let context = "";
+    let selector: CompoundSelector = this.selector;
+    if (selector.next === undefined) return context;
+    while (true) {
+      context += selector.toString(true);
+      if (selector.next) {
+        context += selector.next.combinator.value;
+        selector = selector.next.selector;
+        if (selector.next === undefined) {
+          // it's the key selector
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+    return context;
+  }
 }
 
 /**

@@ -81,6 +81,7 @@ export class Optimizer {
       return;
     }
     Object.keys(optimizations).forEach(opt => {
+      console.log(opt);
       // TODO using any here because of a typescript type resolution bug of some sort.
       if (this.options.only && this.options.only.indexOf(<any>opt) === -1) {
         return;

@@ -20,11 +20,17 @@ export interface Optimizations {
    * that the rewriter can support.
    */
   rewriteIdents: boolean | RewritableIdents;
+
   /**
    * Whether to remove styles that are not in use according to the template
    * analysis.
    */
   removeUnusedStyles: boolean;
+
+  /**
+   * Whether to share declarations across compatible selectors.
+   */
+  shareDeclarations: boolean;
 }
 
 export interface OptiCSSOptions extends Optimizations {
@@ -50,5 +56,6 @@ export interface TemplateIntegrationOptions {
 export const DEFAULT_OPTIONS = Object.freeze<OptiCSSOptions>({
   enabled: true,
   rewriteIdents: true,
-  removeUnusedStyles: true
+  removeUnusedStyles: true,
+  shareDeclarations: true
 });

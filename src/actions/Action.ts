@@ -15,21 +15,28 @@ export abstract class Action {
   constructor(optimization: keyof Optimizations) {
     this.optimization = optimization;
   }
-  annotateLogMessage(message: string) {
-    if (this.sourcePosition) {
+  annotateLogMessage(message: string, sourcePosition = this.sourcePosition) {
+    if (sourcePosition) {
       let prefix = "";
-      if (this.sourcePosition.filename) {
-        prefix += this.sourcePosition.filename + ":";
+      if (sourcePosition.filename) {
+        prefix += sourcePosition.filename + ":";
       }
-      prefix += this.sourcePosition.line;
-      if (this.sourcePosition.column) {
-        prefix += ":" + this.sourcePosition.column;
+      prefix += sourcePosition.line;
+      if (sourcePosition.column) {
+        prefix += ":" + sourcePosition.column;
       }
       return `${prefix} [${this.optimization}] ${message}`;
     } else {
       return message;
     }
   }
+}
+
+export abstract class MultiAction extends Action{
+  logString(): string {
+    return this.logStrings().join("\n");
+  }
+  abstract logStrings(): Array<string>;
 }
 
 export function stripNL(str: string): string {
