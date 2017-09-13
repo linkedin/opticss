@@ -5,10 +5,18 @@ import { TemplateTypes } from "../TemplateInfo";
 import { OptimizationPass } from "../Optimizer";
 
 // Optimizations TODO:
-//   * normalize values
-//   * convert initial to initial value
-//   * combine selectors that are always applied to the same elements.
-//   * combine long-hands into shorthands (sometimes add a de-opt for shared prop)
+//   ✓ Remove unused styles.
+//   ✓ Rewrite idents (consider moving to end of optimization pipeline.)
+//   * Reduce to order-of-a-class specificity (ID => class)
+//   * Remove static selector scope (map class in scope to new class)
+//   * Remove dynamic selector scope (map class in scope to new class when ancestor changes)
+//   * Normalize values
+//   * Convert initial to initial value
+//   ✓ Merge declarations
+//   * Combine selectors that are always applied to the same elements and merge their declarations into a single ruleset.
+//   * Combine long-hands into shorthands (sometimes add a de-opt for shared prop) Open question: is this actually worse for browser perf?
+//   * Combine rulesets with identical declarations to a single ruleset with multiple selectors (if doesn't introduce cascade issues)
+//   * Remove redundant declarations where it's clear the properties aren't being progressively enhanced.
 
 export interface OptimizationConstructor {
   new (options: OptiCSSOptions,

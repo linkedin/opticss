@@ -22,6 +22,7 @@ export interface DeclarationInfo {
  * Merges duplicate declarations from multiple rule sets into a new rule set.
  */
 export class MergeDeclarations extends MultiAction {
+  removedRules: postcss.Rule[];
   originalDecls: DeclarationInfo[];
   decl: Declaration;
   newRule: postcss.Rule;
@@ -44,6 +45,7 @@ export class MergeDeclarations extends MultiAction {
     this.identGenerators = pass.identGenerators;
     this.decl = decl;
     this.originalDecls = originalDecls;
+    this.removedRules = [];
   }
 
   perform(): this {
@@ -51,22 +53,28 @@ export class MergeDeclarations extends MultiAction {
     this.newRule = postcss.rule({selector: `.${classname}`});
     let decl = postcss.decl(this.decl);
     this.newRule.append(decl);
-    if (this.container.append === undefined) {
-      console.log("asdf");
-    }
     this.container.append(this.newRule);
     for (let orig of this.originalDecls) {
-      orig.decl.remove();
+      if (orig.decl.parent.nodes!.filter(node => node.type === "decl").length === 1) {
+        this.removedRules.push(<postcss.Rule>orig.decl.parent);
+        orig.decl.parent.remove();
+      } else {
+        orig.decl.remove();
+      }
     }
     return this;
   }
 
   logStrings(): Array<string> {
     let logs = new Array<string>();
-    let msg = `Declaration moved into generated rule (${this.declString()}). ${this.reason}`;
-    for (let orig of this.originalDecls) {
-      logs.push(this.annotateLogMessage(msg, this.declSourcePosition(orig.decl)));
-    }
+    this.originalDecls.forEach((orig, i) => {
+      let msg = `Declaration moved into generated rule (${this.declString()}). ${this.reason} ${i + 1} of ${this.originalDecls.length}.`;
+      logs.push(this.annotateLogMessage(msg, this.nodeSourcePosition(orig.decl)));
+    });
+    this.removedRules.forEach(rule => {
+      let msg = `Removed empty rule with selector "${rule.selector}".`;
+      logs.push(this.annotateLogMessage(msg, this.nodeSourcePosition(rule)));
+    });
     return logs;
   }
 
@@ -75,15 +83,15 @@ export class MergeDeclarations extends MultiAction {
   }
 
   get sourcePosition(): SourcePosition | undefined {
-    return this.declSourcePosition(this.originalDecls[0].decl);
+    return this.nodeSourcePosition(this.originalDecls[0].decl);
   }
 
-  declSourcePosition(decl: postcss.Declaration) {
-    if (decl.source && decl.source.start) {
+  nodeSourcePosition(node: postcss.Node) {
+    if (node.source && node.source.start) {
       return {
-        filename: decl.source.input.file,
-        line: decl.source.start.line,
-        column: decl.source.start.column
+        filename: node.source.input.file,
+        line: node.source.start.line,
+        column: node.source.start.column
       };
     } else {
       return undefined;
