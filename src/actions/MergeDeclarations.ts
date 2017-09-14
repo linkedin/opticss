@@ -51,7 +51,9 @@ export class MergeDeclarations extends MultiAction {
   perform(): this {
     let classname = this.identGenerators.nextIdent("class");
     this.newRule = postcss.rule({selector: `.${classname}`});
+    this.newRule.raws = { before:' ', after: ' ', semicolon: true};
     let decl = postcss.decl(this.decl);
+    decl.raws = { before:' ', after: ' '};
     this.newRule.append(decl);
     this.container.append(this.newRule);
     for (let orig of this.originalDecls) {
@@ -78,8 +80,8 @@ export class MergeDeclarations extends MultiAction {
     return logs;
   }
 
-  declString(): string {
-    return `${this.newRule.selector} { ${this.decl.prop}: ${this.decl.value}${this.decl.important ? " !important": ""}; }`;
+  declString(selector: string = this.newRule.selector): string {
+    return `${selector} { ${this.decl.prop}: ${this.decl.value}${this.decl.important ? " !important": ""}; }`;
   }
 
   get sourcePosition(): SourcePosition | undefined {

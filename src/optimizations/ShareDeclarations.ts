@@ -12,6 +12,9 @@ import { walkRules, RuleScope } from "./util";
 import { ParsedSelector } from "../parseSelector";
 import { Element } from "../Selectable";
 import { MergeDeclarations, Declaration } from "../actions/MergeDeclarations";
+import { inspect } from "util";
+
+type StringDict = {[prop: string]: string};
 
 interface SelectorInfo {
   /** The original rule node for eventual manipulation */
@@ -82,12 +85,18 @@ class OptimizationContext {
    */
   declarationMap: Dictionary<string, MultiDictionary<string, DeclarationInfo>>;
 
+  /**
+   * A set of properties that are declared within this optimization context.
+   */
+  authoredProps: Set<string>;
+
   constructor(key: string, scope: RuleScope, root: postcss.Root, selectorContext: string | undefined) {
     this.key = key;
     this.scopes = [scope];
     this.root = root;
     this.selectorContext = selectorContext;
     this.declarationMap = new Dictionary<string, MultiDictionary<string, DeclarationInfo>>();
+    this.authoredProps = new Set();
   }
 
   getDeclarationValues(prop: string): MultiDictionary<string, DeclarationInfo> {
@@ -203,6 +212,16 @@ class DeclarationMapper {
         });
       });
     });
+
+    this.selectorTree.inorderTraversal((selectorInfo) => {
+      let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContextString());
+      // At this point we haven't expanded any properties and we shouldn't unless it's possible to find a duplicate value.
+      // So we need to enumerate all possible declared properties.
+      selectorInfo.declarations.keys().forEach(prop => {
+        context.authoredProps.add(prop);
+      });
+    });
+
     let overallIndex = 0;
     this.selectorTree.inorderTraversal((selectorInfo) => {
       selectorInfo.overallIndex = overallIndex++;
@@ -222,19 +241,13 @@ class DeclarationMapper {
         values.forEach(value => {
           let [v, important, decl] = value;
           if (propParser.isShorthandProperty(decl.prop)) {
-            let longhandDeclarations: {[prop: string]: string} = {};
-            for (let p of expandProperty(decl.prop)) {
-              longhandDeclarations[p] = "initial"; // TODO: get the real initial value
+            let longhandDeclarations = expandIfNecessary(context.authoredProps, decl.prop, decl.value);
+            if (decl.prop === "border") {
+              console.log("hi");
             }
-            // TODO: normalize values
-            Object.assign(
-              longhandDeclarations,
-              propParser.expandShorthandProperty(decl.prop, decl.value, true));
             Object.keys(longhandDeclarations).forEach(longHandProp => {
-              if (!propParser.isShorthandProperty(longHandProp)) {
-                let valueInfo = context.getDeclarationValues(longHandProp);
-                this.addDeclInfo(selectorInfo, valueInfo, longHandProp, longhandDeclarations[longHandProp], important, decl);
-              }
+              let valueInfo = context.getDeclarationValues(longHandProp);
+              this.addDeclInfo(selectorInfo, valueInfo, longHandProp, longhandDeclarations[longHandProp], important, decl);
             });
           } else {
             let valueInfo = context.getDeclarationValues(prop);
@@ -249,7 +262,7 @@ class DeclarationMapper {
   private addDeclInfo(
     selectorInfo: SelectorInfo,
     valueInfo: MultiDictionary<string, DeclarationInfo>,
-    prop: string,
+    _prop: string,
     value: string,
     important: boolean,
     decl: postcss.Declaration,
@@ -261,7 +274,7 @@ class DeclarationMapper {
       selectorInfo,
       dupeCount
     };
-    if (prop !== declInfo.decl.prop) {
+    if (propParser.isShorthandProperty(declInfo.decl.prop)) {
       if (this.shortHands.has(declInfo.decl)) {
         this.shortHands.get(declInfo.decl)!.push(declInfo);
       } else {
@@ -270,6 +283,32 @@ class DeclarationMapper {
     }
     valueInfo.setValue(value, declInfo);
   }
+}
+
+function expandIfNecessary(authoredProps: Set<string>, prop: string, value: string): StringDict {
+  if (prop === "border") {
+    console.log(value);
+  }
+  if (!propParser.isShorthandProperty(prop)) {
+    return {[prop]: value};
+  }
+  let longhandDeclarations: StringDict = {};
+  let longHandProps = expandProperty(prop);
+  let longHandValues = propParser.expandShorthandProperty(prop, value, false);
+  let directAuthored = longHandProps.some(p => authoredProps.has(p));
+  for (let p of longHandProps) {
+    let v = longHandValues[p] || "initial";
+    let expanded = expandIfNecessary(authoredProps, p, v);
+    if (Object.keys(expanded).some(key => authoredProps.has(key))) {
+      Object.assign(longhandDeclarations, expanded);
+    } else if (directAuthored) {
+      Object.assign(longhandDeclarations, {[p]: v});
+    }
+  }
+  if (Object.keys(longhandDeclarations).length === 0) {
+    longhandDeclarations[prop] = value;
+  }
+  return longhandDeclarations;
 }
 
 interface Mergable {
@@ -354,7 +393,7 @@ function canMerge(mapper: DeclarationMapper, declInfo: DeclarationInfo): boolean
   if (infos) {
     return infos.every(info => info.dupeCount > 0);
   } else {
-    throw new Error("Missing decl info for declaration!");
+    throw new Error("Missing decl info for declaration! " + inspect(declInfo));
   }
 }
 
