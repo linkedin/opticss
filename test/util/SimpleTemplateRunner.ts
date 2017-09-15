@@ -212,9 +212,6 @@ export function allElements(parent: ParentNode): Array<HtmlElement> {
 }
 
 export function walkElements(node: Node | ParentNode, cb: (node: HtmlElement) => void): void {
-  if (node === undefined) {
-    console.log("wut");
-  }
   if (isElement(node)) {
     cb(node);
   }

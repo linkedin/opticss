@@ -54,12 +54,10 @@ export function extractInlineStyleTags(html: string) {
   }) as parse5.AST.Default.Document;
   let css = "";
   walkElements(document, (element) => {
-    // console.log(element.tagName);
     if (element.tagName === "style") {
       element.childNodes.forEach(e => {
         css += (<parse5.AST.Default.TextNode>e).value;
       });
     }
   });
-  console.log(css);
 }

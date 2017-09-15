@@ -253,9 +253,6 @@ class DeclarationMapper {
           let [v, important, decl] = value;
           if (propParser.isShorthandProperty(decl.prop)) {
             let longhandDeclarations = expandIfNecessary(context.authoredProps, decl.prop, decl.value);
-            if (decl.prop === "background") {
-              console.log("hi");
-            }
             Object.keys(longhandDeclarations).forEach(longHandProp => {
               let valueInfo = context.getDeclarationValues(longHandProp);
               let declValue = this.addDeclInfo(selectorInfo, valueInfo, longHandProp, longhandDeclarations[longHandProp], important, decl);
@@ -301,9 +298,6 @@ class DeclarationMapper {
 }
 
 function expandIfNecessary(authoredProps: Set<string>, prop: string, value: string): StringDict {
-  if (prop === "border") {
-    console.log(value);
-  }
   if (!propParser.isShorthandProperty(prop)) {
     return {[prop]: value};
   }
@@ -356,7 +350,6 @@ export class ShareDeclarations implements MultiFileOptimization {
       for (let prop of context.declarationMap.keys()) {
         let values = context.declarationMap.getValue(prop);
         for (let value of values.keys()) {
-          console.log(`${prop}: ${value}`);
           let decls = values.getValue(value);
           let importantDecls = decls.filter(d => d.important);
           let normalDecls = decls.filter(d => !d.important);
