@@ -4,7 +4,7 @@ import * as propParser from "css-property-parser";
 import { BSTree, MultiDictionary, Dictionary } from "typescript-collections";
 import { MultiFileOptimization } from "./Optimization";
 import { OptiCSSOptions, TemplateIntegrationOptions } from "../OpticssOptions";
-import { OptimizationPass } from "../Optimizer";
+import { OptimizationPass } from "../OptimizationPass";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { TemplateTypes } from "../TemplateInfo";
 import { ParsedCssFile } from "../CssFile";
@@ -13,6 +13,8 @@ import { ParsedSelector } from "../parseSelector";
 import { Element } from "../Selectable";
 import { MergeDeclarations, Declaration } from "../actions/MergeDeclarations";
 import { inspect } from "util";
+import { ExpandShorthand } from "../actions/ExpandShorthand";
+import { Initializers } from "../initializers";
 
 type StringDict = {[prop: string]: string};
 
@@ -51,11 +53,19 @@ interface SelectorInfo {
    * for progressive enhancement.
    */
   declarations: MultiDictionary<string,[string, boolean, postcss.Declaration]>;
+
+  /**
+   * Maps property/value pairs that might be expanded to the declaration infos
+   * for the declaration.
+   */
+  declarationInfos: MultiDictionary<[string, string], DeclarationInfo>;
 }
 
 interface DeclarationInfo {
   selectorInfo: SelectorInfo;
   decl: postcss.Declaration;
+  prop: string;
+  value: string;
   important: boolean;
   dupeCount: number;
 }
@@ -79,7 +89,7 @@ class OptimizationContext {
   root: postcss.Root;
 
   /**
-   * map of long-hand property keys to a dictionary of values multi-mapped to
+   * map of property keys to a dictionary of values multi-mapped to
    * the selector information that references them. The multi-mapped values
    * are in the order of selector precedence. (XXX should we resolve !important right away?)
    */
@@ -196,7 +206,7 @@ class DeclarationMapper {
           analyses.forEach(analysis => {
             elements.splice(elements.length, 0, ...analysis.querySelector(selector));
           });
-          let selectorInfo = {
+          let selectorInfo: SelectorInfo = {
             rule,
             scope,
             selector,
@@ -206,7 +216,8 @@ class DeclarationMapper {
             sourceIndex,
             elements,
             overallIndex: -1,
-            declarations
+            declarations,
+            declarationInfos: new MultiDictionary()
           };
           this.selectorTree.add(selectorInfo);
         });
@@ -242,12 +253,13 @@ class DeclarationMapper {
           let [v, important, decl] = value;
           if (propParser.isShorthandProperty(decl.prop)) {
             let longhandDeclarations = expandIfNecessary(context.authoredProps, decl.prop, decl.value);
-            if (decl.prop === "border") {
+            if (decl.prop === "background") {
               console.log("hi");
             }
             Object.keys(longhandDeclarations).forEach(longHandProp => {
               let valueInfo = context.getDeclarationValues(longHandProp);
-              this.addDeclInfo(selectorInfo, valueInfo, longHandProp, longhandDeclarations[longHandProp], important, decl);
+              let declValue = this.addDeclInfo(selectorInfo, valueInfo, longHandProp, longhandDeclarations[longHandProp], important, decl);
+              selectorInfo.declarationInfos.setValue([prop, v], declValue);
             });
           } else {
             let valueInfo = context.getDeclarationValues(prop);
@@ -262,15 +274,17 @@ class DeclarationMapper {
   private addDeclInfo(
     selectorInfo: SelectorInfo,
     valueInfo: MultiDictionary<string, DeclarationInfo>,
-    _prop: string,
+    prop: string,
     value: string,
     important: boolean,
     decl: postcss.Declaration,
     dupeCount = 0
-  ) {
+  ): DeclarationInfo {
     let declInfo = {
-      important,
       decl,
+      prop,
+      value,
+      important,
       selectorInfo,
       dupeCount
     };
@@ -282,6 +296,7 @@ class DeclarationMapper {
       }
     }
     valueInfo.setValue(value, declInfo);
+    return declInfo;
   }
 }
 
@@ -322,6 +337,8 @@ interface Mergable {
 }
 
 export class ShareDeclarations implements MultiFileOptimization {
+  initializers: Array<keyof Initializers> = ["initKnownIdents"];
+
   private options: OptiCSSOptions;
   private templateOptions: TemplateIntegrationOptions;
   constructor(options: OptiCSSOptions, templateOptions: TemplateIntegrationOptions) {
@@ -360,9 +377,21 @@ export class ShareDeclarations implements MultiFileOptimization {
         }
       }
     }
+
+    let expandedProps = new Set<postcss.Declaration>();
     for (let mergable of mergables) {
       let decls = mergable.decls.filter(d => canMerge(mapper, d));
       if (decls.length > 1) {
+        decls.forEach(d => {
+          if (!expandedProps.has(d.decl)) {
+            let infos = mapper.shortHands.get(d.decl);
+            if (infos) {
+              let toExpand = infos.filter(i => i.dupeCount === 0);
+              pass.actions.perform(new ExpandShorthand(d.decl, toExpand, "shareDeclarations", "Shorthand value was not duplicated anywhere."));
+            }
+            expandedProps.add(d.decl);
+          }
+        });
         this.mergeDeclarations(pass, mergable.context, decls, mergable.decl);
       }
     }
@@ -391,7 +420,8 @@ function canMerge(mapper: DeclarationMapper, declInfo: DeclarationInfo): boolean
   }
   let infos = mapper.shortHands.get(declInfo.decl);
   if (infos) {
-    return infos.every(info => info.dupeCount > 0);
+    let duplicateCount = infos.reduce((total, info) => total + Math.min(info.dupeCount, 1), 1);
+    return duplicateCount >= Math.ceil(infos.length / 2) + 1;
   } else {
     throw new Error("Missing decl info for declaration! " + inspect(declInfo));
   }

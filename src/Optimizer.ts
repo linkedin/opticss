@@ -6,9 +6,9 @@ import { TemplateTypes } from "./TemplateInfo";
 import { optimizations, Optimization, SingleFileOptimization, MultiFileOptimization } from "./optimizations";
 import * as postcss from "postcss";
 import Concat = require("concat-with-sourcemaps");
-import { SelectorCache } from "./query";
 import { Actions } from "./Actions";
-import { IdentGenerators } from "./util/IdentGenerator";
+import { OptimizationPass } from "./OptimizationPass";
+import initializers, { Initializers } from "./initializers";
 
 export interface OptimizationResult {
   output: CssFile;
@@ -32,19 +32,6 @@ function optimizesAllFiles(optimization: Optimization): optimization is MultiFil
   }
 }
 
-export class OptimizationPass {
-  styleMapping: StyleMapping;
-  cache: SelectorCache;
-  actions: Actions;
-  identGenerators: IdentGenerators<"id" | "class">;
-  constructor() {
-    this.styleMapping = new StyleMapping();
-    this.cache = new SelectorCache();
-    this.actions = new Actions();
-    this.identGenerators = new IdentGenerators("id", "class");
-  }
-}
-
 export class Optimizer {
   /**
    * CSS Sources to be optimized.
@@ -58,6 +45,7 @@ export class Optimizer {
 
   private singleFileOptimizations: Array<SingleFileOptimization>;
   private multiFileOptimizations: Array<MultiFileOptimization>;
+  private initializers: Array<keyof Initializers>;
 
   /**
    * Creates a new OptiCSS Optimizer.
@@ -77,6 +65,7 @@ export class Optimizer {
     this.templateOptions = templateOptions;
     this.singleFileOptimizations = [];
     this.multiFileOptimizations = [];
+    this.initializers = new Array<keyof Initializers>();
     if (!this.options.enabled) {
       return;
     }
@@ -92,6 +81,11 @@ export class Optimizer {
       if (this.options[opt]) {
         let Optimization = optimizations[opt];
         let optimization = new Optimization(this.options, this.templateOptions);
+        for (let initializerName of optimization.initializers) {
+          if (!this.initializers.includes(initializerName)) {
+            this.initializers.push(initializerName);
+          }
+        }
         if (optimizesSingleFiles(optimization)) {
           this.singleFileOptimizations.push(optimization);
         }
@@ -110,13 +104,25 @@ export class Optimizer {
     this.analyses.push(analysis);
   }
 
-  private optimizeSingleFile(pass: OptimizationPass, source: CssFile): Promise<ParsedCssFile> {
-    return parseCss(source).then(file => {
-      this.singleFileOptimizations.forEach((optimization) => {
-        optimization.optimizeSingleFile(pass, this.analyses, file);
-      });
-      return file;
+  private initialize(pass: OptimizationPass, files: Array<ParsedCssFile>) {
+    this.initializers.forEach(initializerName => {
+      initializers[initializerName](pass, this.analyses, files, this.options, this.templateOptions);
     });
+  }
+
+  private parseFiles(sources: Array<CssFile>): Promise<Array<ParsedCssFile>> {
+    let promises = new Array<Promise<ParsedCssFile>>();
+    for (let source of sources) {
+      promises.push(parseCss(source));
+    }
+    return Promise.all(promises);
+  }
+
+  private optimizeSingleFile(pass: OptimizationPass, file: ParsedCssFile): Promise<ParsedCssFile> {
+    this.singleFileOptimizations.forEach((optimization) => {
+      optimization.optimizeSingleFile(pass, this.analyses, file);
+    });
+    return Promise.resolve(file);
   }
 
   private optimizeAllFiles(pass: OptimizationPass, files: Array<ParsedCssFile>): Promise<Array<ParsedCssFile>> {
@@ -128,9 +134,12 @@ export class Optimizer {
 
   optimize(outputFilename: string): Promise<OptimizationResult> {
     let pass = new OptimizationPass();
-    let promises = this.sources.map(source => this.optimizeSingleFile(pass, source));
-
-    return Promise.all(promises).then(files => {
+    return this.parseFiles(this.sources).then(parsedFiles => {
+      this.initialize(pass, parsedFiles);
+      return parsedFiles;
+    }).then(parsedFiles => {
+      return Promise.all(parsedFiles.map(cssFile => this.optimizeSingleFile(pass, cssFile)));
+    }).then(files => {
       return this.optimizeAllFiles(pass, files);
     }).then((files) => {
       let output = new Concat(true, outputFilename, "\n");

@@ -8,10 +8,13 @@ import { matches } from "../Match";
 import { RemoveRule } from "../actions/RemoveRule";
 import { ChangeSelector } from "../actions/ChangeSelector";
 import { walkRules } from "./util";
-import { OptimizationPass } from "../Optimizer";
+import { OptimizationPass } from "../OptimizationPass";
+import { Initializers } from "../initializers";
 
 export class RemoveUnusedStyles implements SingleFileOptimization {
+  initializers: Array<keyof Initializers> = [];
   private options: OptiCSSOptions;
+
   constructor(options: OptiCSSOptions) {
     this.options = options;
   }

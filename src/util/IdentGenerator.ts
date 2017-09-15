@@ -22,30 +22,47 @@ function increment(counters: Array<number>, i: number) {
 export class IdentGenerator {
   lastIdent: string;
   returnedIdents: Array<string>;
+  reservedIdents: Set<string>;
   private counters: Array<number>;
   constructor() {
     this.counters = [0];
     this.returnedIdents = [];
+    this.reservedIdents = new Set();
   }
   nextIdent(): string {
     if (this.returnedIdents.length > 0) {
       return this.returnedIdents.pop()!;
     }
-    this.lastIdent = this.counters.map(identChar).join("");
+    let ident: string;
+    while (this.isReserved(ident = this.generateNextIdent())) {}
+    return this.lastIdent = ident;
+  }
+  private generateNextIdent() {
+    let nextIdent = this.counters.map(identChar).join("");
     let carry = false;
     for (let i = this.counters.length - 1; i >= 0; i--) {
       carry = increment(this.counters, i);
       if (!carry) { break; }
     }
     if (carry) this.counters.push(0);
-    return this.lastIdent;
+    return nextIdent;
   }
   /**
    * When a generated ident is no longer in use, it should be returned
    * so it can be re-used.
    */
-  returnIdent(ident: string) {
+  returnIdent(ident: string): void {
     this.returnedIdents.push(ident);
+  }
+
+  reserve(...idents: string[]): void {
+    for (let ident of idents) {
+      this.reservedIdents.add(ident);
+    }
+  }
+
+  isReserved(ident: string): boolean {
+    return this.reservedIdents.has(ident);
   }
 }
 
@@ -59,6 +76,10 @@ export class IdentGenerators<Namespace extends string = string> {
       this.namespaces[ns] = new IdentGenerator();
     });
   }
+  /**
+   * Look up the ident generator for the given namespace. Raise an error if no
+   * no such namespace exists.
+   */
   get(namespace: Namespace): IdentGenerator {
     let generator = this.namespaces[namespace];
     if (generator) {
@@ -67,10 +88,24 @@ export class IdentGenerators<Namespace extends string = string> {
       throw new Error("unknown ident namespace: " + namespace);
     }
   }
+  /**
+   * Generate an ident from the given namespace.
+   */
   nextIdent(namespace: Namespace) {
     return this.get(namespace).nextIdent();
   }
+  /**
+   * Return an ident to be generated for the next requested ident.
+   */
   returnIdent(namespace: Namespace, ident: string) {
     this.get(namespace).returnIdent(ident);
+  }
+  /**
+   * Reserved idents are never output by the ident generator.
+   * @param namespace The namespace that ident should come from.
+   * @param idents The ident that should not be generated.
+   */
+  reserve(namespace: Namespace, ...idents: string[]) {
+    this.get(namespace).reserve(...idents);
   }
 }

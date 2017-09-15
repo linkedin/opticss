@@ -59,3 +59,48 @@ export const DEFAULT_OPTIONS = Object.freeze<OptiCSSOptions>({
   removeUnusedStyles: true,
   shareDeclarations: true
 });
+
+export interface NormalizedRewriteOptions {
+  id: boolean;
+  class: boolean;
+  omitIdents: {
+    id: Array<string>;
+    class: Array<string>;
+  };
+}
+
+export function rewriteOptions(
+  appOptions: boolean | RewritableIdents,
+  templateOptions: RewritableIdents
+): NormalizedRewriteOptions {
+  let combined: NormalizedRewriteOptions = {
+    id: true,
+    class: true,
+    omitIdents: { id: [], class: []}
+  };
+  if (appOptions === false) {
+    mergeIntoRewriteOpts(combined, {id: false, class: false});
+  } else if (appOptions === true) {
+    mergeIntoRewriteOpts(combined, templateOptions);
+  } else {
+    mergeIntoRewriteOpts(combined, appOptions);
+    mergeIntoRewriteOpts(combined, templateOptions);
+  }
+  return combined;
+}
+
+function mergeIntoRewriteOpts(
+  normalized: NormalizedRewriteOptions,
+  opts: RewritableIdents
+): void {
+  normalized.id = normalized.id && opts.id;
+  normalized.class = normalized.class && opts.class;
+  if (opts.omitIdents && opts.omitIdents.id) {
+    normalized.omitIdents.id =
+      normalized.omitIdents.id.concat(opts.omitIdents.id);
+  }
+  if (opts.omitIdents && opts.omitIdents.class) {
+    normalized.omitIdents.class =
+      normalized.omitIdents.class.concat(opts.omitIdents.class);
+  }
+}

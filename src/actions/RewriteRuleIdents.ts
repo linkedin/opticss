@@ -2,11 +2,9 @@ import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { Action, stripNL } from "./Action";
 import { SourcePosition } from "../SourceLocation";
-import { IdentGenerator } from "../util/IdentGenerator";
 import { ParsedSelector, isClass, isIdentifier } from "../parseSelector";
-import { OptimizationPass } from "../Optimizer";
-
-export type IdentNode = selectorParser.Identifier | selectorParser.ClassName;
+import { OptimizationPass } from "../OptimizationPass";
+import { IdentNode } from "../optimizations/util";
 
 export interface RuleIdents {
   rule: postcss.Rule;
@@ -32,13 +30,11 @@ export class RewriteRuleIdents extends Action {
   constructor(
     pass: OptimizationPass,
     ident: RuleIdents,
-    knownIdents: KnownIdents,
     reason = "rewriteIdents")
   {
     super(reason);
     this.pass = pass;
     this.ident = ident;
-    this.knownIdents = knownIdents;
     this.oldSelector = undefined;
   }
   get sourcePosition(): SourcePosition | undefined {
@@ -74,7 +70,7 @@ export class RewriteRuleIdents extends Action {
     if (!toAttr) {
       toAttr = {
         name: type,
-        value: this.nextIdent(type)
+        value: this.pass.identGenerators.nextIdent(type)
       };
       this.pass.styleMapping.rewriteAttribute(fromAttr, toAttr);
     }
@@ -86,15 +82,4 @@ export class RewriteRuleIdents extends Action {
   }
 
   // TODO use analyses to exclude generated idents
-  private nextIdent(
-    type: keyof KnownIdents
-  ): string {
-    let generator = this.pass.identGenerators.get(type);
-    let known = this.knownIdents[type];
-    let nextId = generator.nextIdent();
-    while (known.has(nextId)) {
-      nextId = generator.nextIdent();
-    }
-    return nextId;
-  }
 }

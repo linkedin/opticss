@@ -2,7 +2,6 @@ import { suite, test, skip, only, slow, timeout } from "mocha-typescript";
 import { assert } from "chai";
 import * as path from "path";
 import * as fs from "fs";
-import * as cssSize from "css-size";
 import * as parse5 from "parse5";
 
 import { OptimizationResult } from "../src/Optimizer";
@@ -47,22 +46,6 @@ export class IntegrationTests {
       // });
     });
   }
-}
-
-function debugSize(inputCSS: string, result: CascadeTestResult): Promise<void> {
-  let testedMarkup = result.testedTemplates[0].testedMarkups[0];
-  let inputHtml = testedMarkup.originalBody;
-  let optimizedHtml = Promise.resolve({css: testedMarkup.optimizedBody});
-  const optimizedCss = Promise.resolve({css: result.optimization.output.content.toString()});
-  let templatePromise = cssSize.table(inputHtml, {}, () => optimizedHtml).then((table) => {
-    console.log("Markup");
-    console.log(table);
-  });
-  let cssPromise = cssSize.table(inputCSS, {}, () => optimizedCss).then((table) => {
-    console.log("Styles");
-    console.log(table);
-  });
-  return Promise.all([cssPromise, templatePromise]).then(() => {});
 }
 
 export function extractInlineStyleTags(html: string) {

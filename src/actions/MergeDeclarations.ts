@@ -4,7 +4,7 @@ import { SourcePosition } from "../SourceLocation";
 import { Optimizations } from "../OpticssOptions";
 import { SelectorCache } from "../query";
 import { ParsedSelector } from "../parseSelector";
-import { OptimizationPass } from "../Optimizer";
+import { OptimizationPass } from "../OptimizationPass";
 import { IdentGenerators } from "../util/IdentGenerator";
 
 export interface Declaration {
@@ -57,6 +57,9 @@ export class MergeDeclarations extends MultiAction {
     this.newRule.append(decl);
     this.container.append(this.newRule);
     for (let orig of this.originalDecls) {
+      if (orig.decl.parent === undefined) {
+        continue;
+      }
       if (orig.decl.parent.nodes!.filter(node => node.type === "decl").length === 1) {
         this.removedRules.push(<postcss.Rule>orig.decl.parent);
         orig.decl.parent.remove();
@@ -86,17 +89,5 @@ export class MergeDeclarations extends MultiAction {
 
   get sourcePosition(): SourcePosition | undefined {
     return this.nodeSourcePosition(this.originalDecls[0].decl);
-  }
-
-  nodeSourcePosition(node: postcss.Node) {
-    if (node.source && node.source.start) {
-      return {
-        filename: node.source.input.file,
-        line: node.source.start.line,
-        column: node.source.start.column
-      };
-    } else {
-      return undefined;
-    }
   }
 }

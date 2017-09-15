@@ -2,7 +2,8 @@ import { ParsedCssFile } from "../CssFile";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { OptiCSSOptions, TemplateIntegrationOptions } from "../OpticssOptions";
 import { TemplateTypes } from "../TemplateInfo";
-import { OptimizationPass } from "../Optimizer";
+import { OptimizationPass } from "../OptimizationPass";
+import { Initializers } from "../initializers";
 
 // Optimizations TODO:
 //   ✓ Remove unused styles.
@@ -24,6 +25,7 @@ export interface OptimizationConstructor {
 }
 
 export interface SingleFileOptimization {
+  readonly initializers: Array<keyof Initializers>;
   optimizeSingleFile(
     pass: OptimizationPass,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
@@ -31,6 +33,7 @@ export interface SingleFileOptimization {
 }
 
 export interface MultiFileOptimization {
+  readonly initializers: Array<keyof Initializers>;
   optimizeAllFiles(
     pass: OptimizationPass,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,

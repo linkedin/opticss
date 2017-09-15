@@ -6,6 +6,7 @@
  */
 import { SourcePosition } from "../SourceLocation";
 import { Optimizations } from "../optimizations";
+import * as postcss from "postcss";
 
 export abstract class Action {
   optimization: string;
@@ -28,6 +29,18 @@ export abstract class Action {
       return `${prefix} [${this.optimization}] ${message}`;
     } else {
       return message;
+    }
+  }
+
+  nodeSourcePosition(node: postcss.Node) {
+    if (node.source && node.source.start) {
+      return {
+        filename: node.source.input.file,
+        line: node.source.start.line,
+        column: node.source.start.column
+      };
+    } else {
+      return undefined;
     }
   }
 }
