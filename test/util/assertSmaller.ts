@@ -3,16 +3,51 @@ import * as assert from "assert";
 import { CascadeTestResult } from "./assertCascade";
 import { inspect } from "util";
 
-function assertDelta(cssDelta: cssSize.Result<number>, templateDelta: cssSize.Result<number>, type: keyof cssSize.Result<number>) {
+function assertDelta(type: keyof cssSize.Result<number>, cssDelta: cssSize.Result<number>, templateDelta: cssSize.Result<number>, assertions?: DeltaAssertions) {
     let delta = cssDelta[type].difference + templateDelta[type].difference;
-    assert(delta > 0, `Expected ${type} size difference of CSS + Template to be smaller; was ${-delta} bytes bigger.
-    CSS Delta:
-    ${inspect(cssDelta)}
-    Template Delta:
-    ${inspect(templateDelta)}`);
+    let originalTotal = (cssDelta[type].original + templateDelta[type].original);
+    let processedTotal = (cssDelta[type].processed + templateDelta[type].processed);
+    let fraction = (originalTotal - processedTotal) / originalTotal;
+    let assertion: DeltaAssertion = assertions && assertions[type] || { atLeastSmallerThan: 1 };
+    try {
+      if (assertion.skip) {
+        return;
+      }
+      if (assertion.notBiggerThan !== undefined) {
+        if (assertion.notBiggerThan < 1) {
+          assert(-fraction <= assertion.notBiggerThan, `Expected ${type} size ratio of CSS + Template to not be bigger than ${assertion.notBiggerThan}; was ${fraction*100}% bigger.`);
+        } else {
+          assert(-delta <= assertion.notBiggerThan , `Expected ${type} size difference of CSS + Template to not be bigger than ${assertion.notBiggerThan}; was ${-delta} bytes bigger.`);
+        }
+      } else if (assertion.atLeastSmallerThan !== undefined) {
+        if (assertion.atLeastSmallerThan < 1) {
+          assert(fraction >= assertion.atLeastSmallerThan, `Expected ${type} size ratio of CSS + Template to be smaller than ${assertion.atLeastSmallerThan}; was ${fraction*100}% smaller.`);
+        } else {
+          assert(delta >= assertion.atLeastSmallerThan , `Expected ${type} size difference of CSS + Template to be smaller than ${assertion.atLeastSmallerThan} bytes; was ${delta} bytes bigger.`);
+        }
+      }
+    } catch (e) {
+      e.message += "\nCSS Delta:\n" +
+                   inspect(cssDelta) + 
+                   "\nTemplate Delta:\n" +
+                   inspect(templateDelta);
+      throw e;
+    }
 }
 
-export function assertSmaller(inputCSS: string, result: CascadeTestResult): Promise<void> {
+export interface DeltaAssertion {
+  notBiggerThan?: number;
+  atLeastSmallerThan?: number;
+  skip?: boolean;
+}
+
+export interface DeltaAssertions {
+  uncompressed?: DeltaAssertion;
+  gzip?: DeltaAssertion;
+  brotli?: DeltaAssertion;
+}
+
+export function assertSmaller(inputCSS: string, result: CascadeTestResult, assertions?: DeltaAssertions): Promise<void> {
   let testedMarkup = result.testedTemplates[0].testedMarkups[0];
   let inputHtml = testedMarkup.originalBody;
   let optimizedHtml = Promise.resolve({css: testedMarkup.optimizedBody});
@@ -20,9 +55,9 @@ export function assertSmaller(inputCSS: string, result: CascadeTestResult): Prom
   let templatePromise = cssSize.numeric(inputHtml, {}, () => optimizedHtml);
   let cssPromise = cssSize.numeric(inputCSS, {}, () => optimizedCss);
   return Promise.all([cssPromise, templatePromise]).then(([cssDelta, templateDelta]) => {
-    assertDelta(cssDelta, templateDelta, "uncompressed");
-    assertDelta(cssDelta, templateDelta, "gzip");
-    assertDelta(cssDelta, templateDelta, "brotli");
+    assertDelta("uncompressed", cssDelta, templateDelta, assertions);
+    assertDelta("gzip", cssDelta, templateDelta, assertions);
+    assertDelta("brotli", cssDelta, templateDelta, assertions);
   });
 }
 

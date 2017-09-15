@@ -50,7 +50,7 @@ export class ShareDeclarationsTest {
       }).then(() => {
         debugSize(css1, result);
         // TODO: verify mapping & template rewrite and cascade.
-        // return assertSmaller(css1, result);
+        return assertSmaller(css1, result, {gzip: { notBiggerThan: 1}});
       });
     });
   }
@@ -86,7 +86,7 @@ export class ShareDeclarationsTest {
       }).then(() => {
         debugSize(css1, result);
         // TODO: verify mapping & template rewrite and cascade.
-        // return assertSmaller(css1, result);
+        return assertSmaller(css1, result);
       });
     });
   }
@@ -110,7 +110,7 @@ export class ShareDeclarationsTest {
         });
       }).then(() => {
         // TODO: verify mapping & template rewrite and cascade.
-        // return assertSmaller(css1, result);
+        return assertSmaller(css1, result);
       });
     });
   }
@@ -140,7 +140,7 @@ export class ShareDeclarationsTest {
               .e { background-attachment: fixed; }
               .g { background-color: red; }`);
       // TODO: verify mapping & template rewrite and cascade.
-      // return assertSmaller(css1, result);
+      return assertSmaller(css1, result, {gzip: { notBiggerThan: 5}});
     });
   }
 }
