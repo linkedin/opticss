@@ -8,6 +8,7 @@ import clean from "./util/clean";
 import { testOptimizationCascade, CascadeTestResult, debugResult } from "./util/assertCascade";
 import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOptions";
 import { IdentGenerator, IdentGenerators } from "../src/util/IdentGenerator";
+import { Element, Tagname, Attribute } from "../src/Selectable";
 
 function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -79,8 +80,7 @@ export class RewriteIdentsTest {
     return testRewriteIdents({id: true, class: true}, css1, template).then(result => {
       let logString = result.optimization.actions.performed[0].logString();
       assert.equal(logString, `${path.resolve("test1.css")}:2:7 [rewriteIdents] Rewrote selector's idents from "#id3" to "#a".`);
-      let replaced = Object.keys(result.optimization.styleMapping.replacedAttributes);
-      assert.equal(replaced.length, 7);
+      assert.equal(result.optimization.styleMapping.replacedAttributeCount(), 7);
       // debugResult(css1, result);
     });
   }
@@ -145,12 +145,14 @@ export class RewriteIdentsTest {
     `);
     return testRewriteIdents({id: true, class: true}, css1, template).then(result => {
       // debugResult(css1, result);
-      let replacements = result.optimization.styleMapping.replacedAttributes;
-      let rewrites = Object.keys(replacements);
-      assert.equal(rewrites.length, 7);
-      rewrites.forEach(rw => {
-        assert.notEqual(replacements[rw].value, "a");
-      });
+      assert.equal(result.optimization.styleMapping.replacedAttributeCount(), 7);
+      let tag = new Tagname({ constant: "div" });
+      let classAttr = new Attribute("class", {constant: "a"});
+      let mapping = result.optimization.styleMapping.rewriteMapping(new Element(tag, [classAttr]));
+      if (mapping) {
+        assert.deepEqual(mapping.dynamicClasses, {b: {and: [0]}});
+        assert.deepEqual(mapping.inputClassnames[0], "a");
+      }
     });
   }
 }

@@ -57,7 +57,7 @@ export class SimpleTemplateRewriter {
           }
         }
       });
-      let classMapping = this.styleMapping.classMapping(elementInfo);
+      let classMapping = this.styleMapping.rewriteMapping(elementInfo);
       if (classMapping) {
         let classAttr = element.attrs.find(a => isClassAttr(a));
         let presentClassnames = new Set(classAttr ? classAttr.value.split(/\s+/) : []);

@@ -1,4 +1,10 @@
 import {
+  Dictionary,
+} from "typescript-collections";
+import {
+  IdentityDictionary
+} from "./util/IdentityDictionary";
+import {
   Attr,
   Attribute as SelectableAttribute,
   ElementInfo,
@@ -53,22 +59,32 @@ export interface Attribute {
 }
 
 export class StyleMapping {
-  replacedAttributes: {
-    [attrKey: string]: Attribute;
-  };
+  private replacedAttributes: Dictionary<Attribute, Attribute>;
+  private sourceAttributes: IdentityDictionary<Attribute>;
+  private optimizedAttributes: IdentityDictionary<Attribute>;
   constructor() {
-    this.replacedAttributes = {};
-  }
-  attrToKey(attr: Attribute): string {
-    return `${attr.ns || ''}|${attr.name}=${attr.value}`;
+    this.replacedAttributes = attributeDictionary();
+    this.sourceAttributes = new IdentityDictionary(attrToKey);
+    this.optimizedAttributes = new IdentityDictionary(attrToKey);
   }
   rewriteAttribute(from: Attribute, to: Attribute): void {
-    this.replacedAttributes[this.attrToKey(from)] = to;
+    if (this.optimizedAttributes.has(from)) {
+      this.optimizedAttributes.update(from, (actual) => {
+        actual.ns = to.ns;
+        actual.name = to.name;
+        actual.value = to.value;
+      });
+    } else {
+      this.replacedAttributes.setValue(
+        this.sourceAttributes.add(from),
+        this.optimizedAttributes.add(to)
+      );
+    }
   }
   getRewriteOf(from: Attribute): Attribute | undefined {
-    return this.replacedAttributes[this.attrToKey(from)];
+    return this.replacedAttributes.getValue(from);
   }
-  classMapping(element: ElementInfo): RewriteMapping | null {
+  rewriteMapping(element: ElementInfo): RewriteMapping | null {
     let classAttr = element.attributes.find((a) => isClassAttr(a));
     let inputClassnames = classAttr ? classValues(classAttr) : [];
     let dynamicClasses: DynamicClasses = { };
@@ -85,6 +101,9 @@ export class StyleMapping {
       staticClasses: [],
       dynamicClasses
     };
+  }
+  replacedAttributeCount(): number {
+    return this.replacedAttributes.size();
   }
 }
 
@@ -120,4 +139,12 @@ function stringsForValue(v: FlattenedAttributeValue): string[] {
 
 function isClassAttr(attr: Attr): boolean {
   return attr.namespaceURL === null && attr.name === "class";
+}
+
+function attributeDictionary<V>() {
+  return new Dictionary<Attribute, V>(attrToKey);
+}
+
+function attrToKey(attr: Attribute): string {
+  return `${attr.ns || ''}|${attr.name}=${attr.value}`;
 }
