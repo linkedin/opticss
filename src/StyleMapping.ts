@@ -19,17 +19,7 @@ import {
   isFlattenedSet
  } from "./Selectable";
 import assertNever from "./util/assertNever";
-
-export interface AndExpression<V> {
-  and: Array<V | BooleanExpression<V>>;
-}
-export interface OrExpression<V> {
-  or: Array<V | BooleanExpression<V>>;
-}
-export interface NotExpression<V> {
-  not: V | BooleanExpression<V>;
-}
-export type BooleanExpression<V> = AndExpression<V> | OrExpression<V> | NotExpression<V>;
+import { BooleanExpression, AndExpression, isOrExpression } from "./util/BooleanExpression";
 
 export interface DynamicClasses {
   [classname: string]: BooleanExpression<number>;

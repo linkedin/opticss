@@ -60,6 +60,8 @@ export {
   AndExpression,
   OrExpression,
   NotExpression,
+} from "./util/BooleanExpression";
+export {
   StyleMapping,
   RewriteMapping
 } from "./StyleMapping";

@@ -2,11 +2,11 @@ import * as parse5 from "parse5";
 
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import { allElements, bodyContents, bodyElement } from "./SimpleTemplateRunner";
-import { StyleMapping, RewriteMapping, AndExpression, OrExpression, NotExpression } from "../../src/StyleMapping";
+import { StyleMapping, RewriteMapping } from "../../src/StyleMapping";
 import { AttributeValueParser } from "./AttributeValueParser";
 import { Tagname, Element, Attr, AttributeNS, Attribute } from "../../src/Selectable";
 import { POSITION_UNKNOWN } from "../../src/SourceLocation";
-import { BooleanExpression } from "../../src/index";
+import { BooleanExpression, AndExpression, OrExpression, NotExpression } from "../../src/util/BooleanExpression";
 import assertNever from "../../src/util/assertNever";
 import { TestTemplate } from "./TestTemplate";
 
