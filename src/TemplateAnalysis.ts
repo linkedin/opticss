@@ -4,6 +4,7 @@ import { TagnameBase, AttributeBase, Element, SerializedElementInfo, Attr, Tag }
 import { SourcePosition, POSITION_UNKNOWN, SourceLocation } from "./SourceLocation";
 import { ParsedSelector } from "./parseSelector";
 import { matches } from "./Match";
+import { ObjectDictionary } from "./util/UtilityTypes";
 
 /*
  * This interface defines a JSON friendly serialization
@@ -164,6 +165,23 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
       this.currentElement = undefined;
     }
     return this;
+  }
+
+  constants(attrTypes: Set<string>): ObjectDictionary<Set<string>> {
+    let found: ObjectDictionary<Set<string>> = {};
+    attrTypes.forEach(k => {
+      found[k] = new Set<string>();
+    });
+    for (let element of this.elements) {
+      for (let attr of element.attributes) {
+        if (attrTypes.has(attr.name)) {
+          for (let constant of attr.constants()) {
+            found[attr.name].add(constant);
+          }
+        }
+      }
+    }
+    return found;
   }
 
   querySelector(selector: ParsedSelector): Array<Element> {

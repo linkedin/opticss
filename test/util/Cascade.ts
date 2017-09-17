@@ -5,6 +5,7 @@ import * as specificity from "specificity";
 import * as propParser from "css-property-parser";
 import { inspect } from "util";
 import { walkRules } from "../../src/optimizations/util";
+import { fullyExpandShorthandProperty, expandPropertyName } from "../../src/util/shorthandProperties";
 
 type Document = parse5.AST.HtmlParser2.Document;
 type Node = parse5.AST.HtmlParser2.Node;
@@ -131,13 +132,13 @@ export class ElementStyle {
 function stylesForDeclaration(decl: postcss.Declaration): ComputedStyle {
   if (propParser.isShorthandProperty(decl.prop)) {
     let style: ComputedStyle = {};
-    let expandedProps = propParser.getShorthandComputedProperties(decl.prop);
-    expandedProps.forEach(prop => {
+    let expandedProps = expandPropertyName(decl.prop, true);
+    for (let prop of expandedProps) {
       style[prop] = "initial";
-    });
+    }
     Object.assign(
       style,
-      propParser.expandShorthandProperty(decl.prop, decl.value)
+      fullyExpandShorthandProperty(decl.prop, decl.value)
     );
     return style;
   } else {
@@ -162,7 +163,7 @@ export class Cascade {
   }
   perform(): Promise<Map<HtmlElement, ElementStyle>> {
     let map = new Map<HtmlElement, ElementStyle>();
-    let elements = allElements(this.html);
+    let bodyEl = bodyElement(this.html)!;
     let selectOpts: { strict: true };
     return parseStylesheet(this.stylesheet).then(result => {
       walkRules(result.root!, rule => {
@@ -174,7 +175,7 @@ export class Cascade {
             let s = specificity.calculate(selector)[0];
             // TODO: handle pseudo states and classes here before selecting.
             try{
-            let matchedElements = CSSselect(selector, elements, selectOpts);
+            let matchedElements = CSSselect(selector, bodyEl, selectOpts);
             // console.log(`selector "${selector}" matched ${matchedElements.length} elements`);
             matchedElements.forEach(e => {
               let style = map.get(e);

@@ -9,7 +9,7 @@ import assertNever from "../util/assertNever";
 
 export default function initKnownIdents(
   pass: OptimizationPass,
-  _analyses: TemplateAnalysis<keyof TemplateTypes>[],
+  analyses: TemplateAnalysis<keyof TemplateTypes>[],
   files: ParsedCssFile[],
   options: OptiCSSOptions,
   templateOptions: TemplateIntegrationOptions
@@ -26,4 +26,12 @@ export default function initKnownIdents(
       assertNever(node);
     }
   });
+  for (let analysis of analyses) {
+    let allConstants = analysis.constants(new Set(["class", "id"]));
+    for (let constantType of Object.keys(allConstants)) {
+      for (let constant of allConstants[constantType]) {
+        pass.identGenerators.reserve(<"class" | "id">constantType, constant);
+      }
+    }
+  }
 }

@@ -15,8 +15,7 @@ import { MergeDeclarations, Declaration } from "../actions/MergeDeclarations";
 import { inspect } from "util";
 import { ExpandShorthand } from "../actions/ExpandShorthand";
 import { Initializers } from "../initializers";
-
-type StringDict = {[prop: string]: string};
+import { expandIfNecessary } from "../util/shorthandProperties";
 
 interface SelectorInfo {
   /** The original rule node for eventual manipulation */
@@ -297,29 +296,6 @@ class DeclarationMapper {
   }
 }
 
-function expandIfNecessary(authoredProps: Set<string>, prop: string, value: string): StringDict {
-  if (!propParser.isShorthandProperty(prop)) {
-    return {[prop]: value};
-  }
-  let longhandDeclarations: StringDict = {};
-  let longHandProps = expandProperty(prop);
-  let longHandValues = propParser.expandShorthandProperty(prop, value, false);
-  let directAuthored = longHandProps.some(p => authoredProps.has(p));
-  for (let p of longHandProps) {
-    let v = longHandValues[p] || "initial";
-    let expanded = expandIfNecessary(authoredProps, p, v);
-    if (Object.keys(expanded).some(key => authoredProps.has(key))) {
-      Object.assign(longhandDeclarations, expanded);
-    } else if (directAuthored) {
-      Object.assign(longhandDeclarations, {[p]: v});
-    }
-  }
-  if (Object.keys(longhandDeclarations).length === 0) {
-    longhandDeclarations[prop] = value;
-  }
-  return longhandDeclarations;
-}
-
 interface Mergable {
   context: OptimizationContext;
   decls: DeclarationInfo[];
@@ -392,7 +368,7 @@ export class ShareDeclarations implements MultiFileOptimization {
   private mergeDeclarations(
     pass: OptimizationPass,
     context: OptimizationContext,
-    decls: Array<DeclarationInfo>,
+    declInfos: Array<DeclarationInfo>,
     decl: Declaration
   ) {
     let scope = context.scopes[0];
@@ -401,7 +377,7 @@ export class ShareDeclarations implements MultiFileOptimization {
       pass,
       container,
       decl,
-      decls.map(id => ({selector: id.selectorInfo.selector, decl: id.decl})),
+      declInfos.map(declInfo => ({selector: declInfo.selectorInfo.selector, decl: declInfo.decl})),
       "shareDeclarations",
       "Duplication"));
   }
@@ -418,16 +394,4 @@ function canMerge(mapper: DeclarationMapper, declInfo: DeclarationInfo): boolean
   } else {
     throw new Error("Missing decl info for declaration! " + inspect(declInfo));
   }
-}
-
-function expandProperty(prop: string, recursively = false): string[] {
-  let props = propParser.getShorthandComputedProperties(prop);
-  if (!recursively) return props;
-  while (props.find(p => propParser.isShorthandProperty(p))) {
-    props = props.reduce((prev, p) => {
-      prev.splice(prev.length, 0, ...propParser.getShorthandComputedProperties(p));
-      return prev;
-    }, []);
-  }
-  return props;
 }

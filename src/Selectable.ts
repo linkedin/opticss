@@ -219,6 +219,7 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
   private _namespaceURL: string | null;
   private _name: string;
   private _value: AttributeValue;
+  private _constants: Set<string> | undefined;
 
   constructor(namespaceURL: string | null, name: string, value: AttributeValue = { unknown: true }) {
     this._namespaceURL = namespaceURL;
@@ -234,6 +235,30 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
   }
   get value(): AttributeValue {
     return this._value;
+  }
+
+  constants(condition?: AttributeValue): Set<string> {
+    if (condition === undefined && this._constants !== undefined) {
+      return this._constants;
+    }
+    let result = new Set<string>();
+    condition = condition || this.value;
+    if (isConstant(condition)) {
+      result.add(condition.constant);
+    } else if (isChoice(condition)) {
+      for (let c of condition.oneOf) {
+        for (let constant of this.constants(c)) {
+          result.add(constant);
+        }
+      }
+    } else if (isSet(condition)) {
+      for (let c of condition.allOf) {
+        for (let constant of this.constants(c)) {
+          result.add(constant);
+        }
+      }
+    }
+    return result;
   }
 
   /**

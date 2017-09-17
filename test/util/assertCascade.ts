@@ -62,6 +62,9 @@ export function assertSameCascade(
       let optiStyle = optiCascade.get(optimizedElement);
       if (origStyle || optiStyle) {
         // TODO: pseudoelement and pseudostate support
+        if (optimizedElement.attribs.class === "b g h i") {
+          console.log(optimizedElement);
+        }
         let origComputed = origStyle && origStyle.compute();
         let optiComputed = optiStyle && optiStyle.compute();
         try {

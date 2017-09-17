@@ -3,9 +3,10 @@ import { MultiAction } from "./Action";
 import { SourcePosition } from "../SourceLocation";
 import { Optimizations } from "../OpticssOptions";
 import { SelectorCache } from "../query";
-import { ParsedSelector } from "../parseSelector";
+import { ParsedSelector, CompoundSelector, isClass } from "../parseSelector";
 import { OptimizationPass } from "../OptimizationPass";
 import { IdentGenerators } from "../util/IdentGenerator";
+import { StyleMapping, ElementAttributes, Attribute as ElementAttribute } from "../StyleMapping";
 
 export interface Declaration {
   prop: string;
@@ -22,29 +23,32 @@ export interface DeclarationInfo {
  * Merges duplicate declarations from multiple rule sets into a new rule set.
  */
 export class MergeDeclarations extends MultiAction {
+  styleMapping: StyleMapping;
   removedRules: postcss.Rule[];
-  originalDecls: DeclarationInfo[];
+  declInfos: DeclarationInfo[];
   decl: Declaration;
   newRule: postcss.Rule;
   identGenerators: IdentGenerators<"id" | "class">;
   container: postcss.Container;
   reason: string;
   cache: SelectorCache;
+
   constructor(
     pass: OptimizationPass,
     container: postcss.Container,
     decl: Declaration,
-    originalDecls: Array<DeclarationInfo>,
+    declInfos: Array<DeclarationInfo>,
     optimization: keyof Optimizations,
     reason: string
   ) {
     super(optimization);
+    this.styleMapping = pass.styleMapping;
     this.reason = reason;
     this.container = container;
     this.cache = pass.cache;
     this.identGenerators = pass.identGenerators;
     this.decl = decl;
-    this.originalDecls = originalDecls;
+    this.declInfos = declInfos;
     this.removedRules = [];
   }
 
@@ -56,24 +60,31 @@ export class MergeDeclarations extends MultiAction {
     decl.raws = { before:' ', after: ' '};
     this.newRule.append(decl);
     this.container.append(this.newRule);
-    for (let orig of this.originalDecls) {
-      if (orig.decl.parent === undefined) {
+    let sourceAttributes = new Array<ElementAttributes>();
+    for (let declInfo of this.declInfos) {
+      let sel: CompoundSelector = declInfo.selector.key;
+      sourceAttributes.push({
+        existing: classNames(sel).map(value => ({name: "class", value})),
+        unless: new Array<ElementAttribute>() // TODO: cascade resolution of exclusion classes.
+      });
+      if (declInfo.decl.parent === undefined) {
         continue;
       }
-      if (orig.decl.parent.nodes!.filter(node => node.type === "decl").length === 1) {
-        this.removedRules.push(<postcss.Rule>orig.decl.parent);
-        orig.decl.parent.remove();
+      if (declInfo.decl.parent.nodes!.filter(node => node.type === "decl").length === 1) {
+        this.removedRules.push(<postcss.Rule>declInfo.decl.parent);
+        declInfo.decl.parent.remove();
       } else {
-        orig.decl.remove();
+        declInfo.decl.remove();
       }
     }
+    this.styleMapping.linkAttributes({name: "class", value: classname}, sourceAttributes);
     return this;
   }
 
   logStrings(): Array<string> {
     let logs = new Array<string>();
-    this.originalDecls.forEach((orig, i) => {
-      let msg = `Declaration moved into generated rule (${this.declString()}). ${this.reason} ${i + 1} of ${this.originalDecls.length}.`;
+    this.declInfos.forEach((orig, i) => {
+      let msg = `Declaration moved into generated rule (${this.declString()}). ${this.reason} ${i + 1} of ${this.declInfos.length}.`;
       logs.push(this.annotateLogMessage(msg, this.nodeSourcePosition(orig.decl)));
     });
     this.removedRules.forEach(rule => {
@@ -88,6 +99,16 @@ export class MergeDeclarations extends MultiAction {
   }
 
   get sourcePosition(): SourcePosition | undefined {
-    return this.nodeSourcePosition(this.originalDecls[0].decl);
+    return this.nodeSourcePosition(this.declInfos[0].decl);
   }
+}
+
+function classNames(sel: CompoundSelector): Array<string> {
+  let classes = new Array<string>();
+  for (let node of sel.nodes) {
+    if (isClass(node)) {
+      classes.push(node.value);
+    }
+  }
+  return classes;
 }

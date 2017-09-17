@@ -48,7 +48,7 @@ export class ShareDeclarationsTest {
           assert(!rule.selector.includes(".a"), "Unexpected Selector: .a");
         });
       }).then(() => {
-        debugSize(css1, result);
+        debugResult(css1, result);
         // TODO: verify mapping & template rewrite and cascade.
         return assertSmaller(css1, result, {gzip: { notBiggerThan: 1}});
       });
@@ -64,8 +64,8 @@ export class ShareDeclarationsTest {
     .e { border-style: solid; }
   `;
     let template = new TestTemplate("test", clean`
-    <div class="(c | a)" id="(id1 | id2)"></div>
-    <div class="(--- | b | d)" id="id3"></div>
+    <div class="(c | a)"></div>
+    <div class="(--- | b | d)"></div>
   `);
     return testShareDeclarations(css1, template).then(result => {
       let logString = result.optimization.actions.performed[0].logString();
@@ -85,6 +85,7 @@ export class ShareDeclarationsTest {
         });
       }).then(() => {
         debugSize(css1, result);
+        debugResult(css1, result);
         // TODO: verify mapping & template rewrite and cascade.
         return assertSmaller(css1, result);
       });
@@ -102,7 +103,7 @@ export class ShareDeclarationsTest {
   `);
     return testShareDeclarations(css1, template).then(result => {
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
-      .c { background: none; }`);
+      .e { background: none; }`);
       return parseStylesheet(result.optimization.output.content.toString()).then(styles => {
         styles.root!.walkRules(rule => {
           assert(!rule.selector.includes(".a"), "Unexpected Selector: .a");
@@ -134,11 +135,34 @@ export class ShareDeclarationsTest {
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
         clean`.a { background-position: initial; background-size: initial; background-origin: content-box; }
-              .b { background-image: none; }
-              .c { background-repeat: repeat-x; }
-              .d { background-clip: content-box; }
-              .e { background-attachment: fixed; }
-              .g { background-color: red; }`);
+              .e { background-image: none; }
+              .g { background-repeat: repeat-x; }
+              .h { background-clip: content-box; }
+              .i { background-attachment: fixed; }
+              .j { background-color: red; }`);
+      // TODO: verify mapping & template rewrite and cascade.
+      return assertSmaller(css1, result, {gzip: { notBiggerThan: 6}, brotli: { notBiggerThan: 1}});
+    });
+  }
+
+  @skip
+  @test "won't merge declarations if they break the cascade."() {
+    let css1 = `
+    .a { color: red; }
+    .b { color: blue; }
+    .c { color: red; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="a b"></div>
+    <div class="c"></div>
+  `);
+    return testShareDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`.a { color: red; }
+              .b { color: blue; }
+              .c { color: red; }`);
       // TODO: verify mapping & template rewrite and cascade.
       return assertSmaller(css1, result, {gzip: { notBiggerThan: 5}});
     });

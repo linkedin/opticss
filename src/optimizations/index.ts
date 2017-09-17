@@ -20,6 +20,7 @@ export interface Optimizations {
   [optimization: string]: OptimizationConstructor;
 }
 
+// TODO: enforce execution order of optimizations listed here.
 export const optimizations: Optimizations = {
   removeUnusedStyles: RemoveUnusedStyles,
   rewriteIdents: RewriteIdents,
