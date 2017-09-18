@@ -7,6 +7,7 @@ import { ParsedSelector, CompoundSelector, isClass } from "../parseSelector";
 import { OptimizationPass } from "../OptimizationPass";
 import { IdentGenerators } from "../util/IdentGenerator";
 import { StyleMapping, ElementAttributes, Attribute as ElementAttribute } from "../StyleMapping";
+import { isAtRule } from "../optimizations/util";
 
 export interface Declaration {
   prop: string;
@@ -16,6 +17,7 @@ export interface Declaration {
 
 export interface DeclarationInfo {
   selector: ParsedSelector;
+  rule: postcss.Rule;
   decl: postcss.Declaration;
 }
 
@@ -23,6 +25,7 @@ export interface DeclarationInfo {
  * Merges duplicate declarations from multiple rule sets into a new rule set.
  */
 export class MergeDeclarations extends MultiAction {
+  removedAtRules: postcss.AtRule[];
   styleMapping: StyleMapping;
   removedRules: postcss.Rule[];
   declInfos: DeclarationInfo[];
@@ -50,16 +53,18 @@ export class MergeDeclarations extends MultiAction {
     this.decl = decl;
     this.declInfos = declInfos;
     this.removedRules = [];
+    this.removedAtRules = [];
   }
 
   perform(): this {
     let classname = this.identGenerators.nextIdent("class");
     this.newRule = postcss.rule({selector: `.${classname}`});
-    this.newRule.raws = { before:' ', after: ' ', semicolon: true};
+    this.newRule.raws = { before:'\n', after: ' ', semicolon: true};
     let decl = postcss.decl(this.decl);
     decl.raws = { before:' ', after: ' '};
     this.newRule.append(decl);
-    this.container.append(this.newRule);
+    let ruleLocation = this.declInfos.find(d => d.rule.parent === this.container)!.rule;
+    this.container.insertBefore(ruleLocation, this.newRule);
     let sourceAttributes = new Array<ElementAttributes>();
     for (let declInfo of this.declInfos) {
       let sel: CompoundSelector = declInfo.selector.key;
@@ -71,8 +76,20 @@ export class MergeDeclarations extends MultiAction {
         continue;
       }
       if (declInfo.decl.parent.nodes!.filter(node => node.type === "decl").length === 1) {
-        this.removedRules.push(<postcss.Rule>declInfo.decl.parent);
-        declInfo.decl.parent.remove();
+        let rule = <postcss.Rule>declInfo.decl.parent;
+        let ruleParent = <postcss.Container>rule.parent;
+        if (ruleParent) {
+          this.removedRules.push(rule);
+          ruleParent.removeChild(rule);
+          if (!hasMeaningfulChildren(ruleParent)) {
+            if (isAtRule(ruleParent)) {
+              this.removedAtRules.push(ruleParent);
+              ruleParent.remove();
+            } else {
+              console.warn("this is a weird parent for a rule: ", ruleParent);
+            }
+          }
+        }
       } else {
         declInfo.decl.remove();
       }
@@ -111,4 +128,16 @@ function classNames(sel: CompoundSelector): Array<string> {
     }
   }
   return classes;
+}
+
+function hasMeaningfulChildren(container: postcss.Container | undefined) {
+  return container && container.nodes &&
+    container.nodes.reduce(countNonCommentNodes, 0) > 0;
+}
+
+function countNonCommentNodes(count: number, n: postcss.Node) {
+  if (n === undefined) {
+    console.log("why");
+  }
+  return n.type === "comment" ? count : count + 1;
 }

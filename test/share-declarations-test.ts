@@ -39,16 +39,16 @@ export class ShareDeclarationsTest {
         `${path.resolve("test1.css")}:2:5 [shareDeclarations] Removed empty rule with selector ".a".`;
       assert.deepEqual(logString, expectedLogMessage);
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
+      .e { color: red; }
       .b { border: 1px solid blue; }
       .c { background: red; }
-      .d { border-color: blue; }
-      .e { color: red; }`);
+      .d { border-color: blue; }`);
       return parseStylesheet(result.optimization.output.content.toString()).then(styles => {
         styles.root!.walkRules(rule => {
           assert(!rule.selector.includes(".a"), "Unexpected Selector: .a");
         });
       }).then(() => {
-        debugResult(css1, result);
+        // debugResult(css1, result);
         // TODO: verify mapping & template rewrite and cascade.
         return assertSmaller(css1, result, {gzip: { notBiggerThan: 1}});
       });
@@ -77,15 +77,15 @@ export class ShareDeclarationsTest {
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
       .f { color: red; }
       .g { border-width: 1px; }
-      .h { border-style: solid; }
-      .i { border-color: blue; }`);
+      .i { border-color: blue; }
+      .h { border-style: solid; }`);
       return parseStylesheet(result.optimization.output.content.toString()).then(styles => {
         styles.root!.walkRules(rule => {
           assert(!rule.selector.includes(".a"), "Unexpected Selector: .a");
         });
       }).then(() => {
-        debugSize(css1, result);
-        debugResult(css1, result);
+        // debugSize(css1, result);
+        // debugResult(css1, result);
         // TODO: verify mapping & template rewrite and cascade.
         return assertSmaller(css1, result);
       });
@@ -134,12 +134,12 @@ export class ShareDeclarationsTest {
       // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
-        clean`.a { background-position: initial; background-size: initial; background-origin: content-box; }
-              .e { background-image: none; }
+        clean`.e { background-image: none; }
               .g { background-repeat: repeat-x; }
               .h { background-clip: content-box; }
               .i { background-attachment: fixed; }
-              .j { background-color: red; }`);
+              .j { background-color: red; }
+              .a { background-position: initial; background-size: initial; background-origin: content-box; }`);
       // TODO: verify mapping & template rewrite and cascade.
       return assertSmaller(css1, result, {gzip: { notBiggerThan: 6}, brotli: { notBiggerThan: 1}});
     });
@@ -165,6 +165,35 @@ export class ShareDeclarationsTest {
               .c { color: red; }`);
       // TODO: verify mapping & template rewrite and cascade.
       return assertSmaller(css1, result, {gzip: { notBiggerThan: 5}});
+    });
+  }
+
+  @test "handles media queries"() {
+    let css1 = clean`
+    .a { color: red; }
+    @media (min-device-width: 500px) {
+      .a { color: blue; }
+    }
+    .c { color: red; }
+    @media (min-device-width: 500px) {
+      .c { color: blue; }
+    }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="a b"></div>
+    <div class="c"></div>
+  `);
+    return testShareDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .d { color: red; }
+          @media (min-device-width: 500px) {
+            .e { color: blue; }
+          }
+        `);
+      return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
     });
   }
 }

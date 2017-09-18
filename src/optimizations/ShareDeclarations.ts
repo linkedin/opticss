@@ -377,7 +377,11 @@ export class ShareDeclarations implements MultiFileOptimization {
       pass,
       container,
       decl,
-      declInfos.map(declInfo => ({selector: declInfo.selectorInfo.selector, decl: declInfo.decl})),
+      declInfos.map(declInfo => ({
+        selector: declInfo.selectorInfo.selector,
+        rule: declInfo.selectorInfo.rule,
+        decl: declInfo.decl
+      })),
       "shareDeclarations",
       "Duplication"));
   }

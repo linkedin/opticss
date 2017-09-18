@@ -166,7 +166,8 @@ export class Cascade {
     let bodyEl = bodyElement(this.html)!;
     let selectOpts: { strict: true };
     return parseStylesheet(this.stylesheet).then(result => {
-      walkRules(result.root!, rule => {
+      walkRules(result.root!, (rule, scope) => {
+        if (scope.length > 0) return; // TODO: add ability to simulate media queries.
         if (rule.selectors) {
           if (rule.parent.type === "atrule" && (<postcss.AtRule>rule.parent).name.includes("keyframes")) {
             return;

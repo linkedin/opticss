@@ -62,14 +62,13 @@ export function assertSameCascade(
       let optiStyle = optiCascade.get(optimizedElement);
       if (origStyle || optiStyle) {
         // TODO: pseudoelement and pseudostate support
-        if (optimizedElement.attribs.class === "b g h i") {
-          console.log(optimizedElement);
-        }
         let origComputed = origStyle && origStyle.compute();
         let optiComputed = optiStyle && optiStyle.compute();
         try {
           assert.deepEqual(optiComputed, origComputed);
         } catch (e) {
+          console.warn("Original CSS:\n", originalCss);
+          console.warn("Optimized CSS:\n", optimizedCss);
           let templateStr = debugElement(templateElement);
           console.warn("template element:", templateStr);
           let origStr = debugElement(originalElement);
