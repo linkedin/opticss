@@ -47,6 +47,17 @@ export interface OptiCSSOptions extends Optimizations {
    * optimizations enabled by the `only` option.
    */
   except?: Array<keyof Optimizations>;
+
+  /**
+   * Some CSS features can be used for more optimal output but may have
+   * varying level of support. These options control wether the optimizer
+   * will take advantage of those features where it can.
+   *
+   * CSS features are never output with vendor prefixes. You can try using
+   * autoprefixer or cssnext, but doing so is likely to result in output that
+   * is less optimal than if the optimization hadn't been performed.
+   */
+  css?: Partial<CSSFeatureFlags>;
 }
 
 export interface TemplateIntegrationOptions {
@@ -59,6 +70,10 @@ export const DEFAULT_OPTIONS = Object.freeze<OptiCSSOptions>({
   removeUnusedStyles: true,
   shareDeclarations: true
 });
+
+export interface CSSFeatureFlags {
+  useMatchesPseudoClass: boolean;
+}
 
 export interface NormalizedRewriteOptions {
   id: boolean;
