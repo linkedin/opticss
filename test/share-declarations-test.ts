@@ -211,7 +211,7 @@ export class ShareDeclarationsTest {
     </div>
   `);
     return testShareDeclarations(css1, template).then(result => {
-      debugResult(css1, result);
+      // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
         clean`
@@ -252,7 +252,7 @@ export class ShareDeclarationsTest {
     <span class="d">D Not Scoped!</span>
   `);
     return testShareDeclarations(css1, template).then(result => {
-      debugResult(css1, result);
+      // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
         clean`
@@ -291,7 +291,7 @@ export class ShareDeclarationsTest {
     <span class="e">E Not Scoped!</span>
   `);
     return testShareDeclarations(css1, template).then(result => {
-      debugResult(css1, result);
+      // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
         clean`
