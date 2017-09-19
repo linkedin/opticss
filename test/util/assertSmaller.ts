@@ -46,18 +46,40 @@ export interface DeltaAssertions {
   gzip?: DeltaAssertion;
   brotli?: DeltaAssertion;
 }
+export type SizeResultPair = [cssSize.Result<number>, cssSize.Result<number>];
 
-export function assertSmaller(inputCSS: string, result: CascadeTestResult, assertions?: DeltaAssertions): Promise<void> {
+export function assertSmaller(
+  inputCSS: string,
+  result: CascadeTestResult,
+  assertions?: DeltaAssertions
+): Promise<SizeResultPair> {
   let testedMarkup = result.testedTemplates[0].testedMarkups[0];
   let inputHtml = testedMarkup.originalBody;
-  let optimizedHtml = Promise.resolve({css: testedMarkup.optimizedBody});
-  const optimizedCss = Promise.resolve({css: result.optimization.output.content.toString()});
-  let templatePromise = cssSize.numeric(inputHtml, {}, () => optimizedHtml);
+  return assertSmallerStylesAndMarkup(
+    inputCSS,
+    result.optimization.output.content.toString(),
+    testedMarkup.originalBody,
+    testedMarkup.optimizedBody,
+    assertions
+  );
+}
+
+export function assertSmallerStylesAndMarkup(
+  inputCSS: string,
+  outputCSS: string,
+  inputMarkup: string,
+  outputMarkup: string,
+  assertions?: DeltaAssertions
+): Promise<SizeResultPair> {
+  let optimizedHtml = Promise.resolve({css: outputMarkup});
+  const optimizedCss = Promise.resolve({css: outputCSS});
+  let templatePromise = cssSize.numeric(inputMarkup, {}, () => optimizedHtml);
   let cssPromise = cssSize.numeric(inputCSS, {}, () => optimizedCss);
   return Promise.all([cssPromise, templatePromise]).then(([cssDelta, templateDelta]) => {
     assertDelta("uncompressed", cssDelta, templateDelta, assertions);
     assertDelta("gzip", cssDelta, templateDelta, assertions);
     assertDelta("brotli", cssDelta, templateDelta, assertions);
+    return <SizeResultPair>[cssDelta, templateDelta];
   });
 }
 

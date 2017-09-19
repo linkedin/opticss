@@ -9,7 +9,7 @@ import clean from "./util/clean";
 import { testOptimizationCascade, CascadeTestResult, debugResult } from "./util/assertCascade";
 import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOptions";
 import { IdentGenerator, IdentGenerators } from "../src/util/IdentGenerator";
-import { assertSmaller, debugSize } from "./util/assertSmaller";
+import { assertSmaller, debugSize, assertSmallerStylesAndMarkup } from "./util/assertSmaller";
 
 function testShareDeclarations(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -194,6 +194,157 @@ export class ShareDeclarationsTest {
           }
         `);
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
+    });
+  }
+  // TODO: Tune hueristic about when to merge decls when nested.
+  @test "handles simple scoped selectors"() {
+    let css1 = clean`
+    .a .c { color: blue; float: right; }
+    .a .d { color: blue; float: left; }
+    .a .e { color: blue; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="a">
+      <span class="c">C Scoped!</span>
+      <span class="d">D Scoped!</span>
+      <span class="e">C Scoped!</span>
+    </div>
+  `);
+    return testShareDeclarations(css1, template).then(result => {
+      debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a .b { color: blue; }
+          .a .c { float: right; }
+          .a .d { float: left; }
+        `);
+      return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
+    });
+  }
+
+  // TODO share classes when specificity would override them
+  // and the element(s) already have the class.
+  @skip
+  @test "handles scoped selectors"() {
+    let css1 = clean`
+    .c { color: red; float: left; }
+    .d { color: red; float: right; }
+    .a .c { color: blue; float: right; }
+    .a .d { color: blue; float: left; }
+    .b > .c { color: purple; float: none; }
+    .b > .d { color: purple; float: none; }
+    .e .b > .c { float: left;}
+    .e .b > .d { float: left;}
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="a">
+      <span class="c">C Scoped!</span>
+      <span class="d">D Scoped!</span>
+    </div>
+    <div class="e">
+      <div class="b">
+        <span class="c">C Scoped!</span>
+        <span class="d">D Scoped!</span>
+      </div>
+    </div>
+    <span class="c">C Not Scoped!</span>
+    <span class="d">D Not Scoped!</span>
+  `);
+    return testShareDeclarations(css1, template).then(result => {
+      debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .f { color: red; }
+          .c { float: left; }
+          .d { float: right; }
+          .a .f { color: blue; }
+          .a .c { float: right; }
+          .a .d { float: left; }
+          .b > .f { color: purple; }
+          .b > .g { float: none; }
+          .e .b > .g { float: left; }
+        `);
+      return assertSmaller(css1, result, {gzip: {atLeastSmallerThan: 0}, brotli: {atLeastSmallerThan: 0}});
+    });
+  }
+
+  // TODO share classes when specificity would override them
+  // and the element(s) already have the class.
+  @skip
+  @test "handles scoped selectors with additional scoped mergable decls"() {
+    let css1 = clean`
+    .c { color: red; float: left; }
+    .d { color: red; float: right; }
+    .a .c { color: blue; float: right; }
+    .a .d { color: blue; float: left; }
+    .a .e { color: blue; }`;
+    let template = new TestTemplate("test", clean`
+    <div class="a">
+      <span class="c">C Scoped!</span>
+      <span class="d">D Scoped!</span>
+      <span class="e">E Scoped!</span>
+    </div>
+    <span class="c">C Not Scoped!</span>
+    <span class="d">D Not Scoped!</span>
+    <span class="e">E Not Scoped!</span>
+  `);
+    return testShareDeclarations(css1, template).then(result => {
+      debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .f { color: red; }
+          .c { float: left; }
+          .d { float: right; }
+          .a .f { color: blue; }
+          .a .c { float: right; }
+          .a .d { float: left; }
+        `);
+      return assertSmaller(css1, result, {gzip: {atLeastSmallerThan: 0}, brotli: {atLeastSmallerThan: 0}});
+    });
+  }
+
+  @skip
+  @test "check sizes"() {
+    let inputCSS = clean`
+    .c { color: red; float: left; }
+    .d { color: red; float: right; }
+    .a .c { color: blue; float: right; }
+    .a .d { color: blue; float: left; }
+    .a .e:matches(.e) { color: blue; }`;
+    let inputHTML = clean`
+    <div class="a">
+      <span class="c">C Scoped!</span>
+      <span class="d">D Scoped!</span>
+      <span class="e">E Scoped!</span>
+    </div>
+    <span class="c">C Not Scoped!</span>
+    <span class="d">D Not Scoped!</span>
+    <span class="e">E Not Scoped!</span>`;
+    let outputCSS = clean`
+    .f { color: red; }
+    .c { float: left; }
+    .d { float: right; }
+    .a :matches(.e, .f) { color: blue; }
+    .a .c { float: right; }
+    .a .d { float: left; }
+    `;
+    let outputHTML = clean`
+    <div class="a">
+      <span class="c f">C Scoped!</span>
+      <span class="d f">D Scoped!</span>
+      <span class="e">E Scoped!</span>
+    </div>
+    <span class="c f">C Not Scoped!</span>
+    <span class="d f">D Not Scoped!</span>
+    <span class="e">E Not Scoped!</span>`;
+    return assertSmallerStylesAndMarkup(
+      inputCSS, outputCSS, inputHTML, outputHTML
+    ).then(([cssDelta, markupDelta]) => {
+      console.log("CSS Delta:\n", cssDelta);
+      console.log("Markup Delta:\n", markupDelta);
     });
   }
 }
