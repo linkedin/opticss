@@ -232,5 +232,5 @@ declare namespace parser {
     interface Universal extends Base {
         type: "universal";
     }
-    function universal(opts: any): any;
+    function universal(opts?: NamespaceOptions): any;
 }

@@ -31,6 +31,10 @@ export function isClass(node: selectorParser.Node | undefined): node is selector
   return !!node && node.type === selectorParser.CLASS;
 }
 
+export function isUniversal(node: selectorParser.Node | undefined): node is selectorParser.Universal {
+  return !!node && node.type === selectorParser.UNIVERSAL;
+}
+
 export interface CombinatorAndSelector<SelectorType> {
   combinator: selectorParser.Combinator;
   selector: SelectorType;
@@ -337,6 +341,14 @@ export class ParsedSelector {
     return this.selector.toString();
   }
 
+  toContext(): ParsedSelector {
+    let context = this.clone();
+    let key = context.key;
+    key.nodes = key.nodes.filter(node => isPseudo(node));
+    key.nodes.unshift(selectorParser.universal());
+    return context;
+  }
+
   /**
    * Same as toString() but having omitted the key selector.
    * Includes the final combinator prior to the key selector.
@@ -348,7 +360,8 @@ export class ParsedSelector {
     while (true) {
       context += selector.toString(true);
       if (selector.next) {
-        context += selector.next.combinator.value;
+        let combinator = selector.next.combinator.value;
+        context += combinator === " " ? combinator : ` ${combinator} `;
         selector = selector.next.selector;
         if (selector.next === undefined) {
           // it's the key selector

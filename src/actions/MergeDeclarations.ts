@@ -1,9 +1,10 @@
 import * as postcss from "postcss";
+import * as selectorParser from "postcss-selector-parser";
 import { MultiAction } from "./Action";
 import { SourcePosition } from "../SourceLocation";
 import { Optimizations } from "../OpticssOptions";
 import { SelectorCache } from "../query";
-import { ParsedSelector, CompoundSelector, isClass } from "../parseSelector";
+import { ParsedSelector, CompoundSelector, isClass, isUniversal } from "../parseSelector";
 import { OptimizationPass } from "../OptimizationPass";
 import { IdentGenerators } from "../util/IdentGenerator";
 import { StyleMapping, ElementAttributes, Attribute as ElementAttribute } from "../StyleMapping";
@@ -25,6 +26,7 @@ export interface DeclarationInfo {
  * Merges duplicate declarations from multiple rule sets into a new rule set.
  */
 export class MergeDeclarations extends MultiAction {
+  selectorContext: ParsedSelector | undefined;
   removedAtRules: postcss.AtRule[];
   styleMapping: StyleMapping;
   removedRules: postcss.Rule[];
@@ -39,6 +41,7 @@ export class MergeDeclarations extends MultiAction {
   constructor(
     pass: OptimizationPass,
     container: postcss.Container,
+    selectorContext: ParsedSelector | undefined,
     decl: Declaration,
     declInfos: Array<DeclarationInfo>,
     optimization: keyof Optimizations,
@@ -48,6 +51,7 @@ export class MergeDeclarations extends MultiAction {
     this.styleMapping = pass.styleMapping;
     this.reason = reason;
     this.container = container;
+    this.selectorContext = selectorContext;
     this.cache = pass.cache;
     this.identGenerators = pass.identGenerators;
     this.decl = decl;
@@ -58,7 +62,17 @@ export class MergeDeclarations extends MultiAction {
 
   perform(): this {
     let classname = this.identGenerators.nextIdent("class");
-    this.newRule = postcss.rule({selector: `.${classname}`});
+    let newSelector: string;
+    if (this.selectorContext) {
+      let key = this.selectorContext.key;
+      let nodes = key.nodes;
+      key.nodes = nodes.map(n => isUniversal(n) ? selectorParser.className({value: classname}) : n);
+      newSelector = this.selectorContext.toString();
+      key.nodes = nodes;
+    } else {
+      newSelector = `.${classname}`;
+    }
+    this.newRule = postcss.rule({selector: newSelector});
     this.newRule.raws = { before:'\n', after: ' ', semicolon: true};
     let decl = postcss.decl(this.decl);
     decl.raws = { before:' ', after: ' '};

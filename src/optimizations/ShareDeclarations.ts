@@ -83,8 +83,9 @@ class OptimizationContext {
   key: string;
   /** atrule scopes for this context. All are functionally equivalent. */
   scopes: Array<RuleScope>;
+
   /** runtime selector scoping for this context. */
-  selectorContext: string | undefined;
+  selectorContext: ParsedSelector | undefined;
   root: postcss.Root;
 
   /**
@@ -99,7 +100,7 @@ class OptimizationContext {
    */
   authoredProps: Set<string>;
 
-  constructor(key: string, scope: RuleScope, root: postcss.Root, selectorContext: string | undefined) {
+  constructor(key: string, scope: RuleScope, root: postcss.Root, selectorContext: ParsedSelector | undefined) {
     this.key = key;
     this.scopes = [scope];
     this.root = root;
@@ -134,8 +135,9 @@ class OptimizationContexts {
     }
   }
 
-  getContext(root: postcss.Root, scope: RuleScope, selectorContext: string | undefined) {
-    let key = this.getKey(scope, selectorContext);
+  getContext(root: postcss.Root, scope: RuleScope, selectorContext: ParsedSelector | undefined) {
+    let selectorContextStr = (selectorContext || "").toString();
+    let key = this.getKey(scope, selectorContextStr);
     let context = this.contexts[key];
     if (context) {
       if (context.scopes.indexOf(scope) < 0) {
@@ -224,7 +226,7 @@ class DeclarationMapper {
     });
 
     this.selectorTree.inorderTraversal((selectorInfo) => {
-      let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContextString());
+      let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContext());
       // At this point we haven't expanded any properties and we shouldn't unless it's possible to find a duplicate value.
       // So we need to enumerate all possible declared properties.
       selectorInfo.declarations.keys().forEach(prop => {
@@ -245,7 +247,7 @@ class DeclarationMapper {
       });
 
       // map properties to selector info
-      let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContextString());
+      let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContext());
       selectorInfo.declarations.keys().forEach(prop => {
         let values = selectorInfo.declarations.getValue(prop);
         values.forEach(value => {
@@ -376,6 +378,7 @@ export class ShareDeclarations implements MultiFileOptimization {
     pass.actions.perform(new MergeDeclarations(
       pass,
       container,
+      context.selectorContext,
       decl,
       declInfos.map(declInfo => ({
         selector: declInfo.selectorInfo.selector,
