@@ -6,15 +6,16 @@ const subsetMemos = new WeakMap<IsSubsetFunction<any>, WeakMap<any, WeakMap<any,
 
 /**
  * A subset tree self organizes new nodes such that they will be added to place
- * in the tree where it is guaranteed that all nodes in the tree that are
- * subsets of the new node are descendants of that node or one of its siblings.
+ * in the tree where it is guaranteed that all nodes in the tree that have
+ * values that are subsets of the value in the new node are descendants of that
+ * node or one of its siblings.
  *
  * While the tree always has a root node, the root node will not have a value
  * unless all values in the tree are subsets of that node.
  *
  * When the tree is walked superset first (breadth-first traversal), it is
- * guaranteed that for any node that is traversed, all known supersets of that
- * node will have already been traversed.
+ * guaranteed that for any value that is traversed, all values in the tree that
+ * are a proper super set of that value will have already been traversed.
  *
  * The logic of what constitutes a subset is left to the `isSubset()` function.
  * If two values are both subsets of each other they are deemed to be equal.
@@ -47,14 +48,16 @@ export class SubsetTree<T extends Object> {
   insert(...values: Array<T>): number {
     let count = 0;
     for (let v of values) {
-      if (this.root.insert(v)) {
-        // console.log("did insert");
+      try {
+        this.root.insert(v);
         count++;
-      } else {
-        // console.log("did not insert");
+      } catch (e) {
+        if (e instanceof DuplicateEntry) {
+          // swallow
+        } else {
+          throw e;
+        }
       }
-      // console.log("<<<<<<<<<<");
-      // console.log(this.debug());
     }
     this._size += count;
     return count;
@@ -87,6 +90,10 @@ export class SubsetTree<T extends Object> {
    */
   isProperSubset(superset: T, subset: T): boolean {
     return this.isSubset(superset, subset) && !this.isSubset(subset, superset);
+  }
+
+  isSameSet(set1: T, set2: T): boolean {
+    return this.isSubset(set1, set2) && this.isSubset(set2, set1);
   }
 
   /**
@@ -133,24 +140,51 @@ export class SubsetTree<T extends Object> {
   }
 }
 
-class NodeBase<T> {
+abstract class NodeBase<T> {
   root: boolean;
+  depth: number;
   tree: SubsetTree<T>;
-  parent: Node<T> | RootNode<T> | undefined;
+  parent: NodeBase<T> | undefined;
   children: Array<Node<T>>;
   value: T | undefined;
+  danglingSubsets: Set<Node<T>>;
 
   constructor(
     tree: SubsetTree<T>,
+    depth: number,
     root: boolean,
-    parent: Node<T> | RootNode<T> | undefined,
+    parent: NodeBase<T> | undefined,
     value: T | undefined
   ) {
     this.tree = tree;
+    this.depth = depth;
     this.root = root;
     this.parent = parent;
     this.value = value;
     this.children = [];
+    this.danglingSubsets = new Set();
+  }
+
+  insertAt(newValue: T, subsets: Array<Node<T>>): boolean {
+    if (this.value && this.tree.isSameSet(newValue, this.value)) {
+      throw new DuplicateEntry(this);
+    }
+    // add a new child and move the subsets under it.
+    let newNode = new Node<T>(this.tree, this.depth + 1, <any>this, newValue);
+    for (let subset of subsets) {
+      if (subset.depth <= newNode.depth) {
+        newNode.takeChild(subset);
+      } else {
+        newNode.danglingSubsets.add(subset);
+      }
+    }
+    this.children.push(newNode);
+    return true;
+  }
+
+  findParent(newValue: T): InsertionPoint<T> {
+    return this.children.map(child => child.findParent(newValue))
+                          .reduce((prev, child) => deepestPoint(prev, child), {});
   }
 
   /**
@@ -172,58 +206,29 @@ class NodeBase<T> {
    */
   takeChild(node: Node<T>) {
     node.parent.removeChild(node);
-    node.parent = <Node<T>>this;
+    node.parent.danglingSubsets.add(node);
+    node.parent = <any>this;
     this.children.push(node);
+    this.danglingSubsets.delete(node);
+    node.setDepth();
   }
-  moveValueToChild(_value: T | undefined = undefined) {
-    // pass;
-  }
+
   /**
-   * Inserts a new value into the subset tree.
-   * @param newValue The value to be inserted.
-   * @returns true if a new node was created.
+   * Sets the node's depth to the correct value and propagates the change to
+   * its children.
    */
-  insert(newValue: T): boolean {
-    if (this.value && this.tree.isSubset(newValue, this.value)) {
-      if (!this.root) {
-        throw new Error("Cannot insert a superset value except at the root node.");
-      }
-      this.moveValueToChild(newValue);
-      return true;
-    } else if (this.root && this.value && !this.tree.isSubset(this.value, newValue)) {
-      this.moveValueToChild();
-      let newNode = new Node<T>(this.tree, <Node<T>>this, newValue);
-      this.children.push(newNode);
-      return true;
+  setDepth() {
+    if (!this.parent) return;
+    if (this.parent) {
+      this.depth = this.parent!.depth + 1;
     }
-    let subsets = this.children.filter(child => this.tree.isSubset(newValue, child.value));
-    // Only one subset? It might be the same value.
-    if (subsets.length === 1 && this.tree.isSubset(subsets[0].value, newValue)) {
-      // it's duplicate value.
-      return false;
-    }
-    // if all the values are a subset and there's no root value, just take the value.
-    if (subsets.length === this.children.length && !this.value) {
-      this.value = newValue;
-      return true;
-    }
-    if (subsets.length === 0) {
-      let superset = this.children.find(child => this.tree.isSubset(child.value, newValue));
-      if (superset) {
-        return superset.insert(newValue);
-      } else {
-        let newNode = new Node<T>(this.tree, <Node<T>>this, newValue);
-        this.children.push(newNode);
-        return true;
+    for (let dangler of this.danglingSubsets) {
+      if (dangler.depth <= this.depth) {
+        this.takeChild(dangler);
       }
-    } else {
-      // add a new child and move the subsets under it.
-      let newNode = new Node<T>(this.tree, <Node<T>>this, newValue);
-      for (let subset of subsets) {
-        newNode.takeChild(subset);
-      }
-      this.children.push(newNode);
-      return true;
+    }
+    for (let child of this.children) {
+      child.setDepth();
     }
   }
 
@@ -232,8 +237,8 @@ class NodeBase<T> {
    * is traversed before any of its subsets.
    */
   *walkSupersetOrder(): IterableIterator<T> {
-    let q = new Queue<Node<T> | RootNode<T>>();
-    q.enqueue(<Node<T>>this);
+    let q = new Queue<NodeBase<T>>();
+    q.enqueue(this);
     while (!q.isEmpty()) {
       let node = q.dequeue();
       if (node.value !== undefined) {
@@ -255,21 +260,80 @@ class NodeBase<T> {
   }
 }
 
+function deepestPoint<T>(point1: InsertionPoint<T>, point2: InsertionPoint<T>): InsertionPoint<T> {
+  let subsets = (point1.subsets || []).concat(point2.subsets || []);
+  if (point1.parentNode && point2.parentNode) {
+    let parent = point1.parentNode.depth > point2.parentNode.depth ? point1.parentNode : point2.parentNode;
+    return {
+      parentNode: parent,
+      subsets
+    };
+  } else {
+    return {
+      parentNode: point1.parentNode || point2.parentNode,
+      subsets
+    };
+  }
+}
+
+class DuplicateEntry extends Error {
+  node: NodeBase<any>;
+  constructor(node: NodeBase<any>) {
+    super(`Duplicate value: ${node}`);
+    this.node = node;
+  }
+}
+
+interface InsertionPoint<T> {
+  parentNode?: Node<T>;
+  subsets?: Array<Node<T>>;
+}
+
 class Node<T> extends NodeBase<T> {
   root: false;
-  parent: Node<T> | RootNode<T>;
+  parent: NodeBase<T>;
   value: T;
-  constructor(tree: SubsetTree<T>, parent: Node<T> | RootNode<T>, value: T) {
-    super(tree, false, parent, value);
+  constructor(tree: SubsetTree<T>, depth: number, parent: NodeBase<T>, value: T) {
+    super(tree, depth, false, parent, value);
+  }
+  findSubsetsOf(newValue: T): Array<Node<T>> {
+    if (this.tree.isSameSet(this.value, newValue)) {
+      throw new DuplicateEntry(this);
+    }
+    let subsets = new Array<Node<T>>();
+    if (this.tree.isSubset(newValue, this.value)) {
+      subsets.push(this);
+    }
+    for (let child of this.children) {
+      subsets.splice(subsets.length, 0, ...child.findSubsetsOf(newValue));
+    }
+    return subsets;
+  }
+  findParentWithSubsets(newValue: T): InsertionPoint<T> {
+    if (this.tree.isSameSet(this.value, newValue)) {
+      throw new DuplicateEntry(this);
+    }
+    if (!this.tree.isSubset(this.value, newValue)) {
+      return {
+        subsets: this.findSubsetsOf(newValue)
+      };
+    }
+    let point = this.children.map(child => child.findParentWithSubsets(newValue))
+                          .reduce((prev, child) => deepestPoint(prev, child), {});
+    if (!point.parentNode) {
+      point.parentNode = this;
+    }
+    return point;
   }
 }
 
 class RootNode<T> extends NodeBase<T> {
+  depth: 0;
   root: true;
   parent: undefined;
   value: T | undefined;
   constructor(tree: SubsetTree<T>, value?: T) {
-    super(tree, true, undefined, value);
+    super(tree, 0, true, undefined, value);
   }
   moveValueToChild(value: T | undefined = undefined) {
     if (!this.value) {
@@ -277,12 +341,36 @@ class RootNode<T> extends NodeBase<T> {
     }
     // Create a new node and migrate these children and this value to it
     // then take this value.
-    let newNode = new Node<T>(this.tree, this, this.value);
+    let newNode = new Node<T>(this.tree, 1, this, this.value);
     for (let child of this.children) {
       newNode.takeChild(child);
     }
     this.children = [newNode];
     this.value = value;
+  }
+  insert(newValue: T): boolean {
+    if (this.value) {
+      if (this.tree.isSameSet(this.value, newValue)) {
+        throw new DuplicateEntry(this);
+      }
+      if (this.tree.isSubset(newValue, this.value)) {
+        this.moveValueToChild(newValue);
+        return true;
+      } else if (!this.tree.isSubset(this.value, newValue)) {
+        this.moveValueToChild();
+        let newNode = new Node<T>(this.tree, 1, this, newValue);
+        this.children.push(newNode);
+        return true;
+      }
+    }
+    let insertionPoints = this.children.map(child => child.findParentWithSubsets(newValue));
+    let point = insertionPoints.reduce((prev, child) => deepestPoint(prev, child), {});
+
+    if (point.parentNode) {
+      return point.parentNode.insertAt(newValue, point.subsets || []);
+    } else {
+      return this.insertAt(newValue, point.subsets || []);
+    }
   }
 }
 

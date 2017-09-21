@@ -28,7 +28,10 @@ function newTestSet(...numbers: number[]): TestSet {
 export class SubsetTreeTest {
   random: RandomJS;
   before() {
-    this.random = getRandom({});
+    this.random = getRandom({
+      verbose: false,
+      seed: 37784883
+    });
   }
   @test "construction"() {
     let tree = new SubsetTree(isSubset);
@@ -67,8 +70,6 @@ export class SubsetTreeTest {
     for (let x = 0; x < 10; x++) {
       let tree = new SubsetTree(isSubset);
       tree.insert(...this.random.shuffle(sets));
-      // console.log("*************");
-      // console.log(tree.debug());
       let traversed = new Array<TestSet>();
       for (let set of tree.walkSupersetOrder()) {
         for (let seen of traversed) {
@@ -106,4 +107,61 @@ export class SubsetTreeTest {
     assert.equal(traversed.length, supersets.length);
   }
 
+  @test "walks in correct order 2"() {
+    let sets = new Array<TestSet>();
+    sets.push(newTestSet(1, 2, 3, 4, 5));
+    sets.push(newTestSet(1, 5));
+    sets.push(newTestSet(1, 2, 3, 6));
+    sets.push(newTestSet(1, 2, 6));
+    sets.push(newTestSet(1, 6));
+    sets.push(newTestSet(1));
+    let tree = new SubsetTree(isSubset);
+    tree.insert(...sets);
+    let traversed = new Array<TestSet>();
+    for (let set of tree.walkSupersetOrder()) {
+      for (let seen of traversed) {
+        assert(!seen.isSubsetOf(set), `${seen} was traversed too early`);
+      }
+      traversed.push(set);
+    }
+  }
+  @test "walks in correct order 3"() {
+    let sets = new Array<TestSet>();
+    sets.push(newTestSet(1, 2, 4, 6));
+    sets.push(newTestSet(1, 4));
+    sets.push(newTestSet(1));
+    sets.push(newTestSet(1, 2, 3, 6));
+    sets.push(newTestSet(1, 2, 6));
+    sets.push(newTestSet(1, 6));
+    let tree = new SubsetTree(isSubset);
+    tree.insert(...sets);
+    let traversed = new Array<TestSet>();
+    for (let set of tree.walkSupersetOrder()) {
+      for (let seen of traversed) {
+        assert(!seen.isSubsetOf(set), `${seen} was traversed too early`);
+      }
+      traversed.push(set);
+    }
+  }
+
+  @test "stress test"() {
+    let tree = new SubsetTree(isSubset);
+    for (let x = 0; x < 50; x++) {
+      let setSize = this.random.die(8);
+      let setNumbers = this.random.dice(12, setSize);
+      let set = newTestSet(...setNumbers.sort());
+      tree.insert(set);
+    }
+    assertTreeOrder(tree);
+  }
+}
+
+function assertTreeOrder(tree: SubsetTree<TestSet>) {
+    let traversed = new Array<TestSet>();
+    for (let set of tree.walkSupersetOrder()) {
+      for (let seen of traversed) {
+        assert(!tree.isSubset(set, seen), `${seen} was traversed too early`);
+      }
+      traversed.push(set);
+    }
 }
