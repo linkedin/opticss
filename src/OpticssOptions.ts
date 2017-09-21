@@ -28,9 +28,9 @@ export interface Optimizations {
   removeUnusedStyles: boolean;
 
   /**
-   * Whether to share declarations across compatible selectors.
+   * Whether to merge declarations across compatible selectors.
    */
-  shareDeclarations: boolean;
+  mergeDeclarations: boolean;
 }
 
 export interface OptiCSSOptions extends Optimizations {
@@ -68,7 +68,7 @@ export const DEFAULT_OPTIONS = Object.freeze<OptiCSSOptions>({
   enabled: true,
   rewriteIdents: true,
   removeUnusedStyles: true,
-  shareDeclarations: true
+  mergeDeclarations: true
 });
 
 export interface CSSFeatureFlags {

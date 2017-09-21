@@ -15,7 +15,7 @@ import { Initializers } from "../initializers";
 //   * Convert initial to initial value
 //   ✓ Merge declarations
 //   * Combine selectors that are always applied to the same elements and merge their declarations into a single ruleset.
-//   * Combine long-hands into shorthands (sometimes add a de-opt for shared prop) Open question: is this actually worse for browser perf?
+//   * Combine long-hands into shorthands (sometimes add a de-opt for merged prop) Open question: is this actually worse for browser perf?
 //   * Combine rulesets with identical declarations to a single ruleset with multiple selectors (if doesn't introduce cascade issues)
 //   * Remove redundant declarations where it's clear the properties aren't being progressively enhanced.
 

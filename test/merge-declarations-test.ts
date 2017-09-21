@@ -11,16 +11,16 @@ import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOpti
 import { IdentGenerator, IdentGenerators } from "../src/util/IdentGenerator";
 import { assertSmaller, debugSize, assertSmallerStylesAndMarkup } from "./util/assertSmaller";
 
-function testShareDeclarations(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
+function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
-    { only: ["shareDeclarations"] },
+    { only: ["mergeDeclarations"] },
     { rewriteIdents: { id: false, class: true } },
     ...stylesAndTemplates);
 }
 
 @suite("Shares Declarations")
-export class ShareDeclarationsTest {
-  @test "will share declarations"() {
+export class MergeDeclarationsTest {
+  @test "will merge declarations"() {
     let css1 = `
     .a { color: red; }
     .b { border: 1px solid blue; }
@@ -31,12 +31,12 @@ export class ShareDeclarationsTest {
     <div class="(c | a)" id="(id1 | id2)"></div>
     <div class="(--- | b | d)" id="id3"></div>
   `);
-    return testShareDeclarations(css1, template).then(result => {
+    return testMergeDeclarations(css1, template).then(result => {
       let logString = result.optimization.actions.performed[0].logString();
       let expectedLogMessage =
-        `${path.resolve("test1.css")}:2:10 [shareDeclarations] Declaration moved into generated rule (.e { color: red; }). Duplication 1 of 2.\n` +
-        `${path.resolve("test1.css")}:5:30 [shareDeclarations] Declaration moved into generated rule (.e { color: red; }). Duplication 2 of 2.\n` +
-        `${path.resolve("test1.css")}:2:5 [shareDeclarations] Removed empty rule with selector ".a".`;
+        `${path.resolve("test1.css")}:2:10 [mergeDeclarations] Declaration moved into generated rule (.e { color: red; }). Duplication 1 of 2.\n` +
+        `${path.resolve("test1.css")}:5:30 [mergeDeclarations] Declaration moved into generated rule (.e { color: red; }). Duplication 2 of 2.\n` +
+        `${path.resolve("test1.css")}:2:5 [mergeDeclarations] Removed empty rule with selector ".a".`;
       assert.deepEqual(logString, expectedLogMessage);
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
       .e { color: red; }
@@ -55,7 +55,7 @@ export class ShareDeclarationsTest {
     });
   }
 
-  @test "will share shorthand declarations if duplicated"() {
+  @test "will merge shorthand declarations if duplicated"() {
     let css1 = `
     .a { color: red; }
     .b { border: 1px solid blue; }
@@ -67,12 +67,12 @@ export class ShareDeclarationsTest {
     <div class="(c | a)"></div>
     <div class="(--- | b | d)"></div>
   `);
-    return testShareDeclarations(css1, template).then(result => {
+    return testMergeDeclarations(css1, template).then(result => {
       let logString = result.optimization.actions.performed[0].logString();
       let expectedLogMessage =
-        `${path.resolve("test1.css")}:2:10 [shareDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 1 of 2.\n` +
-        `${path.resolve("test1.css")}:5:30 [shareDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 2 of 2.\n` +
-        `${path.resolve("test1.css")}:2:5 [shareDeclarations] Removed empty rule with selector ".a".`;
+        `${path.resolve("test1.css")}:2:10 [mergeDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 1 of 2.\n` +
+        `${path.resolve("test1.css")}:5:30 [mergeDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 2 of 2.\n` +
+        `${path.resolve("test1.css")}:2:5 [mergeDeclarations] Removed empty rule with selector ".a".`;
       assert.deepEqual(logString, expectedLogMessage);
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
       .f { color: red; }
@@ -101,7 +101,7 @@ export class ShareDeclarationsTest {
     <div class="(c | a)" id="(id1 | id2)"></div>
     <div class="(--- | b | d)" id="id3"></div>
   `);
-    return testShareDeclarations(css1, template).then(result => {
+    return testMergeDeclarations(css1, template).then(result => {
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
       .e { background: none; }`);
       return parseStylesheet(result.optimization.output.content.toString()).then(styles => {
@@ -130,7 +130,7 @@ export class ShareDeclarationsTest {
     <div class="(c | a)" id="(id1 | id2)"></div>
     <div class="(--- | b | d)" id="id3"></div>
   `);
-    return testShareDeclarations(css1, template).then(result => {
+    return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
@@ -156,7 +156,7 @@ export class ShareDeclarationsTest {
     <div class="a b"></div>
     <div class="c"></div>
   `);
-    return testShareDeclarations(css1, template).then(result => {
+    return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
@@ -183,7 +183,7 @@ export class ShareDeclarationsTest {
     <div class="a b"></div>
     <div class="c"></div>
   `);
-    return testShareDeclarations(css1, template).then(result => {
+    return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
@@ -210,7 +210,7 @@ export class ShareDeclarationsTest {
       <span class="e">C Scoped!</span>
     </div>
   `);
-    return testShareDeclarations(css1, template).then(result => {
+    return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
@@ -223,7 +223,7 @@ export class ShareDeclarationsTest {
     });
   }
 
-  // TODO share classes when specificity would override them
+  // TODO merge classes when specificity would override them
   // and the element(s) already have the class.
   @skip
   @test "handles scoped selectors"() {
@@ -251,7 +251,7 @@ export class ShareDeclarationsTest {
     <span class="c">C Not Scoped!</span>
     <span class="d">D Not Scoped!</span>
   `);
-    return testShareDeclarations(css1, template).then(result => {
+    return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
@@ -270,7 +270,7 @@ export class ShareDeclarationsTest {
     });
   }
 
-  // TODO share classes when specificity would override them
+  // TODO merge classes when specificity would override them
   // and the element(s) already have the class.
   @skip
   @test "handles scoped selectors with additional scoped mergable decls"() {
@@ -290,7 +290,7 @@ export class ShareDeclarationsTest {
     <span class="d">D Not Scoped!</span>
     <span class="e">E Not Scoped!</span>
   `);
-    return testShareDeclarations(css1, template).then(result => {
+    return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,

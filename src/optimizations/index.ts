@@ -4,7 +4,7 @@ import {
 
 import { RemoveUnusedStyles } from "./RemoveUnusedStyles";
 import { RewriteIdents } from "./RewriteIdents";
-import { ShareDeclarations } from "./ShareDeclarations";
+import { MergeDeclarations } from "./MergeDeclarations";
 
 export {
   Optimization,
@@ -16,7 +16,7 @@ export {
 export interface Optimizations {
   removeUnusedStyles: typeof RemoveUnusedStyles;
   rewriteIdents: typeof RewriteIdents;
-  shareDeclarations: typeof ShareDeclarations;
+  mergeDeclarations: typeof MergeDeclarations;
   [optimization: string]: OptimizationConstructor;
 }
 
@@ -24,5 +24,5 @@ export interface Optimizations {
 export const optimizations: Optimizations = {
   removeUnusedStyles: RemoveUnusedStyles,
   rewriteIdents: RewriteIdents,
-  shareDeclarations: ShareDeclarations
+  mergeDeclarations: MergeDeclarations
 };
