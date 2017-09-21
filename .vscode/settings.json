@@ -4,5 +4,9 @@
       "**/dist/**/*": true,
       "**/*.lock": true
     },
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "typescriptHero.codeOutline.enabled": true,
+    "typescriptHero.resolver.multiLineWrapThreshold": 10,
+    "typescriptHero.resolver.multiLineTrailingComma": true,
+    "typescriptHero.resolver.organizeOnSave": true
 }
