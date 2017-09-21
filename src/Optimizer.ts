@@ -1,35 +1,43 @@
-import { CssFile, ParsedCssFile } from "./CssFile";
-import { StyleMapping } from "./StyleMapping";
-import { OptiCSSOptions, DEFAULT_OPTIONS, TemplateIntegrationOptions } from "./OpticssOptions";
-import { TemplateAnalysis } from "./TemplateAnalysis";
-import { TemplateTypes } from "./TemplateInfo";
-import { optimizations, Optimization, SingleFileOptimization, MultiFileOptimization } from "./optimizations";
-import * as postcss from "postcss";
+import * as postcss from 'postcss';
 import Concat = require("concat-with-sourcemaps");
-import { Actions } from "./Actions";
-import { OptimizationPass } from "./OptimizationPass";
-import initializers, { Initializers } from "./initializers";
+
+import {
+  Actions,
+} from './Actions';
+import {
+  CssFile,
+  ParsedCssFile,
+} from './CssFile';
+import {
+  default as initializers,
+  Initializers,
+} from './initializers';
+import {
+  OptiCSSOptions,
+  TemplateIntegrationOptions,
+  DEFAULT_OPTIONS,
+} from './OpticssOptions';
+import {
+  Optimization,
+  optimizations,
+  isSingleFileOptimization,
+  isMultiFileOptimization,
+} from './optimizations';
+import {
+  StyleMapping,
+} from './StyleMapping';
+import {
+  TemplateAnalysis,
+} from './TemplateAnalysis';
+import {
+  TemplateTypes,
+} from './TemplateInfo';
+import { OptimizationPass } from './OptimizationPass';
 
 export interface OptimizationResult {
   output: CssFile;
   styleMapping: StyleMapping;
   actions: Actions;
-}
-
-function optimizesSingleFiles(optimization: Optimization): optimization is SingleFileOptimization {
-  if ((<SingleFileOptimization>optimization).optimizeSingleFile) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function optimizesAllFiles(optimization: Optimization): optimization is MultiFileOptimization {
-  if ((<MultiFileOptimization>optimization).optimizeAllFiles) {
-    return true;
-  } else {
-    return false;
-  }
 }
 
 export class Optimizer {
@@ -43,8 +51,7 @@ export class Optimizer {
   options: OptiCSSOptions;
   templateOptions: TemplateIntegrationOptions;
 
-  private singleFileOptimizations: Array<SingleFileOptimization>;
-  private multiFileOptimizations: Array<MultiFileOptimization>;
+  private optimizations: Array<Optimization>;
   private initializers: Array<keyof Initializers>;
 
   /**
@@ -63,8 +70,7 @@ export class Optimizer {
     // TODO: give an error if the options conflict with the template integration abilities?
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
     this.templateOptions = templateOptions;
-    this.singleFileOptimizations = [];
-    this.multiFileOptimizations = [];
+    this.optimizations = [];
     this.initializers = new Array<keyof Initializers>();
     if (!this.options.enabled) {
       return;
@@ -85,12 +91,7 @@ export class Optimizer {
             this.initializers.push(initializerName);
           }
         }
-        if (optimizesSingleFiles(optimization)) {
-          this.singleFileOptimizations.push(optimization);
-        }
-        if (optimizesAllFiles(optimization)) {
-          this.multiFileOptimizations.push(optimization);
-        }
+        this.optimizations.push(optimization);
       }
     });
   }
@@ -117,18 +118,36 @@ export class Optimizer {
     return Promise.all(promises);
   }
 
-  private optimizeSingleFile(pass: OptimizationPass, file: ParsedCssFile): Promise<ParsedCssFile> {
-    this.singleFileOptimizations.forEach((optimization) => {
-      optimization.optimizeSingleFile(pass, this.analyses, file);
-    });
-    return Promise.resolve(file);
+  private optimizeFiles(pass: OptimizationPass, files: Array<ParsedCssFile>): Promise<Array<ParsedCssFile>> {
+    for (let optimization of this.optimizations) {
+      if (isSingleFileOptimization(optimization)) {
+        for (let file of files) {
+          optimization.optimizeSingleFile(pass, this.analyses, file);
+        }
+      }
+      if (isMultiFileOptimization(optimization)) {
+        optimization.optimizeAllFiles(pass, this.analyses, files);
+      }
+    }
+    return Promise.resolve(files);
   }
 
-  private optimizeAllFiles(pass: OptimizationPass, files: Array<ParsedCssFile>): Promise<Array<ParsedCssFile>> {
-    this.multiFileOptimizations.forEach((optimization) => {
-      optimization.optimizeAllFiles(pass, this.analyses, files);
-    });
-    return Promise.resolve(files);
+  private concatenateFiles(files: Array<ParsedCssFile>, outputFilename: string): Concat {
+    let output = new Concat(true, outputFilename, "\n");
+    for (let file of files) {
+      let resultOpts = {
+        to: outputFilename,
+        map: {
+          inline: false,
+          prev: file.content.map,
+          sourcesContent: true,
+          annotation: false
+        }
+      };
+      let result = file.content.root!.toResult(resultOpts);
+      output.add(file.filename || "optimized.css", result.css, result.map.toJSON());
+    }
+    return output;
   }
 
   optimize(outputFilename: string): Promise<OptimizationResult> {
@@ -136,25 +155,10 @@ export class Optimizer {
     return this.parseFiles(this.sources).then(parsedFiles => {
       this.initialize(pass, parsedFiles);
       return parsedFiles;
-    }).then(parsedFiles => {
-      return Promise.all(parsedFiles.map(cssFile => this.optimizeSingleFile(pass, cssFile)));
     }).then(files => {
-      return this.optimizeAllFiles(pass, files);
+      return this.optimizeFiles(pass, files);
     }).then((files) => {
-      let output = new Concat(true, outputFilename, "\n");
-      files.forEach(file => {
-        let resultOpts = {
-          to: outputFilename,
-          map: {
-            inline: false,
-            prev: file.content.map,
-            sourcesContent: true,
-            annotation: false
-          }
-        };
-        let result = file.content.root!.toResult(resultOpts);
-        output.add(file.filename || "optimized.css", result.css, result.map.toJSON());
-      });
+      let output = this.concatenateFiles(files, outputFilename);
       return {
         output: {
           content: output.content.toString(),

@@ -10,7 +10,9 @@ export {
   Optimization,
   OptimizationConstructor,
   MultiFileOptimization,
-  SingleFileOptimization
+  SingleFileOptimization,
+  isMultiFileOptimization,
+  isSingleFileOptimization
 } from "./Optimization";
 
 export interface Optimizations {

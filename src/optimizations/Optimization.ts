@@ -40,6 +40,14 @@ export interface MultiFileOptimization {
     files: Array<ParsedCssFile>): void;
 }
 
+export function isMultiFileOptimization(optimization: Optimization): optimization is MultiFileOptimization {
+  return !!(<MultiFileOptimization>optimization).optimizeAllFiles;
+}
+
+export function isSingleFileOptimization(optimization: Optimization): optimization is SingleFileOptimization {
+  return !!(<SingleFileOptimization>optimization).optimizeSingleFile;
+}
+
 export type Optimization = SingleFileOptimization
                          | MultiFileOptimization
                          | SingleFileOptimization & MultiFileOptimization;

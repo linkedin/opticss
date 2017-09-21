@@ -1,25 +1,47 @@
-import { DeclarationInfo } from './StyleInfo';
 import * as propParser from 'css-property-parser';
 import * as postcss from 'postcss';
-import * as specificity from 'specificity';
-import { BSTree, Dictionary, MultiDictionary } from 'typescript-collections';
-import { inspect } from 'util';
+import {
+  inspect,
+} from 'util';
 
-import { ExpandShorthand } from '../../actions/ExpandShorthand';
-import { Declaration, MergeDeclarations as MergeDeclarationsAction } from '../../actions/MergeDeclarations';
-import { ParsedCssFile } from '../../CssFile';
-import { Initializers } from '../../initializers';
-import { OptiCSSOptions, TemplateIntegrationOptions } from '../../OpticssOptions';
-import { OptimizationPass } from '../../OptimizationPass';
-import { ParsedSelector } from '../../parseSelector';
-import { Element } from '../../Selectable';
-import { TemplateAnalysis } from '../../TemplateAnalysis';
-import { TemplateTypes } from '../../TemplateInfo';
-import { expandIfNecessary } from '../../util/shorthandProperties';
-import { MultiFileOptimization } from '../Optimization';
-import { RuleScope, walkRules } from '../util';
-import { OptimizationContext } from './OptimizationContext';
-import { DeclarationMapper } from './DeclarationMapper';
+import {
+  ExpandShorthand,
+} from '../../actions/ExpandShorthand';
+import {
+  Declaration,
+  MergeDeclarations as MergeDeclarationsAction,
+} from '../../actions/MergeDeclarations';
+import {
+  ParsedCssFile,
+} from '../../CssFile';
+import {
+  Initializers,
+} from '../../initializers';
+import {
+  OptiCSSOptions,
+  TemplateIntegrationOptions,
+} from '../../OpticssOptions';
+import {
+  OptimizationPass,
+} from '../../OptimizationPass';
+import {
+  TemplateAnalysis,
+} from '../../TemplateAnalysis';
+import {
+  TemplateTypes,
+} from '../../TemplateInfo';
+import {
+  MultiFileOptimization,
+} from '../Optimization';
+import {
+  DeclarationMapper,
+} from './DeclarationMapper';
+import {
+  OptimizationContext,
+} from './OptimizationContext';
+import {
+  DeclarationInfo,
+} from './StyleInfo';
 
 interface Mergable {
   context: OptimizationContext;
