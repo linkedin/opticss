@@ -25,6 +25,6 @@ export interface Optimizations {
 // TODO: enforce execution order of optimizations listed here.
 export const optimizations: Optimizations = {
   removeUnusedStyles: RemoveUnusedStyles,
+  mergeDeclarations: MergeDeclarations,
   rewriteIdents: RewriteIdents,
-  mergeDeclarations: MergeDeclarations
 };

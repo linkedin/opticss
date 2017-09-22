@@ -947,6 +947,14 @@ export class Element implements ElementInfo, Selectable {
     }
     return e;
   }
+  toString() {
+    let parts = [];
+    parts.push(this.tagname);
+    for (let attr of this.attributes) {
+      parts.push(attr);
+    }
+    return `<${parts.join(" ")}>`;
+  }
 }
 
 /*

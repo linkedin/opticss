@@ -8,7 +8,10 @@ import { ParsedCssFile } from '../../CssFile';
 import { OptimizationPass } from '../../OptimizationPass';
 import { Element } from '../../Selectable';
 import { TemplateAnalysis } from '../../TemplateAnalysis';
-import { expandIfNecessary } from '../../util/shorthandProperties';
+import {
+  expandIfNecessary,
+  expandPropertyName,
+} from '../../util/shorthandProperties';
 import { walkRules } from '../util';
 import { SelectorInfo, DeclarationInfo } from './StyleInfo';
 import { OptimizationContexts } from './OptimizationContext';
@@ -25,7 +28,7 @@ export class DeclarationMapper {
   /**
    * map of elements to the selectors that match it -- those selectors are in
    * order of lesser to greater precedence. */
-  elementSelectors: Map<Element, SelectorInfo[]>;
+  elementDeclarations: Map<Element, MultiDictionary<string, DeclarationInfo>>;
 
   /** binary search tree of selectors. sorts as they are added and allows in order traversal. */
   selectorTree: BSTree<SelectorInfo>;
@@ -46,7 +49,7 @@ export class DeclarationMapper {
       if (cmp === 0) cmp = compare(s1.sourceIndex, s2.sourceIndex);
       return cmp;
     });
-    this.elementSelectors = new Map<Element, SelectorInfo[]>();
+    this.elementDeclarations = new Map<Element, MultiDictionary<string, DeclarationInfo>>();
     files.forEach((file, fileIndex) => {
       let sourceIndex = 0;
       walkRules(file.content.root!, (rule, scope) => {
@@ -65,6 +68,7 @@ export class DeclarationMapper {
           });
           let selectorInfo: SelectorInfo = {
             rule,
+            container: rule.parent,
             scope,
             selector,
             specificity: specificity.calculate(selector.toString())[0],
@@ -72,85 +76,111 @@ export class DeclarationMapper {
             fileIndex,
             sourceIndex,
             elements,
-            overallIndex: -1,
+            ordinal: -1,
             declarations,
             declarationInfos: new MultiDictionary()
           };
+          let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContext());
+          for (let prop of declarations.keys()) {
+            context.authoredProps.add(prop);
+          }
           this.selectorTree.add(selectorInfo);
         });
       });
     });
 
+    let selectorOrdinal = 1;
+    let declarationOrdinal = 1;
+    let importantDeclInfos = new Array<DeclarationInfo>();
     this.selectorTree.inorderTraversal((selectorInfo) => {
-      let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContext());
-      // At this point we haven't expanded any properties and we shouldn't unless it's possible to find a duplicate value.
-      // So we need to enumerate all possible declared properties.
-      selectorInfo.declarations.keys().forEach(prop => {
-        context.authoredProps.add(prop);
-      });
-    });
-
-    let overallIndex = 0;
-    this.selectorTree.inorderTraversal((selectorInfo) => {
-      selectorInfo.overallIndex = overallIndex++;
-      selectorInfo.elements.forEach(el => {
-        let selectors = this.elementSelectors.get(el);
-        if (selectors) {
-          selectors.push(selectorInfo);
-        } else {
-          this.elementSelectors.set(el, [selectorInfo]);
-        }
-      });
+      selectorInfo.ordinal = selectorOrdinal++;
 
       // map properties to selector info
       let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContext());
       selectorInfo.declarations.keys().forEach(prop => {
         let values = selectorInfo.declarations.getValue(prop);
         values.forEach(value => {
+          declarationOrdinal++;
           let [v, important, decl] = value;
           if (propParser.isShorthandProperty(decl.prop)) {
+            // We only expand shorthand declarations as much as is necessary within the current optimization context
+            // but we need to track declarations globally and against elements according to the fully expanded
+            // values because selectors can conflict across different optimization contexts.
             let longhandDeclarations = expandIfNecessary(context.authoredProps, decl.prop, decl.value);
-            Object.keys(longhandDeclarations).forEach(longHandProp => {
-              let valueInfo = context.getDeclarationValues(longHandProp);
-              let declValue = this.addDeclInfo(selectorInfo, valueInfo, longHandProp, longhandDeclarations[longHandProp], important, decl);
-              selectorInfo.declarationInfos.setValue([prop, v], declValue);
-            });
+            let longHandProps = Object.keys(longhandDeclarations);
+            for (let longHandProp of longHandProps) {
+              let declInfo = this.makeDeclInfo(selectorInfo, longHandProp, longhandDeclarations[longHandProp], important, decl, declarationOrdinal);
+              if (important) {
+                importantDeclInfos.push(declInfo);
+              }
+              selectorInfo.declarationInfos.setValue([prop, v], declInfo);
+              if (propParser.isShorthandProperty(longHandProp)) {
+                this.trackShorthand(declInfo);
+                let allDecls = expandIfNecessary(new Set(expandPropertyName(longHandProp, true)), longHandProp, longhandDeclarations[longHandProp]);
+                for (let longHandProp of Object.keys(allDecls)) {
+                  let valueInfo = context.getDeclarationValues(longHandProp);
+                  valueInfo.setValue(allDecls[longHandProp], declInfo);
+                  this.addDeclInfoToElements(selectorInfo.elements, longHandProp, declInfo);
+                }
+              }
+            }
           } else {
+            // normal long hand props are just set directly
+            let declInfo = this.makeDeclInfo(selectorInfo, prop, v, important, decl, declarationOrdinal);
+            if (important) {
+              importantDeclInfos.push(declInfo);
+            }
             let valueInfo = context.getDeclarationValues(prop);
-            this.addDeclInfo(selectorInfo, valueInfo, prop, v, important, decl);
+            valueInfo.setValue(v, declInfo);
+            this.addDeclInfoToElements(selectorInfo.elements, prop, declInfo);
           }
         });
       });
       // If we want important property precedence to be pre-calculated it can be
       // done here. It's not clear that's helpful yet.
     });
+    // we add the max declaration ordinal to all the important declaration infos
+    // this makes those declarations resolve higher than all the non-important values.
+    for (let declInfo of importantDeclInfos) {
+      declInfo.ordinal = declInfo.ordinal + declarationOrdinal;
+    }
   }
-  private addDeclInfo(
+  private makeDeclInfo(
     selectorInfo: SelectorInfo,
-    valueInfo: MultiDictionary<string, DeclarationInfo>,
     prop: string,
     value: string,
     important: boolean,
     decl: postcss.Declaration,
+    ordinal: number,
     dupeCount = 0
   ): DeclarationInfo {
-    let declInfo = {
+    return {
       decl,
       prop,
       value,
       important,
       selectorInfo,
+      ordinal,
       dupeCount
     };
-    if (propParser.isShorthandProperty(declInfo.decl.prop)) {
-      if (this.shortHands.has(declInfo.decl)) {
-        this.shortHands.get(declInfo.decl)!.push(declInfo);
-      } else {
-        this.shortHands.set(declInfo.decl, [declInfo]);
-      }
+  }
+  private trackShorthand(declInfo: DeclarationInfo) {
+    if (this.shortHands.has(declInfo.decl)) {
+      this.shortHands.get(declInfo.decl)!.push(declInfo);
+    } else {
+      this.shortHands.set(declInfo.decl, [declInfo]);
     }
-    valueInfo.setValue(value, declInfo);
-    return declInfo;
+  }
+
+  private addDeclInfoToElements(elements: Element[], property: string, declInfo: DeclarationInfo) {
+    for (let el of elements) {
+      let declarations = this.elementDeclarations.get(el);
+      if (!declarations) {
+        declarations = new MultiDictionary();
+        this.elementDeclarations.set(el, declarations);
+      }
+      declarations.setValue(property, declInfo);
+    }
   }
 }
 

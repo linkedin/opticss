@@ -20,6 +20,7 @@ export interface DeclarationInfo {
   selector: ParsedSelector;
   rule: postcss.Rule;
   decl: postcss.Declaration;
+  container: postcss.Node;
 }
 
 /**
@@ -77,7 +78,8 @@ export class MergeDeclarations extends MultiAction {
     let decl = postcss.decl(this.decl);
     decl.raws = { before:' ', after: ' '};
     this.newRule.append(decl);
-    let ruleLocation = this.declInfos.find(d => d.rule.parent === this.container)!.rule;
+
+    let ruleLocation = this.declInfos.find(d => d.container === this.container)!.rule;
     this.container.insertBefore(ruleLocation, this.newRule);
     let sourceAttributes = new Array<ElementAttributes>();
     for (let declInfo of this.declInfos) {

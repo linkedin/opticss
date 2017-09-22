@@ -13,23 +13,32 @@ export abstract class Action {
   abstract perform(): this;
   abstract logString(): string;
   abstract readonly sourcePosition: SourcePosition | undefined;
+
   constructor(optimization: keyof Optimizations) {
     this.optimization = optimization;
   }
-  annotateLogMessage(message: string, sourcePosition = this.sourcePosition) {
+
+  positionString(sourcePosition = this.sourcePosition, includeFilename = true): string {
+    let posStr = "";
     if (sourcePosition) {
-      let prefix = "";
-      if (sourcePosition.filename) {
-        prefix += sourcePosition.filename + ":";
+      if (includeFilename && sourcePosition.filename) {
+        posStr += sourcePosition.filename + ":";
       }
-      prefix += sourcePosition.line;
+      posStr += sourcePosition.line;
       if (sourcePosition.column) {
-        prefix += ":" + sourcePosition.column;
+        posStr += ":" + sourcePosition.column;
       }
-      return `${prefix} [${this.optimization}] ${message}`;
-    } else {
-      return message;
     }
+    return posStr;
+  }
+
+  annotateLogMessage(message: string, sourcePosition = this.sourcePosition): string {
+    let annotated = "";
+    if (sourcePosition) {
+      annotated += this.positionString(sourcePosition) + " ";
+    }
+    annotated += `[${this.optimization}] ${message}`;
+    return annotated;
   }
 
   nodeSourcePosition(node: postcss.Node) {

@@ -1,12 +1,17 @@
 import { suite, test, skip, only } from "mocha-typescript";
 import { assert } from "chai";
-import * as path from "path";
-import * as postcss from "postcss";
+import * as path from 'path';
+import * as postcss from 'postcss';
 
 import { OptimizationResult } from "../src/Optimizer";
 import { TestTemplate } from "./util/TestTemplate";
 import clean from "./util/clean";
-import { testOptimizationCascade, CascadeTestResult, debugResult } from "./util/assertCascade";
+import {
+  CascadeTestResult,
+  debugError,
+  debugResult,
+  testOptimizationCascade,
+} from './util/assertCascade';
 import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOptions";
 import { IdentGenerator, IdentGenerators } from "../src/util/IdentGenerator";
 import { assertSmaller, debugSize, assertSmallerStylesAndMarkup } from "./util/assertSmaller";
@@ -18,7 +23,7 @@ function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplat
     ...stylesAndTemplates);
 }
 
-@suite("Shares Declarations")
+@suite("Declaration Merging")
 export class MergeDeclarationsTest {
   @test "will merge declarations"() {
     let css1 = `
@@ -55,6 +60,49 @@ export class MergeDeclarationsTest {
     });
   }
 
+  @skip
+  @test "won't merge shorthand declarations with intervening conflicts"() {
+    let css1 = `
+    .a { color: red; }
+    .b { border: 1px solid blue; }
+    .f { border-style: dashed; }
+    .c { border-width: 1px; }
+    .d { border-color: blue; color: red; }
+    .e { border-style: solid; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="(c | a)"></div>
+    <div class="(--- | b | d)"></div>
+    <div class="e f"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      let logString = result.optimization.actions.performed[0].logString();
+      let expectedLogMessage =
+        `${path.resolve("test1.css")}:2:10 [mergeDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 1 of 2.\n` +
+        `${path.resolve("test1.css")}:5:30 [mergeDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 2 of 2.\n` +
+        `${path.resolve("test1.css")}:2:5 [mergeDeclarations] Removed empty rule with selector ".a".`;
+      assert.deepEqual(logString, expectedLogMessage);
+      assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
+      .g { color: red; }
+      .h { border-width: 1px; }
+      .b { border-style: solid; }
+      .j { border-color: blue; }
+      .f { border-style: dashed; }
+      .i { border-style: solid; }`); // TODO figure out whether or not this should expand
+      return parseStylesheet(result.optimization.output.content.toString()).then(styles => {
+        styles.root!.walkRules(rule => {
+          assert(!rule.selector.includes(".a"), "Unexpected Selector: .a");
+        });
+      }).then(() => {
+        // debugSize(css1, result);
+        // debugResult(css1, result);
+        // TODO: verify mapping & template rewrite and cascade.
+        return assertSmaller(css1, result);
+      });
+    });
+  }
+
+  @skip
   @test "will merge shorthand declarations if duplicated"() {
     let css1 = `
     .a { color: red; }
@@ -196,6 +244,36 @@ export class MergeDeclarationsTest {
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
     });
   }
+
+  @test "is pseudo class scoped"() {
+    let css1 = clean`
+    .aa { color: red; }
+    .aa:hover { color: white; }
+    .bb { color: white; }
+    .cc { color: red; }
+    .cc:hover { color: white; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="aa"></div>
+    <div class="bb cc"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        result.optimization.output.content.toString().trim(),
+        clean`
+          .aa { color: red; }
+          .a:hover { color: white; }
+          .bb { color: white; }
+          .cc { color: red; }
+        `);
+      return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
+    }).catch(e => {
+      // debugError(css1, e);
+      throw e;
+    });
+  }
+
   // TODO: Tune hueristic about when to merge decls when nested.
   @test "handles simple scoped selectors"() {
     let css1 = clean`
