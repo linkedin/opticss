@@ -217,10 +217,14 @@ export function debugError(inputCSS: string, error: CascadeTestError) {
   } else {
     console.log("No optimization occurred before error was raised.");
   }
-  console.log("Template:", "\n" + indentString(error.template.contents));
-  console.log("==============================================================");
-  console.log("Template Rewrite:", "\n" + indentString(error.rewrittenHtml));
-  console.log("==============================================================");
+  if (error.template) {
+    console.log("Template:", "\n" + indentString(error.template.contents));
+    console.log("==============================================================");
+  }
+  if (error.rewrittenHtml) {
+    console.log("Template Rewrite:", "\n" + indentString(error.rewrittenHtml));
+    console.log("==============================================================");
+  }
 }
 
 function indentString(str: string, indent = "  ") {

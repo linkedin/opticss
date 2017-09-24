@@ -217,6 +217,42 @@ export class MergeDeclarationsTest {
     });
   }
 
+  @test "won't merge shorthand declarations if they break the cascade."() {
+    let css1 = `
+    .aa { background: none repeat-x fixed content-box red; }
+    .bb { background-color: red; }
+    .cc { background-image: none; }
+    .zz { background-attachment: static; }
+    .dd { background-repeat: repeat-x; }
+    .ee { background-repeat: repeat-x; }
+    .ff { background-clip: content-box; }
+    .gg { background-attachment: fixed; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="zz gg"></div>
+    <div class="aa bb cc"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .aa { background: none repeat-x fixed content-box red; }
+          .bb { background-color: red; }
+          .cc { background-image: none; }
+          .zz { background-attachment: static; }
+          .a { background-repeat: repeat-x; }
+          .ff { background-clip: content-box; }
+          .gg { background-attachment: fixed; }
+        `);
+      // TODO: verify mapping & template rewrite and cascade.
+      return assertSmaller(css1, result, {uncompressed: {notBiggerThan: 1}, gzip: { notBiggerThan: 5}, brotli: { notBiggerThan: 2}});
+    }).catch(e => {
+      debugError(css1, e);
+      throw e;
+    });
+  }
+
   @test "handles media queries"() {
     let css1 = clean`
     .a { color: red; }

@@ -166,10 +166,12 @@ export class MergeDeclarations implements MultiFileOptimization {
     for (let segments of mergableSets) {
       for (let mergableSet of segments) {
         for (let declInfo of mergableSet.decls) {
-          if (mergableShorthands.has(declInfo.decl)) {
+          if (mergableSet.decls.length > 1 && mergableShorthands.has(declInfo.decl)) {
             mergedLonghands.add(declInfo);
           } else if (unmergableShorthands.has(declInfo.decl)) {
             mergableSet.decls.splice(mergableSet.decls.indexOf(declInfo), 1);
+            mergableSet.decls.forEach(d => {d.dupeCount = d.dupeCount - 1;});
+            declInfo.dupeCount = 0;
           }
         }
       }
@@ -243,9 +245,9 @@ export class MergeDeclarations implements MultiFileOptimization {
           decls: new Array<DeclarationInfo>(unmergedDecl)
         });
       }
-      for (let mergeable of segmentedMergables) {
-        for (let declInfo of mergeable.decls) {
-          declInfo.dupeCount = mergeable.decls.length - 1;
+      for (let segment of segmentedMergables) {
+        for (let declInfo of segment.decls) {
+          declInfo.dupeCount = segment.decls.length - 1;
         }
       }
     contextMergables.push(segmentedMergables);
@@ -294,7 +296,7 @@ function canMerge(mapper: DeclarationMapper, decl: postcss.Declaration): boolean
   }
   let infos = mapper.shortHands.get(decl);
   if (infos) {
-    let duplicateCount = infos.reduce((total, info) => total + Math.min(info.dupeCount, 1), 1);
+    let duplicateCount = infos.reduce((total, info) => total + Math.min(info.dupeCount, 1), 0);
     return duplicateCount >= Math.ceil(infos.length / 2) + 1;
   } else {
     throw new Error("Missing decl info for declaration! " + inspect(decl));
