@@ -60,7 +60,12 @@ export class AnnotateMergeConflict extends Action {
   }
 
   elementString(element: Element = this.element) {
-    return `${element.toString()} (at ${this.positionString(element.sourceLocation.start)})`;
+    let elStr = element.toString();
+    let elPos = this.positionString(element.sourceLocation.start);
+    if (elPos) {
+      elStr += ` (at ${elPos})`;
+    }
+    return elStr;
   }
 
   declString(selector: ParsedSelector, decl: postcss.Declaration): string {

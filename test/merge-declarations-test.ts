@@ -54,7 +54,6 @@ export class MergeDeclarationsTest {
         });
       }).then(() => {
         // debugResult(css1, result);
-        // TODO: verify mapping & template rewrite and cascade.
         return assertSmaller(css1, result, {gzip: { notBiggerThan: 1}});
       }).catch(e => {
         debugError(css1, e);
@@ -62,7 +61,6 @@ export class MergeDeclarationsTest {
     });
   }
 
-  @skip
   @test "won't merge shorthand declarations with intervening conflicts"() {
     let css1 = `
     .a { color: red; }
@@ -80,17 +78,18 @@ export class MergeDeclarationsTest {
     return testMergeDeclarations(css1, template).then(result => {
       let logString = result.optimization.actions.performed[0].logString();
       let expectedLogMessage =
-        `${path.resolve("test1.css")}:2:10 [mergeDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 1 of 2.\n` +
-        `${path.resolve("test1.css")}:5:30 [mergeDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 2 of 2.\n` +
-        `${path.resolve("test1.css")}:2:5 [mergeDeclarations] Removed empty rule with selector ".a".`;
+        `${path.resolve("test1.css")}:4:10 [mergeDeclarations] ` +
+        `Couldn't merge .e { border-style: solid; } (at ${path.resolve("test1.css")}:7:10) ` +
+        `with .b { border: 1px solid blue; } (at ${path.resolve("test1.css")}:3:10) ` +
+        `because it conflicts with .f { border-style: dashed; } on element <div class="e f">`;
       assert.deepEqual(logString, expectedLogMessage);
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
-      .g { color: red; }
-      .h { border-width: 1px; }
-      .b { border-style: solid; }
-      .j { border-color: blue; }
-      .f { border-style: dashed; }
-      .i { border-style: solid; }`); // TODO figure out whether or not this should expand
+        .g { color: red; }
+        .b { border: 1px solid blue; }
+        .f { border-style: dashed; }
+        .c { border-width: 1px; }
+        .d { border-color: blue; }
+        .e { border-style: solid; }`);
       return parseStylesheet(result.optimization.output.content.toString()).then(styles => {
         styles.root!.walkRules(rule => {
           assert(!rule.selector.includes(".a"), "Unexpected Selector: .a");
@@ -98,13 +97,10 @@ export class MergeDeclarationsTest {
       }).then(() => {
         // debugSize(css1, result);
         // debugResult(css1, result);
-        // TODO: verify mapping & template rewrite and cascade.
-        return assertSmaller(css1, result);
       });
     });
   }
 
-  @skip
   @test "will merge shorthand declarations if duplicated"() {
     let css1 = `
     .a { color: red; }
@@ -119,11 +115,6 @@ export class MergeDeclarationsTest {
   `);
     return testMergeDeclarations(css1, template).then(result => {
       let logString = result.optimization.actions.performed[0].logString();
-      let expectedLogMessage =
-        `${path.resolve("test1.css")}:2:10 [mergeDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 1 of 2.\n` +
-        `${path.resolve("test1.css")}:5:30 [mergeDeclarations] Declaration moved into generated rule (.f { color: red; }). Duplication 2 of 2.\n` +
-        `${path.resolve("test1.css")}:2:5 [mergeDeclarations] Removed empty rule with selector ".a".`;
-      assert.deepEqual(logString, expectedLogMessage);
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
       .f { color: red; }
       .g { border-width: 1px; }
@@ -136,8 +127,7 @@ export class MergeDeclarationsTest {
       }).then(() => {
         // debugSize(css1, result);
         // debugResult(css1, result);
-        // TODO: verify mapping & template rewrite and cascade.
-        return assertSmaller(css1, result);
+        // return assertSmaller(css1, result);
       });
     });
   }
@@ -177,7 +167,7 @@ export class MergeDeclarationsTest {
     .a4 { background-attachment: fixed; }
   `;
     let template = new TestTemplate("test", clean`
-    <div class="(c | a)"></div>
+    <div class="(a | c)"></div>
     <div class="(--- | b | d)"></div>
   `);
     return testMergeDeclarations(css1, template).then(result => {
@@ -190,8 +180,9 @@ export class MergeDeclarationsTest {
               .i { background-attachment: fixed; }
               .j { background-color: red; }
               .a { background-position: initial; background-size: initial; background-origin: content-box; }`);
-      // TODO: verify mapping & template rewrite and cascade.
-      return assertSmaller(css1, result, {gzip: { notBiggerThan: 6}, brotli: { notBiggerThan: 1}});
+      assert.deepEqual(result.testedTemplates[0].testedMarkups[0].optimizedBody, clean`
+        <body><div class="a e g h i j"></div>
+        <div></div></body>`);
     });
   }
 
@@ -212,7 +203,6 @@ export class MergeDeclarationsTest {
         clean`.a { color: red; }
               .b { color: blue; }
               .c { color: red; }`);
-      // TODO: verify mapping & template rewrite and cascade.
       return assertSmaller(css1, result, {uncompressed: {notBiggerThan: 1}, gzip: { notBiggerThan: 5}, brotli: { notBiggerThan: 1}});
     });
   }
@@ -245,7 +235,6 @@ export class MergeDeclarationsTest {
           .ff { background-clip: content-box; }
           .gg { background-attachment: fixed; }
         `);
-      // TODO: verify mapping & template rewrite and cascade.
       return assertSmaller(css1, result, {uncompressed: {notBiggerThan: 1}, gzip: { notBiggerThan: 5}, brotli: { notBiggerThan: 2}});
     }).catch(e => {
       debugError(css1, e);
