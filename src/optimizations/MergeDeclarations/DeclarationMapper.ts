@@ -110,16 +110,16 @@ export class DeclarationMapper {
             let longHandProps = Object.keys(longhandDeclarations);
             for (let longHandProp of longHandProps) {
               let declInfo = this.makeDeclInfo(selectorInfo, longHandProp, longhandDeclarations[longHandProp], important, decl, declarationOrdinal);
+              this.trackShorthand(declInfo);
               if (important) {
                 importantDeclInfos.push(declInfo);
               }
               selectorInfo.declarationInfos.setValue([prop, v], declInfo);
+              let valueInfo = context.getDeclarationValues(longHandProp);
+              valueInfo.setValue(longhandDeclarations[longHandProp], declInfo);
               if (propParser.isShorthandProperty(longHandProp)) {
-                this.trackShorthand(declInfo);
                 let allDecls = expandIfNecessary(new Set(expandPropertyName(longHandProp, true)), longHandProp, longhandDeclarations[longHandProp]);
                 for (let longHandProp of Object.keys(allDecls)) {
-                  let valueInfo = context.getDeclarationValues(longHandProp);
-                  valueInfo.setValue(allDecls[longHandProp], declInfo);
                   this.addDeclInfoToElements(selectorInfo.elements, longHandProp, declInfo);
                 }
               }

@@ -56,6 +56,8 @@ export class MergeDeclarationsTest {
         // debugResult(css1, result);
         // TODO: verify mapping & template rewrite and cascade.
         return assertSmaller(css1, result, {gzip: { notBiggerThan: 1}});
+      }).catch(e => {
+        debugError(css1, e);
       });
     });
   }
@@ -140,7 +142,7 @@ export class MergeDeclarationsTest {
     });
   }
 
-  @test "will leave duplicated short hands as short hands if nothing to combine with."() {
+  @test "will leave duplicated short hands as short hands if nothing to combine with"() {
     let css1 = `
     .a { background: none; }
     .b { background: none; }
@@ -175,8 +177,8 @@ export class MergeDeclarationsTest {
     .a4 { background-attachment: fixed; }
   `;
     let template = new TestTemplate("test", clean`
-    <div class="(c | a)" id="(id1 | id2)"></div>
-    <div class="(--- | b | d)" id="id3"></div>
+    <div class="(c | a)"></div>
+    <div class="(--- | b | d)"></div>
   `);
     return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
@@ -193,7 +195,6 @@ export class MergeDeclarationsTest {
     });
   }
 
-  @skip
   @test "won't merge declarations if they break the cascade."() {
     let css1 = `
     .a { color: red; }
@@ -201,8 +202,8 @@ export class MergeDeclarationsTest {
     .c { color: red; }
   `;
     let template = new TestTemplate("test", clean`
-    <div class="a b"></div>
-    <div class="c"></div>
+    <div class="a"></div>
+    <div class="b c"></div>
   `);
     return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
@@ -212,7 +213,7 @@ export class MergeDeclarationsTest {
               .b { color: blue; }
               .c { color: red; }`);
       // TODO: verify mapping & template rewrite and cascade.
-      return assertSmaller(css1, result, {gzip: { notBiggerThan: 5}});
+      return assertSmaller(css1, result, {uncompressed: {notBiggerThan: 1}, gzip: { notBiggerThan: 5}, brotli: { notBiggerThan: 1}});
     });
   }
 
@@ -269,7 +270,7 @@ export class MergeDeclarationsTest {
         `);
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
     }).catch(e => {
-      // debugError(css1, e);
+      debugError(css1, e);
       throw e;
     });
   }

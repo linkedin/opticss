@@ -21,7 +21,7 @@ export class OptimizationContext {
   /**
    * map of property keys to a dictionary of values multi-mapped to
    * the selector information that references them. The multi-mapped values
-   * are in the order of selector precedence. (XXX should we resolve !important right away?)
+   * are in the order of stylesheet precedence. (XXX should we resolve !important right away?)
    */
   declarationMap: Dictionary<string, MultiDictionary<string, DeclarationInfo>>;
 

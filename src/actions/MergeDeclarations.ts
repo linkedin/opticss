@@ -152,8 +152,5 @@ function hasMeaningfulChildren(container: postcss.Container | undefined) {
 }
 
 function countNonCommentNodes(count: number, n: postcss.Node) {
-  if (n === undefined) {
-    console.log("why");
-  }
   return n.type === "comment" ? count : count + 1;
 }

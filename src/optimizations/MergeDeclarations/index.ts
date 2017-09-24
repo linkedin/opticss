@@ -1,4 +1,7 @@
 import {
+  StringDict,
+} from '../../util/UtilityTypes';
+import {
   expandIfNecessary,
   expandPropertyName,
 } from '../../util/shorthandProperties';
@@ -12,7 +15,6 @@ import {
   ExpandShorthand,
 } from '../../actions/ExpandShorthand';
 import {
-  Declaration,
   MergeDeclarations as MergeDeclarationsAction,
 } from '../../actions/MergeDeclarations';
 import {
@@ -50,7 +52,7 @@ import { Element } from '../../Selectable';
 import { Actions } from '../../Actions';
 import { AnnotateMergeConflict } from '../../actions/AnnotateMergeConflict';
 
-interface Mergable {
+interface MergableDeclarationSet {
   context: OptimizationContext;
   decls: DeclarationInfo[];
   decl: {
@@ -75,136 +77,252 @@ export class MergeDeclarations implements MultiFileOptimization {
     files: Array<ParsedCssFile>
   ): void {
     let mapper = new DeclarationMapper(pass, analyses, files);
-    let mergables: Mergable[] = [];
     for (let context of mapper.contexts) {
-      for (let prop of context.declarationMap.keys()) {
-        let values = context.declarationMap.getValue(prop);
-        for (let value of values.keys()) {
-          let decls = values.getValue(value);
-          let importantDecls = decls.filter(d => d.important);
-          let normalDecls = decls.filter(d => !d.important);
-          if (importantDecls.length > 1) {
-            mergables.push({
-              context,
-              decls: importantDecls.map(d => {d.dupeCount = importantDecls.length - 1; return d;}),
-              decl: { prop, value, important: true }
-            });
-          }
-          if (normalDecls.length > 1) {
-            mergables.push({
-              context,
-              decls: normalDecls.map(d => {d.dupeCount = normalDecls.length - 1; return d;}),
-              decl: { prop, value, important: false }
-            });
-          }
+      let contextMergables = this.mergablesForContext(context);
+      let shorthands = mergedShorthandsForContext(contextMergables);
+      let segmentedContextMergables = this.segmentByCascadeConflicts(pass.actions, mapper, contextMergables);
+      segmentedContextMergables = this.checkAndExpandShorthands(pass, mapper, shorthands, segmentedContextMergables);
+      for (let mergableSets of segmentedContextMergables) {
+        for (let mergableSet of mergableSets) {
+          if (mergableSet.decls.length < 2) continue;
+          this.mergeDeclarationSet(pass, mergableSet);
         }
       }
     }
 
-    let expandedProps = new Set<postcss.Declaration>();
-    for (let mergable of mergables) {
-      let decls = mergable.decls.filter(d => canMerge(mapper, d));
-      if (decls.length > 1) {
-        decls.forEach(d => {
-          if (!expandedProps.has(d.decl)) {
-            let infos = mapper.shortHands.get(d.decl);
-            if (infos) {
-              let toExpand = infos.filter(i => i.dupeCount === 0);
-              pass.actions.perform(new ExpandShorthand(d.decl, toExpand, "mergeDeclarations", "one or more of the long hand values was not duplicated anywhere."));
-            }
-            expandedProps.add(d.decl);
-          }
-        });
-        this.mergeDeclarations(pass, mapper, mergable.context, decls, mergable.decl);
+  }
+  private mergablesForContext(context: OptimizationContext) {
+    let contextMergables = new Array<MergableDeclarationSet>();
+    for (let prop of context.declarationMap.keys()) {
+      let values = context.declarationMap.getValue(prop);
+      for (let value of values.keys()) {
+        let decls = values.getValue(value);
+        let importantDecls = decls.filter(d => d.important);
+        let normalDecls = decls.filter(d => !d.important);
+        if (importantDecls.length > 1) {
+          contextMergables.push({
+            context,
+            decls: importantDecls,
+            decl: { prop, value, important: true }
+          });
+        }
+        if (normalDecls.length > 1) {
+          contextMergables.push({
+            context,
+            decls: normalDecls,
+            decl: { prop, value, important: false }
+          });
+        }
       }
     }
+    return contextMergables;
   }
-  private mergeDeclarations(
+  private mergeDeclarationSet(
     pass: OptimizationPass,
-    mapper: DeclarationMapper,
-    context: OptimizationContext,
-    declInfos: Array<DeclarationInfo>,
-    decl: Declaration
+    mergeableDeclarations: MergableDeclarationSet
   ) {
+    let context = mergeableDeclarations.context;
+    let declInfos = mergeableDeclarations.decls;
+    let decl = mergeableDeclarations.decl;
     let scope = context.scopes[0];
     let container = scope.length > 0 ? scope[scope.length - 1] : context.root;
-    let segments = this.segmentByCascadeConflicts(pass.actions, mapper, declInfos);
-
-    for (let declInfos of segments) {
-      if (declInfos.length < 2) continue;
-      pass.actions.perform(new MergeDeclarationsAction(
-        pass,
-        container,
-        context.selectorContext,
-        decl,
-        declInfos.map(declInfo => ({
-          selector: declInfo.selectorInfo.selector,
-          rule: declInfo.selectorInfo.rule,
-          container: declInfo.selectorInfo.container,
-          decl: declInfo.decl
-        })),
-        "mergeDeclarations",
-        "Duplication"));
-      let newOrdinal = declInfos[0].ordinal;
-      for (let i = 1; i < declInfos.length; i++) {
-        declInfos[i].ordinal = newOrdinal;
-      }
+    pass.actions.perform(new MergeDeclarationsAction(
+      pass,
+      container,
+      context.selectorContext,
+      decl,
+      declInfos.map(declInfo => ({
+        selector: declInfo.selectorInfo.selector,
+        rule: declInfo.selectorInfo.rule,
+        container: declInfo.selectorInfo.container,
+        decl: declInfo.decl
+      })),
+      "mergeDeclarations",
+      "Duplication"));
+    // The declarations are inserted at the document location of the first declaration it
+    // is merged with. So we update its declarations to that ordinal value.
+    let newOrdinal = declInfos[0].ordinal;
+    for (let i = 1; i < declInfos.length; i++) {
+      declInfos[i].ordinal = newOrdinal;
     }
-
   }
 
-  private segmentByCascadeConflicts(actions: Actions, mapper: DeclarationMapper, declInfos: Array<DeclarationInfo>): Array<Array<DeclarationInfo>> {
-    if (declInfos.length === 0) {
-      return [];
+  private checkAndExpandShorthands(
+    pass: OptimizationPass,
+    mapper: DeclarationMapper,
+    shorthands: Set<postcss.Declaration>,
+    mergableSets: MergableDeclarationSet[][]
+  ): MergableDeclarationSet[][] {
+    let mergableShorthands = new Set<postcss.Declaration>();
+    let unmergableShorthands = new Set<postcss.Declaration>();
+    for (let shorthand of shorthands) {
+      if (canMerge(mapper, shorthand)) {
+        mergableShorthands.add(shorthand);
+      } else {
+        unmergableShorthands.add(shorthand);
+      }
     }
-    let props = expandPropertyName(declInfos[0].prop);
-    let expanded = expandIfNecessary(new Set(props), declInfos[0].prop, declInfos[0].value);
-    let groups = new Array<Array<DeclarationInfo>>();
-
-    nextMerge:
-    for (let unmergedDecl of declInfos) {
-      nextGroup:
-      for (let group of groups) {
-        for (let mergedDecl of group) {
-          for (let element of unmergedDecl.selectorInfo.elements) {
-            let elInfo = mapper.elementDeclarations.get(element);
-            if (!elInfo) continue;
-            for (let prop of props) {
-              let conflictDecls = elInfo.getValue(prop);
-              for (let conflictDecl of conflictDecls) {
-                if (expanded[prop] !== conflictDecl.value
-                    && mergedDecl.ordinal < conflictDecl.ordinal
-                    && unmergedDecl.ordinal > conflictDecl.ordinal) {
-                  actions.perform(new AnnotateMergeConflict(
-                    mergedDecl.decl, mergedDecl.selectorInfo.selector,
-                    unmergedDecl.decl, unmergedDecl.selectorInfo.selector,
-                    conflictDecl.decl, conflictDecl.selectorInfo.selector,
-                    element
-                  ));
-                  continue nextGroup;
-                }
-              }
-            }
+    let mergedLonghands = new Set<DeclarationInfo>();
+    for (let segments of mergableSets) {
+      for (let mergableSet of segments) {
+        for (let declInfo of mergableSet.decls) {
+          if (mergableShorthands.has(declInfo.decl)) {
+            mergedLonghands.add(declInfo);
+          } else if (unmergableShorthands.has(declInfo.decl)) {
+            mergableSet.decls.splice(mergableSet.decls.indexOf(declInfo), 1);
           }
         }
-        group.push(unmergedDecl);
-        continue nextMerge;
       }
-      groups.push(new Array<DeclarationInfo>(unmergedDecl));
     }
-    return groups;
+    for (let mergableShorthand of mergableShorthands) {
+      let infos = mapper.shortHands.get(mergableShorthand);
+      if (infos) {
+        let toExpand = infos.filter(i => !mergedLonghands.has(i));
+        pass.actions.perform(new ExpandShorthand(mergableShorthand, toExpand, "mergeDeclarations", "one or more of the long hand values was not duplicated anywhere."));
+      }
+    }
+    return mergableSets;
+  }
+
+  /**
+   * Analyzes declarations that can be merged within the same optimization context
+   * and segments them by cascade conflicts.
+   *
+   * A cascade conflict occurs when the declarations we'd like to merge have an
+   * intervening declaration that sets the value to a different value on the same
+   * element for at least one runtime state.
+   *
+   * TODO:
+   *   - Move the merged declaration down the cascade if possible to facilitate
+   *     a merge.
+   *   - Don't consider it a merge conflict if the element analysis indicates
+   *     that declarations are mutually exclusive on the same element.
+   *   - Some shorthands may merge better (or at all) with one segment than
+   *     another.
+   *
+   * @param actions The current {{OptimizationPass}} actions.
+   * @param mapper The declaration map information for the current pass.
+   * @param declInfos information about the declarations that can be merged.
+   *   These must be in order of lowest to highest precedence.
+   * @returns groups of {{DeclarationInfo}}s that should be merged together.
+   */
+  private segmentByCascadeConflicts(
+    actions: Actions,
+    mapper: DeclarationMapper,
+    mergables: Array<MergableDeclarationSet>
+  ): Array<Array<MergableDeclarationSet>> {
+    /** All mergables for the current context */
+    let contextMergables = new Array<Array<MergableDeclarationSet>>();
+    for (let mergeable of mergables) {
+      /** All mergables for the current context and mergable property but separated by cascade divisions */
+      let segmentedMergables = new Array<MergableDeclarationSet>();
+      let declInfos = mergeable.decls;
+      if (declInfos.length === 0) {
+        continue;
+      }
+      let props = expandPropertyName(declInfos[0].prop);
+      let expanded = expandIfNecessary(new Set(props), declInfos[0].prop, declInfos[0].value);
+
+      nextMerge:
+      for (let unmergedDecl of declInfos) {
+        nextGroup:
+        for (let segment of segmentedMergables) {
+          for (let mergedDecl of segment.decls) {
+            let conflict = isMergeConflicted(mapper, props, expanded, unmergedDecl, mergedDecl);
+            if (conflict) {
+              actions.perform(conflict);
+              continue nextGroup;
+            }
+          }
+          segment.decls.push(unmergedDecl);
+          continue nextMerge;
+        }
+        segmentedMergables.push({
+          context: mergeable.context,
+          decl: mergeable.decl,
+          decls: new Array<DeclarationInfo>(unmergedDecl)
+        });
+      }
+      for (let mergeable of segmentedMergables) {
+        for (let declInfo of mergeable.decls) {
+          declInfo.dupeCount = mergeable.decls.length - 1;
+        }
+      }
+    contextMergables.push(segmentedMergables);
+    }
+
+    return contextMergables;
   }
 }
 
-function canMerge(mapper: DeclarationMapper, declInfo: DeclarationInfo): boolean {
-  if (!propParser.isShorthandProperty(declInfo.decl.prop)) {
+function isMergeConflicted(
+  mapper: DeclarationMapper,
+  props: string[],
+  expanded: StringDict,
+  unmergedDecl: DeclarationInfo,
+  mergedDecl: DeclarationInfo
+): AnnotateMergeConflict | undefined {
+  for (let element of unmergedDecl.selectorInfo.elements) {
+    let elInfo = mapper.elementDeclarations.get(element);
+    if (!elInfo) continue;
+    for (let prop of props) {
+      let conflictDecls = elInfo.getValue(prop); // TODO: check if the decls are applied in conjunction or if they are exclusive from each other.
+      for (let conflictDecl of conflictDecls) {
+        if (expanded[prop] !== conflictDecl.value // TODO: What if the conflict decl is a shorthand?
+            && declBetween(mergedDecl, conflictDecl, unmergedDecl)) {
+          return mergeConflict(mergedDecl, unmergedDecl, conflictDecl, element);
+        }
+      }
+    }
+  }
+  return;
+}
+
+function declBetween(
+  outside1: DeclarationInfo,
+  between: DeclarationInfo,
+  outside2: DeclarationInfo
+) {
+  let lowerOrdinal = Math.min(outside1.ordinal, outside2.ordinal);
+  let upperOrdinal = Math.max(outside1.ordinal, outside2.ordinal);
+  return lowerOrdinal < between.ordinal && upperOrdinal > between.ordinal;
+}
+
+function canMerge(mapper: DeclarationMapper, decl: postcss.Declaration): boolean {
+  if (!propParser.isShorthandProperty(decl.prop)) {
     return true;
   }
-  let infos = mapper.shortHands.get(declInfo.decl);
+  let infos = mapper.shortHands.get(decl);
   if (infos) {
     let duplicateCount = infos.reduce((total, info) => total + Math.min(info.dupeCount, 1), 1);
     return duplicateCount >= Math.ceil(infos.length / 2) + 1;
   } else {
-    throw new Error("Missing decl info for declaration! " + inspect(declInfo));
+    throw new Error("Missing decl info for declaration! " + inspect(decl));
   }
+}
+
+function mergeConflict(
+  mergedDecl: DeclarationInfo,
+  unmergedDecl: DeclarationInfo,
+  conflictDecl: DeclarationInfo,
+  element: Element
+): AnnotateMergeConflict {
+  return new AnnotateMergeConflict(
+    mergedDecl.decl, mergedDecl.selectorInfo.selector,
+    unmergedDecl.decl, unmergedDecl.selectorInfo.selector,
+    conflictDecl.decl, conflictDecl.selectorInfo.selector,
+    element
+  );
+}
+
+function mergedShorthandsForContext(contextMergables: MergableDeclarationSet[]) {
+  let shorthands = new Set<postcss.Declaration>();
+  for (let mergable of contextMergables) {
+    for (let declInfo of mergable.decls) {
+      if (declInfo.decl.prop !== declInfo.prop) {
+        shorthands.add(declInfo.decl);
+      }
+    }
+  }
+  return shorthands;
 }
