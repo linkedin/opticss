@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "name": "opticss",
+  "devDependencies": {
+    "lerna": "^2.2.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}
