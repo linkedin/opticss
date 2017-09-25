@@ -31,6 +31,10 @@ export function isClass(node: selectorParser.Node | undefined): node is selector
   return !!node && node.type === selectorParser.CLASS;
 }
 
+export function isAttribute(node: selectorParser.Node | undefined): node is selectorParser.Attribute {
+  return !!node && node.type === selectorParser.ATTRIBUTE;
+}
+
 export function isUniversal(node: selectorParser.Node | undefined): node is selectorParser.Universal {
   return !!node && node.type === selectorParser.UNIVERSAL;
 }

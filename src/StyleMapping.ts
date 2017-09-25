@@ -42,50 +42,71 @@ export interface RewriteMapping {
   dynamicClasses: DynamicClasses;
 }
 
-export interface Attribute {
+export interface SimpleAttribute {
   ns?: string;
   name: string;
   value: string;
+}
+
+export function simpleAttributeToString(attr: SimpleAttribute): string {
+  if (attr.ns) {
+    if (attr.value) {
+      return `${attr.ns}:${attr.name}="${attr.value}"`;
+    } else {
+      return `${attr.ns}:${attr.name}`;
+    }
+  } else {
+    if (attr.value) {
+      return `${attr.name}="${attr.value}"`;
+    } else {
+      return `${attr.name}`;
+    }
+  }
 }
 
 export interface ElementAttributes {
   /**
    * A list of attributes that should be on the element.
    */
-  existing: Array<Attribute>;
+  existing: Array<SimpleAttribute>;
   /**
    * a list of attributes that shouldn't be on the element.
    */
-  unless: Array<Attribute>;
+  unless: Array<SimpleAttribute>;
 }
 
 interface PrimaryAttributeLink {
   /**
    * The optimized attribute that is linked to the source attribute.
    */
-  to: Attribute;
+  to: SimpleAttribute;
   /**
    * A list of attributes that must be present to create the link.
    */
-  from: Array<Attribute>;
+  from: Array<SimpleAttribute>;
   /**
    * A list of attributes that must not be present to to create the link.
    */
-  unless: Array<Attribute>;
+  unless: Array<SimpleAttribute>;
 }
 
 export class StyleMapping {
-  private replacedAttributes: Dictionary<Attribute, Attribute>;
-  private linkedAttributes: MultiDictionary<Attribute, PrimaryAttributeLink>;
-  private sourceAttributes: IdentityDictionary<Attribute>;
-  private optimizedAttributes: IdentityDictionary<Attribute>;
+  private replacedAttributes: Dictionary<SimpleAttribute, SimpleAttribute>;
+  private linkedAttributes: MultiDictionary<SimpleAttribute, PrimaryAttributeLink>;
+  private sourceAttributes: IdentityDictionary<SimpleAttribute>;
+  private optimizedAttributes: IdentityDictionary<SimpleAttribute>;
+  private obsoleteAttributes: IdentityDictionary<SimpleAttribute>;
   constructor() {
     this.replacedAttributes = attributeDictionary();
     this.linkedAttributes = attributeMultiDictionary();
     this.sourceAttributes = new IdentityDictionary(attrToKey);
     this.optimizedAttributes = new IdentityDictionary(attrToKey);
+    this.obsoleteAttributes = new IdentityDictionary(attrToKey);
   }
-  rewriteAttribute(from: Attribute, to: Attribute): void {
+  attributeIsObsolete(attr: SimpleAttribute) {
+    this.obsoleteAttributes.add(attr);
+  }
+  rewriteAttribute(from: SimpleAttribute, to: SimpleAttribute): void {
     if (this.optimizedAttributes.has(from)) {
       this.optimizedAttributes.update(from, (actual) => {
         actual.ns = to.ns;
@@ -99,7 +120,7 @@ export class StyleMapping {
       );
     }
   }
-  linkAttributes(newAttr: Attribute, toAttrs: Array<ElementAttributes>) {
+  linkAttributes(newAttr: SimpleAttribute, toAttrs: Array<ElementAttributes>) {
     newAttr = this.optimizedAttributes.add(newAttr);
     for (let attrCondition of toAttrs) {
       let link: PrimaryAttributeLink = {
@@ -112,7 +133,7 @@ export class StyleMapping {
       }
     }
   }
-  getRewriteOf(from: Attribute): Attribute | undefined {
+  getRewriteOf(from: SimpleAttribute): SimpleAttribute | undefined {
     return this.replacedAttributes.getValue(from);
   }
   rewriteMapping(element: ElementInfo): RewriteMapping | null {
@@ -124,7 +145,7 @@ export class StyleMapping {
       let rwc = this.getRewriteOf({name: "class", value: icn});
       if (rwc) {
         dynamicClasses[rwc.value] = {and: [i]};
-      } else {
+      } else if (!this.obsoleteAttributes.has({name: "class", value: icn})) {
         dynamicClasses[icn] = {and: [i]};
       }
       let linkages = this.linkedAttributes.getValue({name: "class", value: icn});
@@ -211,17 +232,17 @@ function isClassAttr(attr: Attr): boolean {
   return attr.namespaceURL === null && attr.name === "class";
 }
 
-function attributeDictionary<V>(): Dictionary<Attribute, V> {
-  return new Dictionary<Attribute, V>(attrToKey);
+function attributeDictionary<V>(): Dictionary<SimpleAttribute, V> {
+  return new Dictionary<SimpleAttribute, V>(attrToKey);
 }
 
 function attributeMultiDictionary<V>(
   valueEqualsFn?: (a: V, b: V) => boolean,
   allowDuplicateValues = false
-): MultiDictionary<Attribute, V> {
-  return new MultiDictionary<Attribute, V>(attrToKey, valueEqualsFn, allowDuplicateValues);
+): MultiDictionary<SimpleAttribute, V> {
+  return new MultiDictionary<SimpleAttribute, V>(attrToKey, valueEqualsFn, allowDuplicateValues);
 }
 
-function attrToKey(attr: Attribute): string {
+function attrToKey(attr: SimpleAttribute): string {
   return `${attr.ns || ''}|${attr.name}=${attr.value}`;
 }

@@ -1,11 +1,9 @@
 import * as parse5 from "parse5";
-import { Template, TemplateTypes, TemplateInfo } from "../../src/TemplateInfo";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import { Tagname, Attribute, AttributeValue, AttributeNS } from "../../src/Selectable";
 import { AttributeValueParser } from "./AttributeValueParser";
 import { TestTemplate } from "./TestTemplate";
 import { POSITION_UNKNOWN } from "../../src/SourceLocation";
-import * as util from "util";
 
 export interface HasAnalysisId {
   analysisId: string;
@@ -30,7 +28,6 @@ export class SimpleAnalyzer {
     return this.valueParser.parse(attrNamespace, attrName, valueStr);
   }
   analyze(): Promise<TemplateAnalysis<"TestTemplate">> {
-    let nextId = 1;
     let analysis = new TemplateAnalysis<"TestTemplate">(this.template);
     const parser = new parse5.SAXParser({ locationInfo: this.includeSourceInformation });
     parser.on("startTag", (name, attrs, _selfClosing, location) => {

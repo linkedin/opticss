@@ -1,13 +1,16 @@
-import * as postcss from "postcss";
-import * as selectorParser from "postcss-selector-parser";
+import * as postcss from 'postcss';
+import * as selectorParser from 'postcss-selector-parser';
 import { MultiAction } from "./Action";
 import { SourcePosition } from "../SourceLocation";
 import { Optimizations } from "../OpticssOptions";
-import { SelectorCache } from "../query";
+import {
+  ParsedSelectorAndRule,
+  SelectorCache,
+} from '../query';
 import { ParsedSelector, CompoundSelector, isClass, isUniversal } from "../parseSelector";
 import { OptimizationPass } from "../OptimizationPass";
 import { IdentGenerators } from "../util/IdentGenerator";
-import { StyleMapping, ElementAttributes, Attribute as ElementAttribute } from "../StyleMapping";
+import { StyleMapping, ElementAttributes, SimpleAttribute as ElementAttribute } from "../StyleMapping";
 import { isAtRule } from "../optimizations/util";
 
 export interface Declaration {
@@ -27,6 +30,7 @@ export interface DeclarationInfo {
  * Merges duplicate declarations from multiple rule sets into a new rule set.
  */
 export class MergeDeclarations extends MultiAction {
+  removedSelectors: ParsedSelectorAndRule[];
   selectorContext: ParsedSelector | undefined;
   removedAtRules: postcss.AtRule[];
   styleMapping: StyleMapping;
@@ -59,6 +63,7 @@ export class MergeDeclarations extends MultiAction {
     this.declInfos = declInfos;
     this.removedRules = [];
     this.removedAtRules = [];
+    this.removedSelectors = new Array<ParsedSelectorAndRule>();
   }
 
   perform(): this {
@@ -93,6 +98,8 @@ export class MergeDeclarations extends MultiAction {
       }
       if (declInfo.decl.parent.nodes!.filter(node => node.type === "decl").length === 1) {
         let rule = <postcss.Rule>declInfo.decl.parent;
+        let newlyRemoved: ParsedSelectorAndRule[] = this.cache.getParsedSelectors(rule).map(s => ({parsedSelector: s, rule}));
+        this.removedSelectors.splice(0, 0, ...newlyRemoved);
         let ruleParent = <postcss.Container>rule.parent;
         if (ruleParent) {
           this.removedRules.push(rule);
@@ -117,7 +124,7 @@ export class MergeDeclarations extends MultiAction {
   logStrings(): Array<string> {
     let logs = new Array<string>();
     this.declInfos.forEach((orig, i) => {
-      let msg = `Declaration moved into generated rule (${this.declString()}). ${this.reason} ${i + 1} of ${this.declInfos.length}.`;
+      let msg = `Declaration moved from "${orig.selector}" into generated rule (${this.declString()}). ${this.reason} ${i + 1} of ${this.declInfos.length}.`;
       logs.push(this.annotateLogMessage(msg, this.nodeSourcePosition(orig.decl)));
     });
     this.removedRules.forEach(rule => {

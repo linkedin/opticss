@@ -20,6 +20,19 @@ export interface ClassifiedParsedSelectors {
   };
 }
 
+export function allParsedSelectors(result: ClassifiedParsedSelectors): ParsedSelector[] {
+  let selectors = new Array<ParsedSelector>();
+  for (let s of result.main) {
+    selectors.push(s.parsedSelector);
+  }
+  for (let type of Object.keys(result.other)) {
+    for (let s of result.other[type]) {
+      selectors.push(s.parsedSelector);
+    }
+  }
+  return selectors;
+}
+
 export interface SelectorFactory {
   getParsedSelectors(node: postcss.Rule): ParsedSelector[];
 }

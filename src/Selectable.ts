@@ -525,8 +525,8 @@ export abstract class AttributeBase implements Selectable, HasNamespace {
     }
   }
 
-  sameNamespace(namespace: string) {
-    if (this.namespaceURL === null && namespace === "") {
+  sameNamespace(namespace: string | undefined) {
+    if (!(this.namespaceURL || namespace)) {
       return true;
     } else {
       return this.namespaceURL === namespace;
@@ -991,16 +991,18 @@ function attr(element: ElementInfo, name: string, namespaceURL: string | null = 
   return attr;
 }
 
+/**
+ * @param [keySelectorOnly=true] When false, this selector can match against
+ *   any compound selector in the parsed selector.
+ */
 function matchSelectorImpl(selectable: Selectable, parsedSelector: ParsedSelector, keySelectorOnly = true): Match {
-  let maybe: Match | undefined = undefined;
-  let no = parsedSelector.eachCompoundSelector((selector) => {
+  let matched = parsedSelector.eachCompoundSelector((selector) => {
     if (selector !== parsedSelector.key && keySelectorOnly) return;
     let match = selectable.matchSelectorComponent(selector);
-    if (match === Match.no) return match;
-    if (match === Match.maybe) maybe = match;
+    if (matches(match)) return match;
     return;
   });
-  return no || maybe || Match.yes;
+  return matched || Match.no;
 }
 
 export function isAbsent(value: FlattenedAttributeValue | AttributeValue): value is ValueAbsent {

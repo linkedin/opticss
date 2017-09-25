@@ -39,8 +39,8 @@ export class MergeDeclarationsTest {
     return testMergeDeclarations(css1, template).then(result => {
       let logString = result.optimization.actions.performed[0].logString();
       let expectedLogMessage =
-        `${path.resolve("test1.css")}:2:10 [mergeDeclarations] Declaration moved into generated rule (.e { color: red; }). Duplication 1 of 2.\n` +
-        `${path.resolve("test1.css")}:5:30 [mergeDeclarations] Declaration moved into generated rule (.e { color: red; }). Duplication 2 of 2.\n` +
+        `${path.resolve("test1.css")}:2:10 [mergeDeclarations] Declaration moved from ".a" into generated rule (.e { color: red; }). Duplication 1 of 2.\n` +
+        `${path.resolve("test1.css")}:5:30 [mergeDeclarations] Declaration moved from ".d" into generated rule (.e { color: red; }). Duplication 2 of 2.\n` +
         `${path.resolve("test1.css")}:2:5 [mergeDeclarations] Removed empty rule with selector ".a".`;
       assert.deepEqual(logString, expectedLogMessage);
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
@@ -259,6 +259,10 @@ export class MergeDeclarationsTest {
   `);
     return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
+      assert.deepEqual(result.testedTemplates[0].testedMarkups[0].optimizedBody, clean`
+        <body><div class="d e b"></div>
+        <div class="d e"></div></body>
+      `);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
         clean`
@@ -268,6 +272,41 @@ export class MergeDeclarationsTest {
           }
         `);
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
+    });
+  }
+  @test "handles media queries with conflict"() {
+    let css1 = clean`
+    .a { color: red; }
+    @media (min-device-width: 500px) {
+      .a { color: blue; }
+    }
+    .c { color: red; }
+    @media (min-device-width: 500px) {
+      .c { color: blue; }
+    }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="b"></div>
+    <div class="a c"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(result.testedTemplates[0].testedMarkups[0].optimizedBody, clean`
+        <body><div class="b"></div>
+        <div class="a c"></div></body>
+      `);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a { color: red; }
+          @media (min-device-width: 500px) {
+            .a { color: blue; }
+          }
+          .c { color: red; }
+          @media (min-device-width: 500px) {
+            .c { color: blue; }
+          }
+        `);
     });
   }
 

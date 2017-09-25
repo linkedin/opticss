@@ -190,7 +190,7 @@ declare namespace parser {
         attribute: string;
         operator: AttributeOperator | undefined;
         insensitive?: boolean;
-        ns: string;
+        ns: string | undefined;
         raws: {
           insensitive?: boolean;
         };

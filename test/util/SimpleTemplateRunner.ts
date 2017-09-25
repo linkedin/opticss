@@ -3,7 +3,7 @@ import * as Random from "random-js";
 import { SimpleAnalyzer, HasAnalysisId } from "./SimpleAnalyzer";
 import { TestTemplate } from "./TestTemplate";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
-import { FlattenedAttributeValue, isAbsent, isUnknown, isConstant, isUnknownIdentifier, isStartsWith, isEndsWith, isStartsAndEndsWith, isSet, isFlattenedSet, isChoice, Attribute, AttributeNS } from "../../src/Selectable";
+import { FlattenedAttributeValue, isAbsent, isUnknown, isConstant, isUnknownIdentifier, isStartsWith, isEndsWith, isStartsAndEndsWith, isFlattenedSet, Attribute, AttributeNS } from "../../src/Selectable";
 import assertNever from "../../src/util/assertNever";
 import { AttributeValueParser } from "./AttributeValueParser";
 
@@ -12,7 +12,7 @@ type ParentNode = parse5.AST.Default.ParentNode;
 type Node = parse5.AST.Default.Node;
 type HtmlElement = parse5.AST.Default.Element;
 type HtmlAttribute = parse5.AST.Default.Attribute;
-type BodyElement = HtmlElement & ParentNode & {
+export type BodyElement = parse5.AST.Default.Element & parse5.AST.Default.ParentNode & {
   nodeName: "body";
   tagName: "body";
 };
@@ -51,7 +51,7 @@ export class SimpleTemplateRunner {
     }
     this.random = new Random(engine);
   }
-  prepareDocument(): PreparedDocument {
+  private prepareDocument(): PreparedDocument {
     const valueParser = new AttributeValueParser(this.template.plainHtml);
     let document = parse5.parse(this.template.contents, {
       treeAdapter: parse5.treeAdapters.default
@@ -81,7 +81,7 @@ export class SimpleTemplateRunner {
       variableAttrs
     };
   }
-  run(document: Document, attributes: Array<ConcreteAttribute>): string {
+  private run(document: Document, attributes: Array<ConcreteAttribute>): string {
     attributes.forEach(attr => {
       attr.attribute.value = attr.value || "";
     });
@@ -113,7 +113,7 @@ export class SimpleTemplateRunner {
       return Promise.resolve(new Array<string>());
     }
   }
-  concreteValue(value: FlattenedAttributeValue): string | null {
+  private concreteValue(value: FlattenedAttributeValue): string | null {
     if (isAbsent(value)) {
       return null;
     } else if (isUnknown(value)) {
@@ -146,7 +146,7 @@ export class SimpleTemplateRunner {
   private word(length: number): string {
     return this.random.string(length);
   }
-  permuteAttributeValues(attributes: VariableAttribute[], i = 0): ConcreteAttribute[][] {
+  private permuteAttributeValues(attributes: VariableAttribute[], i = 0): ConcreteAttribute[][] {
     let concreteAttrs = new Array<ConcreteAttribute[]>();
     if (i === attributes.length) {
       concreteAttrs.push(new Array<ConcreteAttribute>());
@@ -170,7 +170,7 @@ export class SimpleTemplateRunner {
   }
 }
 
-export function bodyElement(document: Document): BodyElement | undefined {
+export function bodyElement(document: parse5.AST.Default.Document): BodyElement | undefined {
   let html = document.childNodes.find(child => isElement(child) && child.tagName === "html");
   if (html && isParentNode(html)) {
     return html.childNodes.find(child => isElement(child) && child.nodeName === "body") as BodyElement | undefined;
@@ -179,7 +179,7 @@ export function bodyElement(document: Document): BodyElement | undefined {
   }
 }
 
-export function bodyContents(document: Document): string {
+export function bodyContents(document: parse5.AST.Default.Document): string {
   let body = bodyElement(document);
   if (body) {
     return parse5.serialize({childNodes: [body]});
@@ -195,7 +195,7 @@ function isElement(node: Node | ParentNode): node is HtmlElement {
     return false;
   }
 }
-function isParentNode(node: Node | ParentNode): node is ParentNode {
+function isParentNode(node: parse5.AST.Default.Node | parse5.AST.Default.ParentNode): node is parse5.AST.Default.ParentNode {
   if ((<ParentNode>node).childNodes) {
     return true;
   } else {
@@ -203,7 +203,7 @@ function isParentNode(node: Node | ParentNode): node is ParentNode {
   }
 }
 
-export function allElements(parent: ParentNode): Array<HtmlElement> {
+export function allElements(parent: parse5.AST.Default.ParentNode): Array<parse5.AST.Default.Element> {
   let els = new Array<HtmlElement>();
   walkElements(parent, (el) => {
     els.push(el);
@@ -211,7 +211,7 @@ export function allElements(parent: ParentNode): Array<HtmlElement> {
   return els;
 }
 
-export function walkElements(node: Node | ParentNode, cb: (node: HtmlElement) => void): void {
+export function walkElements(node: parse5.AST.Default.Node | parse5.AST.Default.ParentNode, cb: (node: parse5.AST.Default.Element) => void): void {
   if (isElement(node)) {
     cb(node);
   }

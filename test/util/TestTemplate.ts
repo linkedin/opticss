@@ -1,4 +1,4 @@
-import { TemplateTypes, TemplateInfo, SerializedTemplateInfo, TemplateInfoFactory } from "../../src/TemplateInfo";
+import { TemplateInfo, SerializedTemplateInfo, TemplateInfoFactory } from "../../src/TemplateInfo";
 
 declare module "../../src/TemplateInfo" {
   export interface TemplateTypes {

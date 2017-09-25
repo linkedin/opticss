@@ -1,4 +1,25 @@
 import {
+  MarkAttributeValueObsolete,
+} from '../../actions/MarkAttributeValueObsolete';
+import {
+  allParsedSelectors,
+  ParsedSelectorAndRule,
+  QuerySelectorReferences,
+} from '../../query';
+import {
+  IdentityDictionary,
+} from '../../util/IdentityDictionary';
+import {
+  SimpleAttribute,
+  simpleAttributeToString,
+} from '../../StyleMapping';
+import {
+  isClass,
+  isIdentifier,
+  ParsedSelector,
+  isAttribute,
+} from '../../parseSelector';
+import {
   StringDict,
 } from '../../util/UtilityTypes';
 import {
@@ -48,9 +69,22 @@ import {
 import {
   DeclarationInfo,
 } from './StyleInfo';
-import { Element } from '../../Selectable';
+import {
+  Attr,
+  Attribute,
+  AttributeNS,
+  AttributeValueChoice,
+  Element,
+  isAbsent,
+  isChoice,
+  isConstant,
+  Tagname,
+  ValueAbsent,
+  ValueConstant,
+} from '../../Selectable';
 import { Actions } from '../../Actions';
 import { AnnotateMergeConflict } from '../../actions/AnnotateMergeConflict';
+import { matchToBool, matches } from '../../Match';
 
 interface MergableDeclarationSet {
   context: OptimizationContext;
@@ -77,6 +111,7 @@ export class MergeDeclarations implements MultiFileOptimization {
     files: Array<ParsedCssFile>
   ): void {
     let mapper = new DeclarationMapper(pass, analyses, files);
+    let removedSelectors = new Array<ParsedSelectorAndRule>();
     for (let context of mapper.contexts) {
       let contextMergables = this.mergablesForContext(context);
       let shorthands = mergedShorthandsForContext(contextMergables);
@@ -85,12 +120,28 @@ export class MergeDeclarations implements MultiFileOptimization {
       for (let mergableSets of segmentedContextMergables) {
         for (let mergableSet of mergableSets) {
           if (mergableSet.decls.length < 2) continue;
-          this.mergeDeclarationSet(pass, mergableSet);
+          let removed = this.mergeDeclarationSet(pass, mergableSet);
+          removedSelectors.splice(0, 0, ...removed);
         }
       }
     }
-
+    let unusedAttrs = this.findUnusedAttributes(files, removedSelectors);
+    for (let unusedAttr of unusedAttrs) {
+      let referencedSelectors = removedSelectors.filter(sel => matches(unusedAttr.matchSelector(sel.parsedSelector)));
+      let attr: SimpleAttribute = {
+        ns: unusedAttr.namespaceURL || undefined,
+        name: unusedAttr.name,
+        value: isConstant(unusedAttr.value) ? unusedAttr.value.constant : ""
+      };
+      pass.actions.perform(new MarkAttributeValueObsolete(pass, referencedSelectors, attr, "All selectors referencing it were removed."));
+    }
   }
+  /**
+   * Returns all the sets of mergeable declaration sets that exist in the given
+   * optimization context. The sets returned from this method do not
+   * respect the cascade or take into account whether the merge would be a net
+   * benefit.
+   */
   private mergablesForContext(context: OptimizationContext) {
     let contextMergables = new Array<MergableDeclarationSet>();
     for (let prop of context.declarationMap.keys()) {
@@ -117,16 +168,89 @@ export class MergeDeclarations implements MultiFileOptimization {
     }
     return contextMergables;
   }
+  // TODO: consider extracting this out to it's own optimization and base it on the
+  // analysis instead of the attributes that were removed? This would catch
+  // unused attributes in the template -- but maybe that's too aggressive to rely on
+  // and would end up disabled. In theory, if we had that this could run only
+  // when that optimization is disabled and they could share a single impl.
+  private findUnusedAttributes(files: Array<ParsedCssFile>, removedSelectors: Array<ParsedSelectorAndRule>): Array<Attr> {
+    let attrs = attrsForSelectors(removedSelectors);
+    // construct an analysis element that is a choice of all attrs that were in
+    // removed selectors. that will allow use to query each stylesheet only
+    // once and find selectors that are still using them.
+    let attrGroups = groupAttrsByName(attrs);
+    let elementAttributes = new Array<Attr>();
+    for (let group of attrGroups) {
+      let values: AttributeValueChoice = {oneOf: group.values!.map(v => v ? <ValueConstant>{constant: v} : <ValueAbsent>{absent: true})};
+      if (group.ns) {
+        elementAttributes.push(new AttributeNS(group.ns, group.name, values));
+      } else {
+        elementAttributes.push(new Attribute(group.name, values));
+      }
+    }
+    let element = new Element(new Tagname({unknown: true}), elementAttributes);
+
+    // Run the query and collect all selectors that are using at least one
+    // of the attributes that might be in use.
+    let query = new QuerySelectorReferences([element]);
+    let foundSelectors = new Array<ParsedSelector>();
+    for (let file of files) {
+      let result = query.execute(file.content.root!);
+      foundSelectors.splice(0, 0, ...allParsedSelectors(result));
+    }
+
+    // Now we transform our single element into a set of attributes with one
+    // value each and figure out which of those aren't being used in the selectors
+    // that matched our query.
+    let attrsToRemove = new Array<Attr>();
+    for (let elAttr of element.attributes) {
+      let value = elAttr.value;
+      if (!isChoice(value)) continue; // this makes the type checker happy
+      let attrs = new Set(value.oneOf.map(v => {
+        if (elAttr.namespaceURL) {
+          return new AttributeNS(elAttr.namespaceURL, elAttr.name, v);
+        } else {
+          return new Attribute(elAttr.name, v);
+        }
+      }));
+      for (let foundSelector of foundSelectors) {
+        for (let attr of attrs) {
+          let match = attr.matchSelector(foundSelector, false);
+          if (matchToBool(match)) {
+            attrs.delete(attr); // once it matches one selector we can remove it.
+          }
+        }
+        if (attrs.size === 0) break; // from the selectors a bit early if possible.
+      }
+      for (let unusedAttr of attrs) {
+        if (isConstant(unusedAttr.value)) {
+          attrsToRemove.push(unusedAttr);
+        } else if (isAbsent(unusedAttr.value)) {
+          // TODO: we can remove this attribute on all elements when it has no
+          // value.
+        } else {
+          throw new Error("unsupported value: " + inspect(unusedAttr.value));
+        }
+      }
+    }
+    return attrsToRemove;
+  }
+  /**
+   * Merges a set of mergeable declarations and updates the state of the
+   * declaration data accordingly.
+   * @param mergeableDeclarations A set of declarations that should be merged.
+   * @returns ParsedSelectors that were removed
+   */
   private mergeDeclarationSet(
     pass: OptimizationPass,
     mergeableDeclarations: MergableDeclarationSet
-  ) {
+  ): Array<ParsedSelectorAndRule> {
     let context = mergeableDeclarations.context;
     let declInfos = mergeableDeclarations.decls;
     let decl = mergeableDeclarations.decl;
     let scope = context.scopes[0];
     let container = scope.length > 0 ? scope[scope.length - 1] : context.root;
-    pass.actions.perform(new MergeDeclarationsAction(
+    let action = new MergeDeclarationsAction(
       pass,
       container,
       context.selectorContext,
@@ -138,13 +262,15 @@ export class MergeDeclarations implements MultiFileOptimization {
         decl: declInfo.decl
       })),
       "mergeDeclarations",
-      "Duplication"));
+      "Duplication");
+    pass.actions.perform(action);
     // The declarations are inserted at the document location of the first declaration it
     // is merged with. So we update its declarations to that ordinal value.
     let newOrdinal = declInfos[0].ordinal;
     for (let i = 1; i < declInfos.length; i++) {
       declInfos[i].ordinal = newOrdinal;
     }
+    return action.removedSelectors;
   }
 
   private checkAndExpandShorthands(
@@ -250,7 +376,7 @@ export class MergeDeclarations implements MultiFileOptimization {
           declInfo.dupeCount = segment.decls.length - 1;
         }
       }
-    contextMergables.push(segmentedMergables);
+      contextMergables.push(segmentedMergables);
     }
 
     return contextMergables;
@@ -315,6 +441,47 @@ function mergeConflict(
     conflictDecl.decl, conflictDecl.selectorInfo.selector,
     element
   );
+}
+
+const operatorsDescribingIdents = ["=", "~=", undefined];
+
+function attrsForSelectors(selectors: ParsedSelectorAndRule[]): IdentityDictionary<SimpleAttribute> {
+  let attributes = new IdentityDictionary<SimpleAttribute>(simpleAttributeToString);
+  for (let selector of selectors) {
+    selector.parsedSelector.eachSelectorNode(node => {
+      if (isClass(node)) {
+        attributes.add({name: "class", value: node.value});
+      } else if (isIdentifier(node)) {
+        attributes.add({name: "id", value: node.value});
+      } else if (isAttribute(node)) {
+        if (operatorsDescribingIdents.includes(node.operator)) {
+          let attr: SimpleAttribute = {
+            ns: node.ns,
+            name: node.attribute,
+            value: node.value || ""
+          };
+          attributes.add(attr);
+        }
+      }
+    });
+  }
+  return attributes;
+}
+
+interface AttrGroup {
+  ns: string | undefined;
+  name: string;
+  values?: Array<string | undefined>;
+}
+
+function groupAttrsByName(attrs: IdentityDictionary<SimpleAttribute>): IdentityDictionary<AttrGroup> {
+  let groupDictionary = new IdentityDictionary<AttrGroup>((v => `${v.ns}|${v.name}`));
+  for (let attr of attrs) {
+    let group = groupDictionary.add({ns: attr.ns, name: attr.name});
+    if (!group.values) group.values = [];
+    group.values.push(attr.value);
+  }
+  return groupDictionary;
 }
 
 function mergedShorthandsForContext(contextMergables: MergableDeclarationSet[]) {

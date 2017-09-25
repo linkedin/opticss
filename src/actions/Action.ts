@@ -12,7 +12,7 @@ export abstract class Action {
   optimization: string;
   abstract perform(): this;
   abstract logString(): string;
-  abstract readonly sourcePosition: SourcePosition | undefined;
+  abstract readonly sourcePosition: SourcePosition | undefined | null;
 
   constructor(optimization: keyof Optimizations) {
     this.optimization = optimization;
@@ -20,7 +20,7 @@ export abstract class Action {
 
   positionString(sourcePosition = this.sourcePosition, includeFilename = true): string {
     let posStr = "";
-    if (sourcePosition) {
+    if (sourcePosition && sourcePosition.line > 0) {
       if (includeFilename && sourcePosition.filename) {
         posStr += sourcePosition.filename + ":";
       }
@@ -32,12 +32,19 @@ export abstract class Action {
     return posStr;
   }
 
-  annotateLogMessage(message: string, sourcePosition = this.sourcePosition): string {
+  annotateLogMessage(message: string, sourcePosition?: SourcePosition | null, indent = 0): string {
+    if (sourcePosition === undefined) {
+      sourcePosition = this.sourcePosition;
+    }
     let annotated = "";
     if (sourcePosition) {
       annotated += this.positionString(sourcePosition) + " ";
     }
-    annotated += `[${this.optimization}] ${message}`;
+    let indentation = "";
+    for (let i = 0; i < indent; i++) {
+      indentation += "  ";
+    }
+    annotated += `[${this.optimization}] ${indentation}${message}`;
     return annotated;
   }
 
