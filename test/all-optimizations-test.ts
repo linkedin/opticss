@@ -58,7 +58,7 @@ export class MergeDeclarationsTest {
   }
 
   @skip
-  @test "mergable decls with ids"() {
+  @test "mergeable decls with ids"() {
     let css1 = clean`
     #first { color: red; }
     .asdf { border: 1px solid blue; }

@@ -86,7 +86,7 @@ import { Actions } from '../../Actions';
 import { AnnotateMergeConflict } from '../../actions/AnnotateMergeConflict';
 import { matchToBool, matches } from '../../Match';
 
-interface MergableDeclarationSet {
+interface MergeableDeclarationSet {
   context: OptimizationContext;
   decls: DeclarationInfo[];
   decl: {
@@ -113,14 +113,14 @@ export class MergeDeclarations implements MultiFileOptimization {
     let mapper = new DeclarationMapper(pass, analyses, files);
     let removedSelectors = new Array<ParsedSelectorAndRule>();
     for (let context of mapper.contexts) {
-      let contextMergables = this.mergablesForContext(context);
-      let shorthands = mergedShorthandsForContext(contextMergables);
-      let segmentedContextMergables = this.segmentByCascadeConflicts(pass.actions, mapper, contextMergables);
-      segmentedContextMergables = this.checkAndExpandShorthands(pass, mapper, shorthands, segmentedContextMergables);
-      for (let mergableSets of segmentedContextMergables) {
-        for (let mergableSet of mergableSets) {
-          if (mergableSet.decls.length < 2) continue;
-          let removed = this.mergeDeclarationSet(pass, mergableSet);
+      let contextMergeables = this.mergeablesForContext(context);
+      let shorthands = mergedShorthandsForContext(contextMergeables);
+      let segmentedContextMergeables = this.segmentByCascadeConflicts(pass.actions, mapper, contextMergeables);
+      segmentedContextMergeables = this.checkAndExpandShorthands(pass, mapper, shorthands, segmentedContextMergeables);
+      for (let mergeableSets of segmentedContextMergeables) {
+        for (let mergeableSet of mergeableSets) {
+          if (mergeableSet.decls.length < 2) continue;
+          let removed = this.mergeDeclarationSet(pass, mergeableSet);
           removedSelectors.splice(0, 0, ...removed);
         }
       }
@@ -142,8 +142,8 @@ export class MergeDeclarations implements MultiFileOptimization {
    * respect the cascade or take into account whether the merge would be a net
    * benefit.
    */
-  private mergablesForContext(context: OptimizationContext) {
-    let contextMergables = new Array<MergableDeclarationSet>();
+  private mergeablesForContext(context: OptimizationContext) {
+    let contextMergeables = new Array<MergeableDeclarationSet>();
     for (let prop of context.declarationMap.keys()) {
       let values = context.declarationMap.getValue(prop);
       for (let value of values.keys()) {
@@ -151,14 +151,14 @@ export class MergeDeclarations implements MultiFileOptimization {
         let importantDecls = decls.filter(d => d.important);
         let normalDecls = decls.filter(d => !d.important);
         if (importantDecls.length > 1) {
-          contextMergables.push({
+          contextMergeables.push({
             context,
             decls: importantDecls,
             decl: { prop, value, important: true }
           });
         }
         if (normalDecls.length > 1) {
-          contextMergables.push({
+          contextMergeables.push({
             context,
             decls: normalDecls,
             decl: { prop, value, important: false }
@@ -166,7 +166,7 @@ export class MergeDeclarations implements MultiFileOptimization {
         }
       }
     }
-    return contextMergables;
+    return contextMergeables;
   }
   // TODO: consider extracting this out to it's own optimization and base it on the
   // analysis instead of the attributes that were removed? This would catch
@@ -243,7 +243,7 @@ export class MergeDeclarations implements MultiFileOptimization {
    */
   private mergeDeclarationSet(
     pass: OptimizationPass,
-    mergeableDeclarations: MergableDeclarationSet
+    mergeableDeclarations: MergeableDeclarationSet
   ): Array<ParsedSelectorAndRule> {
     let context = mergeableDeclarations.context;
     let declInfos = mergeableDeclarations.decls;
@@ -277,39 +277,39 @@ export class MergeDeclarations implements MultiFileOptimization {
     pass: OptimizationPass,
     mapper: DeclarationMapper,
     shorthands: Set<postcss.Declaration>,
-    mergableSets: MergableDeclarationSet[][]
-  ): MergableDeclarationSet[][] {
-    let mergableShorthands = new Set<postcss.Declaration>();
-    let unmergableShorthands = new Set<postcss.Declaration>();
+    mergeableSets: MergeableDeclarationSet[][]
+  ): MergeableDeclarationSet[][] {
+    let mergeableShorthands = new Set<postcss.Declaration>();
+    let unmergeableShorthands = new Set<postcss.Declaration>();
     for (let shorthand of shorthands) {
       if (canMerge(mapper, shorthand)) {
-        mergableShorthands.add(shorthand);
+        mergeableShorthands.add(shorthand);
       } else {
-        unmergableShorthands.add(shorthand);
+        unmergeableShorthands.add(shorthand);
       }
     }
     let mergedLonghands = new Set<DeclarationInfo>();
-    for (let segments of mergableSets) {
-      for (let mergableSet of segments) {
-        for (let declInfo of mergableSet.decls) {
-          if (mergableSet.decls.length > 1 && mergableShorthands.has(declInfo.decl)) {
+    for (let segments of mergeableSets) {
+      for (let mergeableSet of segments) {
+        for (let declInfo of mergeableSet.decls) {
+          if (mergeableSet.decls.length > 1 && mergeableShorthands.has(declInfo.decl)) {
             mergedLonghands.add(declInfo);
-          } else if (unmergableShorthands.has(declInfo.decl)) {
-            mergableSet.decls.splice(mergableSet.decls.indexOf(declInfo), 1);
-            mergableSet.decls.forEach(d => {d.dupeCount = d.dupeCount - 1;});
+          } else if (unmergeableShorthands.has(declInfo.decl)) {
+            mergeableSet.decls.splice(mergeableSet.decls.indexOf(declInfo), 1);
+            mergeableSet.decls.forEach(d => {d.dupeCount = d.dupeCount - 1;});
             declInfo.dupeCount = 0;
           }
         }
       }
     }
-    for (let mergableShorthand of mergableShorthands) {
-      let infos = mapper.shortHands.get(mergableShorthand);
+    for (let mergeableShorthand of mergeableShorthands) {
+      let infos = mapper.shortHands.get(mergeableShorthand);
       if (infos) {
         let toExpand = infos.filter(i => !mergedLonghands.has(i));
-        pass.actions.perform(new ExpandShorthand(mergableShorthand, toExpand, "mergeDeclarations", "one or more of the long hand values was not duplicated anywhere."));
+        pass.actions.perform(new ExpandShorthand(mergeableShorthand, toExpand, "mergeDeclarations", "one or more of the long hand values was not duplicated anywhere."));
       }
     }
-    return mergableSets;
+    return mergeableSets;
   }
 
   /**
@@ -337,13 +337,13 @@ export class MergeDeclarations implements MultiFileOptimization {
   private segmentByCascadeConflicts(
     actions: Actions,
     mapper: DeclarationMapper,
-    mergables: Array<MergableDeclarationSet>
-  ): Array<Array<MergableDeclarationSet>> {
-    /** All mergables for the current context */
-    let contextMergables = new Array<Array<MergableDeclarationSet>>();
-    for (let mergeable of mergables) {
-      /** All mergables for the current context and mergable property but separated by cascade divisions */
-      let segmentedMergables = new Array<MergableDeclarationSet>();
+    mergeables: Array<MergeableDeclarationSet>
+  ): Array<Array<MergeableDeclarationSet>> {
+    /** All mergeables for the current context */
+    let contextMergeables = new Array<Array<MergeableDeclarationSet>>();
+    for (let mergeable of mergeables) {
+      /** All mergeables for the current context and mergeable property but separated by cascade divisions */
+      let segmentedMergeables = new Array<MergeableDeclarationSet>();
       let declInfos = mergeable.decls;
       if (declInfos.length === 0) {
         continue;
@@ -354,7 +354,7 @@ export class MergeDeclarations implements MultiFileOptimization {
       nextMerge:
       for (let unmergedDecl of declInfos) {
         nextGroup:
-        for (let segment of segmentedMergables) {
+        for (let segment of segmentedMergeables) {
           for (let mergedDecl of segment.decls) {
             let conflict = isMergeConflicted(mapper, props, expanded, unmergedDecl, mergedDecl);
             if (conflict) {
@@ -365,21 +365,21 @@ export class MergeDeclarations implements MultiFileOptimization {
           segment.decls.push(unmergedDecl);
           continue nextMerge;
         }
-        segmentedMergables.push({
+        segmentedMergeables.push({
           context: mergeable.context,
           decl: mergeable.decl,
           decls: new Array<DeclarationInfo>(unmergedDecl)
         });
       }
-      for (let segment of segmentedMergables) {
+      for (let segment of segmentedMergeables) {
         for (let declInfo of segment.decls) {
           declInfo.dupeCount = segment.decls.length - 1;
         }
       }
-      contextMergables.push(segmentedMergables);
+      contextMergeables.push(segmentedMergeables);
     }
 
-    return contextMergables;
+    return contextMergeables;
   }
 }
 
@@ -484,10 +484,10 @@ function groupAttrsByName(attrs: IdentityDictionary<SimpleAttribute>): IdentityD
   return groupDictionary;
 }
 
-function mergedShorthandsForContext(contextMergables: MergableDeclarationSet[]) {
+function mergedShorthandsForContext(contextMergeables: MergeableDeclarationSet[]) {
   let shorthands = new Set<postcss.Declaration>();
-  for (let mergable of contextMergables) {
-    for (let declInfo of mergable.decls) {
+  for (let mergeable of contextMergeables) {
+    for (let declInfo of mergeable.decls) {
       if (declInfo.decl.prop !== declInfo.prop) {
         shorthands.add(declInfo.decl);
       }

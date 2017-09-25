@@ -416,7 +416,7 @@ export class MergeDeclarationsTest {
   // TODO merge classes when specificity would override them
   // and the element(s) already have the class.
   @skip
-  @test "handles scoped selectors with additional scoped mergable decls"() {
+  @test "handles scoped selectors with additional scoped mergeable decls"() {
     let css1 = clean`
     .c { color: red; float: left; }
     .d { color: red; float: right; }
