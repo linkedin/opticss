@@ -3,8 +3,8 @@
   "compilerOptions": {
     "removeComments": false,
     "outDir": "../dist",
-    "allowJs": true,
-    "declaration": false
+    "allowJs": false,
+    "declaration": true
   },
   "include": [
     "../src",

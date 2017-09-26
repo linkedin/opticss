@@ -24,36 +24,17 @@
     "lib": [
       "es2016"
     ],
-    "types": [
-      "@types/chai",
-      "@types/debug",
-      "@types/fs-extra",
-      "@types/handlebars",
-      "@types/mocha",
-      "@types/nearley",
-      "@types/source-map"
-    ],
 
     // output options
     "newLine": "LF",
-    "outDir": "dist",
+    "outDir": "dist/src",
     "module": "commonjs",
     "traceResolution": false,
     "baseUrl": "dist/src",
-    "paths": {
-      "perfectionist": [
-        "../../types-local/perfectionist"
-      ],
-      "postcss-selector-parser": [
-        "../../types-local/postcss-selector-parser"
-      ],
-      "regexpu-core": [
-        "../../types-local/regexpu-core"
-      ],
-      "inline-source-map-comment": [
-        "../../types-local/inline-source-map-comment"
-      ]
-    }
+    "types": [
+      "@types/chai",
+      "@types/mocha"
+    ]
   },
   "include": [
     "src",

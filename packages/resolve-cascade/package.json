@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "compile": "rm -rf dist && tsc -p test/tsconfig.json",
-    "pretest": "npm run compile && tslint --project tsconfig.json --type-check",
-    "prepublish": "npm run compile",
+    "pretest": "yarn run compile && tslint --project tsconfig.json --type-check",
+    "prepublish": "rm -rf dist && tsc",
     "tslint": "tslint --project tsconfig.json",
     "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
