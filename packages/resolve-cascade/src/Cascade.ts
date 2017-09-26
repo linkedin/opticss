@@ -128,7 +128,7 @@ function stylesForDeclaration(decl: postcss.Declaration): ComputedStyle {
   if (propParser.isShorthandProperty(decl.prop)) {
     let expandedProps = propParser.getShorthandComputedProperties(decl.prop, true)
                                   .filter(p => !propParser.isShorthandProperty(p));
-    let expandedValues = propParser.expandShorthandProperty(decl.prop, decl.value);
+    let expandedValues = propParser.expandShorthandProperty(decl.prop, decl.value, true);
     let style: ComputedStyle = {};
     // this filters out the shorthand props returned by expandShorthandProperty
     // when recursively applied and sets values not set explicitly.

@@ -132,3 +132,7 @@ export function debugElement(element: parse5.AST.HtmlParser2.Element): string {
   }, "");
   return `<${tagName} ${attrs}>`;
 }
+
+export function documentToString(document: parse5.AST.HtmlParser2.Document): string {
+  return serializeElement(bodyElement(document)!);
+}

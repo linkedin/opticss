@@ -15,8 +15,10 @@ import {
 export interface AssertionResult {
   expectedFullCascade: FullCascade;
   expectedDoc: parse5.AST.HtmlParser2.Document;
+  expectedCss: string;
   actualFullCascade: FullCascade;
   actualDoc: parse5.AST.HtmlParser2.Document;
+  actualCss: string;
 }
 
 export class MarkupMismatchError extends assert.AssertionError {
@@ -113,8 +115,10 @@ export function assertSameCascade(
     return {
       expectedFullCascade,
       expectedDoc,
+      expectedCss,
       actualFullCascade,
       actualDoc,
+      actualCss,
     };
   });
 }
