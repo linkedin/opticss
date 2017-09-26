@@ -1,0 +1,69 @@
+{
+  "compilerOptions": {
+    // Compilation Configuration
+    "target": "es2015",
+    "inlineSources": false,
+    "inlineSourceMap": true,
+    "declaration": true,
+    "allowSyntheticDefaultImports": true,
+
+    // Environment Configuration
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "es2016"
+    ],
+    "types": [
+      "@types/chai",
+      "@types/debug",
+      "@types/fs-extra",
+      "@types/handlebars",
+      "@types/mocha",
+      "@types/nearley",
+      "@types/source-map"
+    ],
+
+    // output options
+    "newLine": "LF",
+    "outDir": "dist",
+    "module": "commonjs",
+    "traceResolution": false,
+    "baseUrl": "dist/src",
+    "paths": {
+      "perfectionist": [
+        "../../types-local/perfectionist"
+      ],
+      "postcss-selector-parser": [
+        "../../types-local/postcss-selector-parser"
+      ],
+      "regexpu-core": [
+        "../../types-local/regexpu-core"
+      ],
+      "inline-source-map-comment": [
+        "../../types-local/inline-source-map-comment"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "sanity",
+    "dist",
+    "tsbuild",
+    "node_modules",
+    "test"
+  ]
+}
