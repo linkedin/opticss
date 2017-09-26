@@ -8,5 +8,6 @@
     "typescriptHero.codeOutline.enabled": true,
     "typescriptHero.resolver.multiLineWrapThreshold": 10,
     "typescriptHero.resolver.multiLineTrailingComma": true,
-    "typescriptHero.resolver.organizeOnSave": true
+    "typescriptHero.resolver.organizeOnSave": true,
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

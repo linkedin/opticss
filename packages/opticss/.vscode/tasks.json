@@ -26,7 +26,7 @@
         },
         {
             "taskName": "compile",
-            "args": ["run", "prepublish"]
+            "args": ["run", "pretest"]
         }
     ]
 }
