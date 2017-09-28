@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+
+const { DemoOptimizer } = require("opticss");
+
+let optimizer = new DemoOptimizer();
+optimizer.run();

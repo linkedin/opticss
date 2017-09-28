@@ -81,3 +81,5 @@ export {
   TemplateInfoFactory,
   TemplateTypes,
 } from "./TemplateInfo";
+
+export * from "./DemoOptimizer";
