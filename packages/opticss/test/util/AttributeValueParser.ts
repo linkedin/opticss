@@ -19,7 +19,7 @@ export class AttributeValueParser {
       return {constant: value};
     }
     let startProduction = whitespaceDelimited ? "whitespaceDelimitedAttribute" : "attribute";
-    let grammarObj = nearley.Grammar.fromCompiled(<any>grammar, startProduction);
+    let grammarObj = nearley.Grammar.fromCompiled(<any>grammar);
     (<any>grammarObj).start = startProduction; // because this api is stupid.
     let parser = new nearley.Parser(grammarObj);
     parser.feed(value);

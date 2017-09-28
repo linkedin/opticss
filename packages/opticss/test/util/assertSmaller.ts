@@ -2,6 +2,7 @@ import * as cssSize from "css-size";
 import * as assert from "assert";
 import { CascadeTestResult } from "./assertCascade";
 import { inspect } from "util";
+import { documentToString } from "resolve-cascade";
 
 function assertDelta(type: keyof cssSize.Result<number>, cssDelta: cssSize.Result<number>, templateDelta: cssSize.Result<number>, assertions?: DeltaAssertions) {
     let delta = cssDelta[type].difference + templateDelta[type].difference;
@@ -28,7 +29,7 @@ function assertDelta(type: keyof cssSize.Result<number>, cssDelta: cssSize.Resul
       }
     } catch (e) {
       e.message += "\nCSS Delta:\n" +
-                   inspect(cssDelta) + 
+                   inspect(cssDelta) +
                    "\nTemplate Delta:\n" +
                    inspect(templateDelta);
       throw e;
@@ -53,13 +54,12 @@ export function assertSmaller(
   result: CascadeTestResult,
   assertions?: DeltaAssertions
 ): Promise<SizeResultPair> {
-  let testedMarkup = result.testedTemplates[0].testedMarkups[0];
-  let inputHtml = testedMarkup.originalBody;
+  let assertionResults = result.testedTemplates[0].assertionResults[0];
   return assertSmallerStylesAndMarkup(
     inputCSS,
     result.optimization.output.content.toString(),
-    testedMarkup.originalBody,
-    testedMarkup.optimizedBody,
+    documentToString(assertionResults.expectedDoc),
+    documentToString(assertionResults.actualDoc),
     assertions
   );
 }
@@ -83,16 +83,16 @@ export function assertSmallerStylesAndMarkup(
   });
 }
 
-export function debugSize(inputCSS: string, result: CascadeTestResult): Promise<void> {
-  let testedMarkup = result.testedTemplates[0].testedMarkups[0];
-  let inputHtml = testedMarkup.originalBody;
-  let optimizedHtml = Promise.resolve({css: testedMarkup.optimizedBody});
-  const optimizedCss = Promise.resolve({css: result.optimization.output.content.toString()});
+export function debugSize(result: CascadeTestResult): Promise<void> {
+  let results = result.testedTemplates[0].assertionResults[0];
+  let inputHtml = documentToString(results.expectedDoc);
+  let optimizedHtml = Promise.resolve({css: documentToString(results.actualDoc)});
+  const optimizedCss = Promise.resolve({css: results.actualCss});
   let templatePromise = cssSize.table(inputHtml, {}, () => optimizedHtml).then((table) => {
     console.log("Markup");
     console.log(table);
   });
-  let cssPromise = cssSize.table(inputCSS, {}, () => optimizedCss).then((table) => {
+  let cssPromise = cssSize.table(results.expectedCss, {}, () => optimizedCss).then((table) => {
     console.log("Styles");
     console.log(table);
   });

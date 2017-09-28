@@ -5,7 +5,7 @@ import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import { OptiCSSOptions, TemplateIntegrationOptions } from "../../src/OpticssOptions";
 import { OptimizationResult, Optimizer } from "../../src/Optimizer";
 
-import { Cascade, walkElements, allElements, parseHtml, debugElement, bodyElement, serializeElement } from "./Cascade";
+import { Cascade, walkElements, allElements, parseHtml, debugElement, bodyElement, serializeElement, assertSameCascade, AssertionResult } from "resolve-cascade";
 import { SimpleTemplateRunner } from "./SimpleTemplateRunner";
 import { SimpleAnalyzer } from "./SimpleAnalyzer";
 import { TestTemplate } from "./TestTemplate";
@@ -17,86 +17,9 @@ export interface TestedMarkup {
   optimizedBody: string;
 }
 
-export function assertSameCascade(
-  originalCss: string,
-  optimizedCss: string,
-  templateHtml: string,
-  originalHtml: string,
-  optimizedHtml: string
-): Promise<TestedMarkup> {
-  // console.log("template HTML:", templateHtml);
-  // console.log("original HTML:", originalHtml);
-  // console.log("optimized HTML:", optimizedHtml);
-  let templateDoc = parseHtml(templateHtml);
-  let originalDoc = parseHtml(originalHtml);
-  let optimizedDoc = parseHtml(optimizedHtml);
-  let originalCascade = new Cascade(originalCss, originalDoc);
-  let originalCascadePromise = originalCascade.perform();
-  let optimizedCascade = new Cascade(optimizedCss, optimizedDoc);
-  let optimizedCascadePromise = optimizedCascade.perform();
-  let cascades = [originalCascadePromise, optimizedCascadePromise];
-  return Promise.all(cascades).then(([origCascade, optiCascade]) => {
-    let templateBody = bodyElement(templateDoc)!;
-    let templateElements = allElements(templateBody);
-    let originalBody = bodyElement(originalDoc)!;
-    let originalElements = allElements(originalBody);
-    let optimizedBody = bodyElement(optimizedDoc)!;
-    let optimizedElements = allElements(optimizedBody);
-    if (originalElements.length !== templateElements.length) {
-      let commonLength = Math.min(originalElements.length, templateElements.length);
-      for (let i = 0; i < commonLength; i++) {
-        console.log(`${debugElement(originalElements[i])} | ${debugElement(templateElements[i])}`);
-      }
-    }
-    assert.equal(originalElements.length,
-                 templateElements.length,
-                 "original document doesn't match template");
-    assert.equal(optimizedElements.length,
-                 templateElements.length,
-                 "rewritten document doesn't match template");
-    for (let i = 0; i < originalElements.length; i++) {
-      let templateElement = templateElements[i];
-      let originalElement = originalElements[i];
-      let optimizedElement = optimizedElements[i];
-      let origStyle = origCascade.get(originalElement);
-      let optiStyle = optiCascade.get(optimizedElement);
-      if (origStyle || optiStyle) {
-        // TODO: pseudoelement and pseudostate support
-        let origComputed = origStyle && origStyle.compute();
-        let optiComputed = optiStyle && optiStyle.compute();
-        try {
-          assert.deepEqual(optiComputed, origComputed);
-        } catch (e) {
-          console.warn("Original CSS:\n", originalCss);
-          console.warn("Optimized CSS:\n", optimizedCss);
-          let templateStr = debugElement(templateElement);
-          console.warn("template element:", templateStr);
-          let origStr = debugElement(originalElement);
-          console.warn("original element:", origStr);
-          let optiStr = debugElement(optimizedElement);
-          console.warn("optimized element:", optiStr);
-          if (origComputed) {
-            console.warn("original cascade:", origStyle && origStyle.debug());
-            console.warn("original computed styles:", origComputed);
-          }
-          if (optiComputed) {
-            console.warn("optimized cascade:", optiStyle && optiStyle.debug());
-            console.warn("optimized computed styles:", optiComputed);
-          }
-          throw e;
-        }
-      }
-    }
-    return {
-      originalBody: serializeElement(originalBody),
-      optimizedBody: serializeElement(optimizedBody)
-    };
-  });
-}
-
 export interface CascadeAssertionResults {
   template: TestTemplate;
-  testedMarkups: Array<TestedMarkup>;
+  assertionResults: Array<AssertionResult>;
 }
 
 export interface CascadeTestResult {
@@ -143,13 +66,12 @@ export function testOptimizationCascade(
       templates.forEach(template => {
         let runner = new SimpleTemplateRunner(template);
         let promise = runner.runAll().then(result => {
-          let cascadeAssertions = new Array<Promise<TestedMarkup>>();
+          let cascadeAssertions = new Array<Promise<AssertionResult>>();
           result.forEach((html) => {
             let rewrittenHtml = rewriter.rewrite(template, html);
             cascadeAssertions.push(
               assertSameCascade(originalCss,
                                 optimizationToCss(optimization),
-                                template.contents,
                                 html,
                                 rewrittenHtml).catch((e: any) => {
                                   Object.assign(e, {
@@ -160,8 +82,8 @@ export function testOptimizationCascade(
                                   throw e;
                                 }));
           });
-          return Promise.all(cascadeAssertions).then(testedMarkups => {
-            return {template, testedMarkups};
+          return Promise.all(cascadeAssertions).then(assertionResults => {
+            return {template, assertionResults};
           });
         });
         allTemplateRuns.push(promise);
@@ -199,8 +121,8 @@ export function debugResult(inputCSS: string, result: CascadeTestResult) {
   console.log("Optimized CSS:", "\n" + indentString(optimized));
   result.testedTemplates.forEach(testedTemplate => {
     console.log("Template:", "\n" + indentString(testedTemplate.template.contents));
-    testedTemplate.testedMarkups.forEach(markup => {
-      console.log("Rewritten to:", "\n" + indentString(markup.optimizedBody));
+    testedTemplate.assertionResults.forEach(results => {
+      console.log("Rewritten to:", "\n" + indentString(serializeElement(bodyElement(results.actualDoc)!)));
     });
   });
 }

@@ -2,6 +2,7 @@ import { suite, test, skip, only } from "mocha-typescript";
 import { assert } from "chai";
 import * as path from 'path';
 import * as postcss from 'postcss';
+import { documentToString } from "resolve-cascade";
 
 import { OptimizationResult } from "../src/Optimizer";
 import { TestTemplate } from "./util/TestTemplate";
@@ -180,7 +181,7 @@ export class MergeDeclarationsTest {
               .i { background-attachment: fixed; }
               .j { background-color: red; }
               .a { background-position: initial; background-size: initial; background-origin: content-box; }`);
-      assert.deepEqual(result.testedTemplates[0].testedMarkups[0].optimizedBody, clean`
+      assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
         <body><div class="a e g h i j"></div>
         <div></div></body>`);
     });
@@ -259,7 +260,7 @@ export class MergeDeclarationsTest {
   `);
     return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
-      assert.deepEqual(result.testedTemplates[0].testedMarkups[0].optimizedBody, clean`
+      assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
         <body><div class="d e b"></div>
         <div class="d e"></div></body>
       `);
@@ -274,6 +275,7 @@ export class MergeDeclarationsTest {
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
     });
   }
+
   @test "handles media queries with conflict"() {
     let css1 = clean`
     .a { color: red; }
@@ -291,7 +293,7 @@ export class MergeDeclarationsTest {
   `);
     return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
-      assert.deepEqual(result.testedTemplates[0].testedMarkups[0].optimizedBody, clean`
+      assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
         <body><div class="b"></div>
         <div class="a c"></div></body>
       `);
