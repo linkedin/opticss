@@ -1,11 +1,15 @@
 import {
+  assert,
+} from 'chai';
+import {
+  suite,
+  test,
+} from 'mocha-typescript';
+
+import {
   assertSameCascade,
 } from '../src';
-import { suite, test, skip, only } from "mocha-typescript";
-import { assert } from "chai";
-
-import clean from "./util/clean";
-import * as path from 'path';
+import clean from './util/clean';
 
 @suite("Cascade")
 export class CascadeTest {
@@ -32,7 +36,7 @@ export class CascadeTest {
       result.actualFullCascade.forEach(element => {
         let style = element.compute();
         assert.equal(style.color, "red");
-      })
+      });
     });
   }
 }

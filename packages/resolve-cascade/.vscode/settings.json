@@ -8,5 +8,7 @@
     "typescriptHero.codeOutline.enabled": true,
     "typescriptHero.resolver.multiLineWrapThreshold": 10,
     "typescriptHero.resolver.multiLineTrailingComma": true,
-    "typescriptHero.resolver.organizeOnSave": true
+    "typescriptHero.resolver.organizeOnSave": true,
+    "tslint.configFile": "tslint.json",
+    "tslint.enable": true
 }

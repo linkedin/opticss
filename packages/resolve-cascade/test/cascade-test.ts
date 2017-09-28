@@ -1,10 +1,20 @@
-import { bodyElement, parseHtml, walkElements } from '../src/util';
-import { Cascade } from '../src/Cascade';
-import { suite, test, skip, only } from "mocha-typescript";
-import { assert } from "chai";
+import {
+  assert,
+} from 'chai';
+import {
+  suite,
+  test,
+} from 'mocha-typescript';
 
-import clean from "./util/clean";
-import * as path from 'path';
+import {
+  Cascade,
+} from '../src/Cascade';
+import {
+  bodyElement,
+  parseHtml,
+  walkElements,
+} from '../src/util';
+import clean from './util/clean';
 
 @suite("Cascade")
 export class CascadeTest {
@@ -16,17 +26,17 @@ export class CascadeTest {
       <div class="a"></div>
     `;
     let document = parseHtml(html);
-    let body = bodyElement(document)!
+    let body = bodyElement(document)!;
     let cascade = new Cascade(css, document);
     return cascade.perform().then(cascadedStyles => {
       walkElements(body, (node) => {
         let elStyle = cascadedStyles.get(node);
         if (elStyle) {
           let styles = elStyle.compute();
-          assert.equal(styles.color, "red")
+          assert.equal(styles.color, "red");
         }
       });
-    })
+    });
   }
   @test "can be constructed"() {
     let css = clean`
@@ -38,7 +48,7 @@ export class CascadeTest {
       <div id="c" class="a b"></div>
     `;
     let document = parseHtml(html);
-    let body = bodyElement(document)!
+    let body = bodyElement(document)!;
     let cascade = new Cascade(css, document);
     return cascade.perform().then(cascadedStyles => {
       walkElements(body, (node) => {
@@ -58,6 +68,6 @@ export class CascadeTest {
           });
         }
       });
-    })
+    });
   }
 }

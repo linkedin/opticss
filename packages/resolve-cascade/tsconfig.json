@@ -21,16 +21,18 @@
     "noImplicitThis": true,
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "alwaysStrict": true,
     "lib": [
       "es2016"
     ],
 
     // output options
     "newLine": "LF",
-    "outDir": "dist/src",
+    "outDir": "dist",
     "module": "commonjs",
     "traceResolution": false,
-    "baseUrl": "dist/src",
+    "baseUrl": "dist",
     "types": [
       "@types/chai",
       "@types/mocha"
@@ -44,7 +46,6 @@
     "sanity",
     "dist",
     "tsbuild",
-    "node_modules",
-    "test"
+    "node_modules"
   ]
 }

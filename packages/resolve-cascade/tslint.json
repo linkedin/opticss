@@ -12,7 +12,6 @@
     "no-duplicate-variable": true,
     "no-inferrable-types": [true],
     "no-trailing-whitespace": true,
-    "no-unused-variable": true,
     "no-unused-expression": true,
     "semicolon": [true, "always"],
     "triple-equals": true,
