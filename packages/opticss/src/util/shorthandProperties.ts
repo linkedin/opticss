@@ -8,7 +8,7 @@ export function expandPropertyName(prop: string, recursively = false): string[] 
     props = props.reduce((prev, p) => {
       prev.splice(prev.length, 0, ...propParser.getShorthandComputedProperties(p));
       return prev;
-    }, []);
+    }, new Array<string>());
   }
   return props;
 }

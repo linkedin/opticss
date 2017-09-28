@@ -1,6 +1,6 @@
 import * as parse5 from "parse5";
 import * as Random from "random-js";
-import { SimpleAnalyzer, HasAnalysisId } from "./SimpleAnalyzer";
+import { SimpleAnalyzer } from "./SimpleAnalyzer";
 import { TestTemplate } from "./TestTemplate";
 import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import { FlattenedAttributeValue, isAbsent, isUnknown, isConstant, isUnknownIdentifier, isStartsWith, isEndsWith, isStartsAndEndsWith, isFlattenedSet, Attribute, AttributeNS } from "../../src/Selectable";

@@ -1,11 +1,9 @@
 import * as parse5 from "parse5";
 
-import { TemplateAnalysis } from "../../src/TemplateAnalysis";
 import { allElements, bodyContents, bodyElement } from "./SimpleTemplateRunner";
 import { StyleMapping, RewriteMapping } from "../../src/StyleMapping";
 import { AttributeValueParser } from "./AttributeValueParser";
 import { Tagname, Element, Attr, AttributeNS, Attribute } from "../../src/Selectable";
-import { POSITION_UNKNOWN } from "../../src/SourceLocation";
 import { BooleanExpression, AndExpression, OrExpression, NotExpression } from "../../src/util/BooleanExpression";
 import assertNever from "../../src/util/assertNever";
 import { TestTemplate } from "./TestTemplate";
@@ -133,10 +131,6 @@ function evaluateExpression(
 
 function isClassAttr(attr: parse5.AST.Default.Attribute): boolean {
   return attr.namespace === undefined && attr.name === "class";
-}
-
-function isWhitespaceAttr(attr: parse5.AST.Default.Attribute): boolean {
-  return isClassAttr(attr);
 }
 
 function isAndExpression<T>(expression: BooleanExpression<T>): expression is AndExpression<T> {

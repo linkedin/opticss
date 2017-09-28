@@ -72,8 +72,9 @@ export class TemplateInfoFactory {
   static constructors: TemplateConstructors = {};
 
   static create<K extends keyof TemplateTypes>(name: K, identifier: string, ...data: any[]): TemplateTypes[K] {
-    let constructor = TemplateInfoFactory.constructors[name];
-    if (constructor) {
+    // TODO: get rid of this stupid any
+    let constructor: any = TemplateInfoFactory.constructors[name];
+    if (constructor !== undefined) {
       return constructor(identifier, ...data);
     } else {
       throw new Error(`No template info registered for ${name}`);

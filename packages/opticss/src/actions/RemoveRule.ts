@@ -18,7 +18,7 @@ export class RemoveRule extends Action {
     super(optimization);
     this.reason = reason;
     this.parent = rule.parent;
-    this.prevSibling = rule.prev();
+    this.prevSibling = rule.prev() || undefined;
     this.rule = rule;
     this.cache = cache;
   }

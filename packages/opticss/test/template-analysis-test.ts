@@ -1,8 +1,9 @@
+import { Element, ValueAbsent, ValueUnknownIdentifier, ElementInfo, ValueUnknown } from '../src/Selectable';
 import { suite, test, skip, only } from "mocha-typescript";
 import { assert } from "chai";
 
 import {
-  Tagname, TagnameNS, Attribute, Class
+  Tagname, TagnameNS, Attribute, Class, SerializedAttribute
 } from "../src/Selectable";
 import {
   default as parseSelector,
@@ -13,6 +14,7 @@ import { Template } from "../src/TemplateInfo";
 import { SimpleAnalyzer } from "./util/SimpleAnalyzer";
 import { TestTemplate } from "./util/TestTemplate";
 import clean from "./util/clean";
+import { AttributeValueChoice } from '../src/index';
 
 function selector(selector: string): CompoundSelector {
   let parsed = parseSelector(selector);
@@ -54,7 +56,7 @@ export class TemplateAnalysisTest {
               { "name": "contenteditable", "value": { "absent": true } }
             ]
           }
-        ]);
+        ] as ElementInfo[]);
     });
   }
   @test "Can add an attribute with unknown value"() {
@@ -71,7 +73,7 @@ export class TemplateAnalysisTest {
               { "name": "data-foo", "value": { "unknown": true } }
             ]
           }
-        ]);
+        ] as ElementInfo[]);
     });
   }
   @test "Can add an attribute with unknown identifier"() {
@@ -88,7 +90,7 @@ export class TemplateAnalysisTest {
               { "name": "class", "value": { "unknownIdentifier": true } }
             ]
           }
-        ]);
+        ] as ElementInfo[]);
     });
   }
   @test "Can add an attribute with two unknown identifiers"() {
@@ -106,14 +108,14 @@ export class TemplateAnalysisTest {
                 "name": "class",
                 "value": {
                   "allOf": [
-                    { "unknownIdentifier": true },
-                    { "unknownIdentifier": true }
+                    <ValueUnknownIdentifier>{ "unknownIdentifier": true },
+                    <ValueUnknownIdentifier>{ "unknownIdentifier": true }
                   ]
                 }
               }
             ]
           }
-        ]
+        ] as ElementInfo[]
       );
     });
   }
@@ -184,14 +186,16 @@ export class TemplateAnalysisTest {
                     "endsWith": "i"
                   },
                   {
-                    "oneOf": [{ "absent": true },
-                    { "constant": "j" }]
+                    "oneOf": [
+                      { "absent": true },
+                      { "constant": "j" }
+                    ]
                   },
                   { "unknownIdentifier": true }]
                 }
               }]
           }
-        ]);
+        ] as ElementInfo[]);
     });
   }
 }

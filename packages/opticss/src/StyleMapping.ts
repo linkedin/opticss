@@ -98,7 +98,7 @@ export class StyleMapping {
   private obsoleteAttributes: IdentityDictionary<SimpleAttribute>;
   constructor() {
     this.replacedAttributes = attributeDictionary();
-    this.linkedAttributes = attributeMultiDictionary();
+    this.linkedAttributes = attributeMultiDictionary<PrimaryAttributeLink>();
     this.sourceAttributes = new IdentityDictionary(attrToKey);
     this.optimizedAttributes = new IdentityDictionary(attrToKey);
     this.obsoleteAttributes = new IdentityDictionary(attrToKey);
@@ -232,7 +232,7 @@ function isClassAttr(attr: Attr): boolean {
   return attr.namespaceURL === null && attr.name === "class";
 }
 
-function attributeDictionary<V>(): Dictionary<SimpleAttribute, V> {
+function attributeDictionary<V = SimpleAttribute>(): Dictionary<SimpleAttribute, V> {
   return new Dictionary<SimpleAttribute, V>(attrToKey);
 }
 

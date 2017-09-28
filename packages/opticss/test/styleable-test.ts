@@ -2,6 +2,7 @@ import { suite, test, skip, only } from "mocha-typescript";
 import { assert } from "chai";
 
 import {
+AttributeValueChoiceOption ,
   Tagname, TagnameNS, Attribute, isUnknown, isConstant, isChoice, isTagChoice, isAbsent, isStartsWith, isEndsWith, isStartsAndEndsWith, isSet
 } from "../src/Selectable";
 import {
@@ -141,7 +142,7 @@ export class SelectableAttributeTest {
         {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
       ]
     });
-    assert.deepEqual(isChoice(attr.value) && attr.value.oneOf,
+    assert.deepEqual<AttributeValueChoiceOption[]>(isChoice(attr.value) && attr.value.oneOf || [],
                      [{absent: true},
                       {constant: "asdf"},
                       {startsWith: "foo", whitespace: false},

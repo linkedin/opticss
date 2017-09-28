@@ -78,7 +78,7 @@ export class DeclarationMapper {
             elements,
             ordinal: -1,
             declarations,
-            declarationInfos: new MultiDictionary()
+            declarationInfos: new MultiDictionary<[string, string], DeclarationInfo>()
           };
           let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContext());
           for (let prop of declarations.keys()) {
@@ -176,10 +176,12 @@ export class DeclarationMapper {
     for (let el of elements) {
       let declarations = this.elementDeclarations.get(el);
       if (!declarations) {
-        declarations = new MultiDictionary();
-        this.elementDeclarations.set(el, declarations);
+        let newDecls = new MultiDictionary<string, DeclarationInfo>();
+        this.elementDeclarations.set(el, newDecls);
+        newDecls.setValue(property, declInfo);
+      } else {
+        declarations.setValue(property, declInfo);
       }
-      declarations.setValue(property, declInfo);
     }
   }
 }

@@ -1,5 +1,5 @@
 import * as postcss from 'postcss';
-import Concat = require("concat-with-sourcemaps");
+import Concat = require('concat-with-sourcemaps');
 
 import {
   Actions,
@@ -18,10 +18,10 @@ import {
   DEFAULT_OPTIONS,
 } from './OpticssOptions';
 import {
+  isMultiFileOptimization,
+  isSingleFileOptimization,
   Optimization,
   optimizations,
-  isSingleFileOptimization,
-  isMultiFileOptimization,
 } from './optimizations';
 import {
   StyleMapping,
