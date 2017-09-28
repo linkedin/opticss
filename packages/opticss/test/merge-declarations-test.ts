@@ -18,9 +18,8 @@ import {
   testOptimizationCascade,
 } from './util/assertCascade';
 import {
-  assertSmaller as assertSmallerUtil,
-  assertSmallerStylesAndMarkup,
-  DeltaAssertions,
+  assertSmaller,
+  assertSmallerStylesAndMarkupWithResults,
 } from './util/assertSmaller';
 import clean from './util/clean';
 import {
@@ -32,14 +31,6 @@ function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplat
     { only: ["mergeDeclarations"] },
     { rewriteIdents: { id: false, class: true } },
     ...stylesAndTemplates);
-}
-
-function assertSmaller(
-  inputCSS: string,
-  result: CascadeTestResult,
-  assertions?: DeltaAssertions
-): Promise<void> {
-  return assertSmallerUtil(inputCSS, result, assertions).then(() => {});
 }
 
 @suite("Declaration Merging")
@@ -502,7 +493,7 @@ export class MergeDeclarationsTest {
     <span class="c f">C Not Scoped!</span>
     <span class="d f">D Not Scoped!</span>
     <span class="e">E Not Scoped!</span>`;
-    return assertSmallerStylesAndMarkup(
+    return assertSmallerStylesAndMarkupWithResults(
       inputCSS, outputCSS, inputHTML, outputHTML
     ).then(([cssDelta, markupDelta]) => {
       console.log("CSS Delta:\n", cssDelta);

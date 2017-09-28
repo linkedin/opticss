@@ -53,9 +53,17 @@ export function assertSmaller(
   inputCSS: string,
   result: CascadeTestResult,
   assertions?: DeltaAssertions
+): Promise<void> {
+  return assertSmallerWithResults(inputCSS, result, assertions).then(() => {});
+}
+
+export function assertSmallerWithResults(
+  inputCSS: string,
+  result: CascadeTestResult,
+  assertions?: DeltaAssertions
 ): Promise<SizeResultPair> {
   let assertionResults = result.testedTemplates[0].assertionResults[0];
-  return assertSmallerStylesAndMarkup(
+  return assertSmallerStylesAndMarkupWithResults(
     inputCSS,
     result.optimization.output.content.toString(),
     documentToString(assertionResults.expectedDoc),
@@ -65,6 +73,17 @@ export function assertSmaller(
 }
 
 export function assertSmallerStylesAndMarkup(
+  inputCSS: string,
+  outputCSS: string,
+  inputMarkup: string,
+  outputMarkup: string,
+  assertions?: DeltaAssertions
+): Promise<void> {
+  return assertSmallerStylesAndMarkupWithResults(
+    inputCSS, outputCSS, inputMarkup, outputMarkup, assertions).then(() => {});
+}
+
+export function assertSmallerStylesAndMarkupWithResults(
   inputCSS: string,
   outputCSS: string,
   inputMarkup: string,
