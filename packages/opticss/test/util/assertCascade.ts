@@ -1,16 +1,33 @@
-import * as parse5 from "parse5";
-import { assert } from "chai";
+import {
+  AssertionResult,
+  assertSameCascade,
+  bodyElement,
+  serializeElement,
+} from 'resolve-cascade';
 
-import { TemplateAnalysis } from "../../src/TemplateAnalysis";
-import { OptiCSSOptions, TemplateIntegrationOptions } from "../../src/OpticssOptions";
-import { OptimizationResult, Optimizer } from "../../src/Optimizer";
-
-import { Cascade, walkElements, allElements, parseHtml, debugElement, bodyElement, serializeElement, assertSameCascade, AssertionResult } from "resolve-cascade";
-import { SimpleTemplateRunner } from "./SimpleTemplateRunner";
-import { SimpleAnalyzer } from "./SimpleAnalyzer";
-import { TestTemplate } from "./TestTemplate";
-import { SimpleTemplateRewriter } from "./SimpleTemplateRewriter";
-import { inspect } from "util";
+import {
+  OptiCSSOptions,
+  TemplateIntegrationOptions,
+} from '../../src/OpticssOptions';
+import {
+  OptimizationResult,
+  Optimizer,
+} from '../../src/Optimizer';
+import {
+  TemplateAnalysis,
+} from '../../src/TemplateAnalysis';
+import {
+  SimpleAnalyzer,
+} from './SimpleAnalyzer';
+import {
+  SimpleTemplateRewriter,
+} from './SimpleTemplateRewriter';
+import {
+  SimpleTemplateRunner,
+} from './SimpleTemplateRunner';
+import {
+  TestTemplate,
+} from './TestTemplate';
 
 export interface TestedMarkup {
   originalBody: string;

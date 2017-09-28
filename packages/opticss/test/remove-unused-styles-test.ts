@@ -1,14 +1,32 @@
-import { suite, test, skip, only } from "mocha-typescript";
-import { assert } from "chai";
+import {
+  assert,
+} from 'chai';
+import {
+  suite,
+  test,
+} from 'mocha-typescript';
+import * as path from 'path';
 
-import { Optimizer, OptimizationResult } from "../src/Optimizer";
-import { TestTemplate } from "./util/TestTemplate";
-import { SimpleAnalyzer } from "./util/SimpleAnalyzer";
-import clean from "./util/clean";
-import * as path from "path";
-import { TemplateAnalysis } from "../src/TemplateAnalysis";
-import { RemoveRule } from "../src/actions/RemoveRule";
-import { ChangeSelector } from "../src/actions/ChangeSelector";
+import {
+  ChangeSelector,
+} from '../src/actions/ChangeSelector';
+import {
+  RemoveRule,
+} from '../src/actions/RemoveRule';
+import {
+  OptimizationResult,
+  Optimizer,
+} from '../src/Optimizer';
+import {
+  TemplateAnalysis,
+} from '../src/TemplateAnalysis';
+import clean from './util/clean';
+import {
+  SimpleAnalyzer,
+} from './util/SimpleAnalyzer';
+import {
+  TestTemplate,
+} from './util/TestTemplate';
 
 function testRemoveUnusedStyles(stylesAndTemplates: Array<string | TestTemplate>, expectedOutput: string): Promise<OptimizationResult> {
   let optimizer = new Optimizer({
@@ -117,11 +135,6 @@ export class RemoveUnusedStylesTest {
     let template = new TestTemplate("test", clean`
       <div class="a b"></div>
     `);
-    let analyzer = new SimpleAnalyzer(template);
-    let analysis = analyzer.analyze();
-    let optimizer = new Optimizer({
-      only: ["removeUnusedStyles"]
-    },{ rewriteIdents: { id: false, class: true }});
     let expectedCss = css;
     return testRemoveUnusedStyles([css, template], expectedCss);
   }

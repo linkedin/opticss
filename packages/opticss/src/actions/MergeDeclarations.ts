@@ -1,17 +1,39 @@
 import * as postcss from 'postcss';
 import * as selectorParser from 'postcss-selector-parser';
-import { MultiAction } from "./Action";
-import { SourcePosition } from "../SourceLocation";
-import { Optimizations } from "../OpticssOptions";
+
+import {
+  Optimizations,
+} from '../OpticssOptions';
+import {
+  OptimizationPass,
+} from '../OptimizationPass';
+import {
+  CompoundSelector,
+  isClass,
+  isUniversal,
+  ParsedSelector,
+} from '../parseSelector';
 import {
   ParsedSelectorAndRule,
   SelectorCache,
 } from '../query';
-import { ParsedSelector, CompoundSelector, isClass, isUniversal } from "../parseSelector";
-import { OptimizationPass } from "../OptimizationPass";
-import { IdentGenerators } from "../util/IdentGenerator";
-import { StyleMapping, ElementAttributes, SimpleAttribute as ElementAttribute } from "../StyleMapping";
-import { isAtRule } from "../optimizations/util";
+import {
+  SourcePosition,
+} from '../SourceLocation';
+import {
+  ElementAttributes,
+  SimpleAttribute as ElementAttribute,
+  StyleMapping,
+} from '../StyleMapping';
+import {
+  isAtRule
+} from '../optimizations/util';
+import {
+  IdentGenerators,
+} from '../util/IdentGenerator';
+import {
+  MultiAction,
+} from './Action';
 
 export interface Declaration {
   prop: string;

@@ -1,25 +1,22 @@
-import { Element, ValueAbsent, ValueUnknownIdentifier, ElementInfo, ValueUnknown } from '../src/Selectable';
-import { suite, test, skip, only } from "mocha-typescript";
-import { assert } from "chai";
+import {
+  assert,
+} from 'chai';
+import {
+  suite,
+  test,
+} from 'mocha-typescript';
 
 import {
-  Tagname, TagnameNS, Attribute, Class, SerializedAttribute
-} from "../src/Selectable";
+  ElementInfo,
+  ValueUnknownIdentifier,
+} from '../src/Selectable';
+import clean from './util/clean';
 import {
-  default as parseSelector,
-  CompoundSelector,
-} from "../src/parseSelector";
-import { TemplateAnalysis } from "../src/TemplateAnalysis";
-import { Template } from "../src/TemplateInfo";
-import { SimpleAnalyzer } from "./util/SimpleAnalyzer";
-import { TestTemplate } from "./util/TestTemplate";
-import clean from "./util/clean";
-import { AttributeValueChoice } from '../src/index';
-
-function selector(selector: string): CompoundSelector {
-  let parsed = parseSelector(selector);
-  return parsed[0].selector;
-}
+  SimpleAnalyzer,
+} from './util/SimpleAnalyzer';
+import {
+  TestTemplate,
+} from './util/TestTemplate';
 
 @suite("Template Analysis")
 export class TemplateAnalysisTest {

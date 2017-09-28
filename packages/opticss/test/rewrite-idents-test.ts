@@ -1,14 +1,32 @@
-import { suite, test, skip, only } from "mocha-typescript";
-import { assert } from "chai";
-import * as path from "path";
+import {
+  assert,
+} from 'chai';
+import {
+  suite,
+  test,
+} from 'mocha-typescript';
+import * as path from 'path';
 
-import { OptimizationResult } from "../src/Optimizer";
-import { TestTemplate } from "./util/TestTemplate";
-import clean from "./util/clean";
-import { testOptimizationCascade, CascadeTestResult, debugResult } from "./util/assertCascade";
-import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOptions";
-import { IdentGenerator, IdentGenerators } from "../src/util/IdentGenerator";
-import { Element, Tagname, Attribute } from "../src/Selectable";
+import {
+  RewritableIdents,
+} from '../src/OpticssOptions';
+import {
+  Attribute,
+  Element,
+  Tagname,
+} from '../src/Selectable';
+import {
+  IdentGenerator,
+  IdentGenerators,
+} from '../src/util/IdentGenerator';
+import {
+  CascadeTestResult,
+  testOptimizationCascade,
+} from './util/assertCascade';
+import clean from './util/clean';
+import {
+  TestTemplate,
+} from './util/TestTemplate';
 
 function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(

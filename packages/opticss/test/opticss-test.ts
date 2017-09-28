@@ -1,11 +1,14 @@
-import { suite, test, skip, only } from "mocha-typescript";
-import { assert } from "chai";
+import {
+  assert,
+} from 'chai';
+import {
+  suite,
+  test,
+} from 'mocha-typescript';
 
-import { Optimizer, OptimizationResult } from "../src/Optimizer";
-import { TestTemplate } from "./util/TestTemplate";
-import { SimpleAnalyzer } from "./util/SimpleAnalyzer";
-import clean from "./util/clean";
-import * as path from "path";
+import {
+  Optimizer,
+} from '../src/Optimizer';
 
 @suite("OptiCSS")
 export class OptiCSSTest {

@@ -1,15 +1,33 @@
-import { suite, test, skip, only } from "mocha-typescript";
-import { assert } from "chai";
+import {
+  assert,
+} from 'chai';
+import {
+  suite,
+  test,
+} from 'mocha-typescript';
 
 import {
-AttributeValueChoiceOption ,
-  Tagname, TagnameNS, Attribute, isUnknown, isConstant, isChoice, isTagChoice, isAbsent, isStartsWith, isEndsWith, isStartsAndEndsWith, isSet
-} from "../src/Selectable";
+  Match,
+} from '../src/Match';
 import {
-  default as parseSelector,
   CompoundSelector,
-} from "../src/parseSelector";
-import { Match } from "../src/Match";
+  default as parseSelector,
+} from '../src/parseSelector';
+import {
+  Attribute,
+  AttributeValueChoiceOption,
+  isAbsent,
+  isChoice,
+  isConstant,
+  isEndsWith,
+  isSet,
+  isStartsAndEndsWith,
+  isStartsWith,
+  isTagChoice,
+  isUnknown,
+  Tagname,
+  TagnameNS,
+} from '../src/Selectable';
 
 function selector(selector: string): CompoundSelector {
   let parsed = parseSelector(selector);

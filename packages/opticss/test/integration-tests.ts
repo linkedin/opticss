@@ -1,16 +1,25 @@
-import { suite, test, skip, only, slow, timeout } from "mocha-typescript";
-import { assert } from "chai";
-import * as path from "path";
-import * as fs from "fs";
-import * as parse5 from "parse5";
+import * as fs from 'fs';
+import {
+  slow,
+  suite,
+  test,
+  timeout,
+} from 'mocha-typescript';
+import * as parse5 from 'parse5';
+import * as path from 'path';
 
-import { OptimizationResult } from "../src/Optimizer";
-import { TestTemplate } from "./util/TestTemplate";
-import clean from "./util/clean";
-import { testOptimizationCascade, CascadeTestResult, CascadeTestError, logOptimizations, debugError, debugResult } from "./util/assertCascade";
-import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOptions";
-import { IdentGenerator } from "../src/util/IdentGenerator";
-import { walkElements } from "./util/SimpleTemplateRunner";
+import {
+  CascadeTestError,
+  CascadeTestResult,
+  debugError,
+  testOptimizationCascade,
+} from './util/assertCascade';
+import {
+  walkElements,
+} from './util/SimpleTemplateRunner';
+import {
+  TestTemplate,
+} from './util/TestTemplate';
 
 function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(

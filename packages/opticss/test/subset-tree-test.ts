@@ -1,10 +1,21 @@
-import { suite, test, only } from "mocha-typescript";
-import { SubsetTree } from "../src/util/SubsetTree";
-import { Set as TSCSet } from "typescript-collections";
-import selectorParser = require("postcss-selector-parser");
-import * as RandomJS from "random-js";
-import { assert } from "chai";
-import { getRandom } from "./util/randomness";
+import {
+  assert,
+} from 'chai';
+import {
+  suite,
+  test,
+} from 'mocha-typescript';
+import * as RandomJS from 'random-js';
+import {
+  Set as TSCSet,
+} from 'typescript-collections';
+
+import {
+  SubsetTree,
+} from '../src/util/SubsetTree';
+import {
+  getRandom,
+} from './util/randomness';
 
 type TestSet = TSCSet<number>;
 

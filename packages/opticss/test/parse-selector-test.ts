@@ -1,7 +1,15 @@
-import { suite, test, skip } from "mocha-typescript";
-import parseSelector, { /* CompoundSelector */ } from "../src/parseSelector";
-import selectorParser = require("postcss-selector-parser");
-import { assert } from "chai";
+import {
+  assert,
+} from 'chai';
+import {
+  skip,
+  suite,
+  test,
+} from 'mocha-typescript';
+import selectorParser = require('postcss-selector-parser');
+
+import parseSelector from '../src/parseSelector';
+
 // import assertError from "./util/assertError";
 
 @suite("parseSelector")

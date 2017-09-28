@@ -9,5 +9,8 @@
     "typescriptHero.resolver.multiLineWrapThreshold": 10,
     "typescriptHero.resolver.multiLineTrailingComma": true,
     "typescriptHero.resolver.organizeOnSave": true,
-    "typescript.tsdk": "node_modules/typescript/lib"
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "tslint.enable": true,
+    "tslint.configFile": "tslint.json",
+    "typescript.useCodeSnippetsOnMethodSuggest": true
 }

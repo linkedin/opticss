@@ -1,27 +1,45 @@
-import { suite, test, skip, only } from "mocha-typescript";
-import { assert } from "chai";
+import {
+  assert,
+} from 'chai';
+import {
+  skip,
+  suite,
+  test,
+} from 'mocha-typescript';
 import * as path from 'path';
 import * as postcss from 'postcss';
-import { documentToString } from "resolve-cascade";
+import {
+  documentToString,
+} from 'resolve-cascade';
 
-import { OptimizationResult } from "../src/Optimizer";
-import { TestTemplate } from "./util/TestTemplate";
-import clean from "./util/clean";
 import {
   CascadeTestResult,
   debugError,
-  debugResult,
   testOptimizationCascade,
 } from './util/assertCascade';
-import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOptions";
-import { IdentGenerator, IdentGenerators } from "../src/util/IdentGenerator";
-import { assertSmaller, debugSize, assertSmallerStylesAndMarkup } from "./util/assertSmaller";
+import {
+  assertSmaller as assertSmallerUtil,
+  assertSmallerStylesAndMarkup,
+  DeltaAssertions,
+} from './util/assertSmaller';
+import clean from './util/clean';
+import {
+  TestTemplate,
+} from './util/TestTemplate';
 
 function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
     { only: ["mergeDeclarations"] },
     { rewriteIdents: { id: false, class: true } },
     ...stylesAndTemplates);
+}
+
+function assertSmaller(
+  inputCSS: string,
+  result: CascadeTestResult,
+  assertions?: DeltaAssertions
+): Promise<void> {
+  return assertSmallerUtil(inputCSS, result, assertions).then(() => {});
 }
 
 @suite("Declaration Merging")
@@ -115,7 +133,6 @@ export class MergeDeclarationsTest {
     <div class="(--- | b | d)"></div>
   `);
     return testMergeDeclarations(css1, template).then(result => {
-      let logString = result.optimization.actions.performed[0].logString();
       assert.deepEqual(clean`${result.optimization.output.content.toString()}`, clean`
       .f { color: red; }
       .g { border-width: 1px; }

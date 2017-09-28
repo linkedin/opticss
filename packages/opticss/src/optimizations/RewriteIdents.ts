@@ -3,7 +3,6 @@ import { ParsedCssFile } from "../CssFile";
 import { OptiCSSOptions, TemplateIntegrationOptions, NormalizedRewriteOptions, rewriteOptions } from "../OpticssOptions";
 import { TemplateAnalysis } from "../TemplateAnalysis";
 import { TemplateTypes } from "../TemplateInfo";
-import { ParsedSelector } from "../parseSelector";
 import { RuleIdents, RewriteRuleIdents } from "../actions/RewriteRuleIdents";
 import { eachFileIdent } from "./util";
 import { OptimizationPass } from "../OptimizationPass";

@@ -1,20 +1,24 @@
-import { suite, test, skip, only } from "mocha-typescript";
-import { assert } from "chai";
-import * as path from 'path';
-import * as postcss from 'postcss';
+import {
+  assert,
+} from 'chai';
+import {
+  skip,
+  suite,
+  test,
+} from 'mocha-typescript';
 
-import { OptimizationResult } from "../src/Optimizer";
-import { TestTemplate } from "./util/TestTemplate";
-import clean from "./util/clean";
 import {
   CascadeTestResult,
   debugError,
-  debugResult,
   testOptimizationCascade,
 } from './util/assertCascade';
-import { TemplateIntegrationOptions, RewritableIdents } from "../src/OpticssOptions";
-import { IdentGenerator, IdentGenerators } from "../src/util/IdentGenerator";
-import { assertSmaller, debugSize, assertSmallerStylesAndMarkup } from "./util/assertSmaller";
+import {
+  assertSmaller,
+} from './util/assertSmaller';
+import clean from './util/clean';
+import {
+  TestTemplate,
+} from './util/TestTemplate';
 
 function testAll(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -80,10 +84,4 @@ export class MergeDeclarationsTest {
       throw error;
     });
   }
-}
-
-function parseStylesheet(content: string): Promise<postcss.Result> {
-  return new Promise<postcss.Result>((resolve, reject) => {
-    postcss().process(content, {from: "stylesheet.css"}).then(resolve, reject);
-  });
 }

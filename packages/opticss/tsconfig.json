@@ -15,6 +15,7 @@
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedParameters": true,
+    "noUnusedLocals": true,
     "allowUnreachableCode": false,
     "strictNullChecks": true,
     "noImplicitReturns": true,
@@ -63,7 +64,6 @@
     "sanity",
     "dist",
     "tsbuild",
-    "node_modules",
-    "test"
+    "node_modules"
   ]
 }
