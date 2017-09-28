@@ -40,6 +40,10 @@ export interface OptimizationResult {
   actions: Actions;
 }
 
+export interface TimingData {
+  [optimization: string]: number;
+}
+
 export class Optimizer {
   /**
    * CSS Sources to be optimized.
@@ -50,6 +54,7 @@ export class Optimizer {
 
   options: OptiCSSOptions;
   templateOptions: TemplateIntegrationOptions;
+  timings: TimingData;
 
   private optimizations: Array<Optimization>;
   private initializers: Array<keyof Initializers>;
@@ -71,6 +76,7 @@ export class Optimizer {
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
     this.templateOptions = templateOptions;
     this.optimizations = [];
+    this.timings = {};
     this.initializers = new Array<keyof Initializers>();
     if (!this.options.enabled) {
       return;
@@ -120,6 +126,7 @@ export class Optimizer {
 
   private optimizeFiles(pass: OptimizationPass, files: Array<ParsedCssFile>): Promise<Array<ParsedCssFile>> {
     for (let optimization of this.optimizations) {
+      let start = new Date();
       if (isSingleFileOptimization(optimization)) {
         for (let file of files) {
           optimization.optimizeSingleFile(pass, this.analyses, file);
@@ -128,6 +135,8 @@ export class Optimizer {
       if (isMultiFileOptimization(optimization)) {
         optimization.optimizeAllFiles(pass, this.analyses, files);
       }
+      let end = new Date();
+      this.timings[optimization.name] = end.getUTCMilliseconds() - start.getUTCMilliseconds();
     }
     return Promise.resolve(files);
   }

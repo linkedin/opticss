@@ -10,6 +10,7 @@ import { OptimizationPass } from "../OptimizationPass";
 import { Initializers } from "../initializers";
 
 export class RewriteIdents implements MultiFileOptimization {
+  name = "rewriteIdents";
   initializers: Array<keyof Initializers> = ["initKnownIdents"];
 
   private options: OptiCSSOptions;

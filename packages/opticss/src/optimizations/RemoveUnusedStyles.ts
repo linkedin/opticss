@@ -12,6 +12,7 @@ import { OptimizationPass } from "../OptimizationPass";
 import { Initializers } from "../initializers";
 
 export class RemoveUnusedStyles implements SingleFileOptimization {
+  name = "removeUnusedStyles";
   initializers: Array<keyof Initializers> = [];
   private options: OptiCSSOptions;
 

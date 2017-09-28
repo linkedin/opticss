@@ -25,6 +25,7 @@ export interface OptimizationConstructor {
 }
 
 export interface SingleFileOptimization {
+  name: string;
   readonly initializers: Array<keyof Initializers>;
   optimizeSingleFile(
     pass: OptimizationPass,
@@ -33,6 +34,7 @@ export interface SingleFileOptimization {
 }
 
 export interface MultiFileOptimization {
+  name: string;
   readonly initializers: Array<keyof Initializers>;
   optimizeAllFiles(
     pass: OptimizationPass,

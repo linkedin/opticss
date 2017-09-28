@@ -97,6 +97,7 @@ interface MergeableDeclarationSet {
 }
 
 export class MergeDeclarations implements MultiFileOptimization {
+  name = "mergeDeclarations";
   initializers: Array<keyof Initializers> = ["initKnownIdents"];
 
   private options: OptiCSSOptions;
