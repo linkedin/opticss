@@ -479,7 +479,7 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
  * @param selector  Selector like object: including `string`, `selectorParser.Root`, `selectorParser.Selector`, or `selectorParser.Node`
  * @return Array of `ParsedSelector` objects.
  */
-export default function parseSelector(selector: Selectorish): ParsedSelector[] {
+export function parseSelector(selector: Selectorish): ParsedSelector[] {
   let compoundSelectors = parseCompoundSelectors(selector);
   return compoundSelectors.map(cs => new ParsedSelector(cs));
 }

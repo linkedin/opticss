@@ -19,12 +19,10 @@ import {
 } from '../query';
 import {
   SourcePosition,
-} from '../SourceLocation';
-import {
   ElementAttributes,
   SimpleAttribute as ElementAttribute,
   StyleMapping,
-} from '../StyleMapping';
+} from '@opticss/template-api';
 import {
   isAtRule
 } from '../optimizations/util';

@@ -19,14 +19,12 @@ import {
 } from '../src/Optimizer';
 import {
   TemplateAnalysis,
-} from '../src/TemplateAnalysis';
+} from '@opticss/template-api';
 import clean from './util/clean';
 import {
   SimpleAnalyzer,
-} from './util/SimpleAnalyzer';
-import {
   TestTemplate,
-} from './util/TestTemplate';
+} from '@opticss/simple-template';
 
 function testRemoveUnusedStyles(stylesAndTemplates: Array<string | TestTemplate>, expectedOutput: string): Promise<OptimizationResult> {
   let optimizer = new Optimizer({

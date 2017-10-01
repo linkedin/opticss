@@ -8,7 +8,7 @@ import {
 } from 'mocha-typescript';
 import selectorParser = require('postcss-selector-parser');
 
-import parseSelector from '../src/parseSelector';
+import { parseSelector } from '../src/parseSelector';
 
 // import assertError from "./util/assertError";
 

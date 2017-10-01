@@ -14,7 +14,7 @@ import {
   Attribute,
   Element,
   Tagname,
-} from '../src/Selectable';
+} from '@opticss/template-api';
 import {
   IdentGenerator,
   IdentGenerators,
@@ -26,7 +26,7 @@ import {
 import clean from './util/clean';
 import {
   TestTemplate,
-} from './util/TestTemplate';
+} from '@opticss/simple-template';
 
 function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(

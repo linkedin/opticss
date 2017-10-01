@@ -8,20 +8,31 @@ import {
 } from '../../query';
 import {
   IdentityDictionary,
-} from '../../util/IdentityDictionary';
+  StringDict,
+} from '@opticss/util';
 import {
   SimpleAttribute,
   simpleAttributeToString,
-} from '../../StyleMapping';
+  TemplateAnalysis,
+  TemplateTypes,
+  Attr,
+  Attribute,
+  AttributeNS,
+  AttributeValueChoice,
+  Element,
+  isAbsent,
+  isChoice,
+  isConstant,
+  Tagname,
+  ValueAbsent,
+  ValueConstant,
+} from '@opticss/template-api';
 import {
   isClass,
   isIdentifier,
   ParsedSelector,
   isAttribute,
 } from '../../parseSelector';
-import {
-  StringDict,
-} from '../../util/UtilityTypes';
 import {
   expandIfNecessary,
   expandPropertyName,
@@ -52,12 +63,6 @@ import {
   OptimizationPass,
 } from '../../OptimizationPass';
 import {
-  TemplateAnalysis,
-} from '../../TemplateAnalysis';
-import {
-  TemplateTypes,
-} from '../../TemplateInfo';
-import {
   MultiFileOptimization,
 } from '../Optimization';
 import {
@@ -69,22 +74,11 @@ import {
 import {
   DeclarationInfo,
 } from './StyleInfo';
-import {
-  Attr,
-  Attribute,
-  AttributeNS,
-  AttributeValueChoice,
-  Element,
-  isAbsent,
-  isChoice,
-  isConstant,
-  Tagname,
-  ValueAbsent,
-  ValueConstant,
-} from '../../Selectable';
 import { Actions } from '../../Actions';
 import { AnnotateMergeConflict } from '../../actions/AnnotateMergeConflict';
-import { matchToBool, matches } from '../../Match';
+import { matchToBool, matches, AttributeMatcher } from '../../Match';
+
+const attrMatcher = AttributeMatcher.instance;
 
 interface MergeableDeclarationSet {
   context: OptimizationContext;
@@ -128,7 +122,7 @@ export class MergeDeclarations implements MultiFileOptimization {
     }
     let unusedAttrs = this.findUnusedAttributes(files, removedSelectors);
     for (let unusedAttr of unusedAttrs) {
-      let referencedSelectors = removedSelectors.filter(sel => matches(unusedAttr.matchSelector(sel.parsedSelector)));
+      let referencedSelectors = removedSelectors.filter(sel => matches(attrMatcher.matchSelector(unusedAttr, sel.parsedSelector, true)));
       let attr: SimpleAttribute = {
         ns: unusedAttr.namespaceURL || undefined,
         name: unusedAttr.name,
@@ -216,7 +210,7 @@ export class MergeDeclarations implements MultiFileOptimization {
       }));
       for (let foundSelector of foundSelectors) {
         for (let attr of attrs) {
-          let match = attr.matchSelector(foundSelector, false);
+          let match = attrMatcher.matchSelector(attr, foundSelector, false);
           if (matchToBool(match)) {
             attrs.delete(attr); // once it matches one selector we can remove it.
           }

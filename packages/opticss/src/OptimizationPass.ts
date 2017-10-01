@@ -1,4 +1,4 @@
-import { StyleMapping } from "./StyleMapping";
+import { StyleMapping } from "@opticss/template-api";
 import { SelectorCache } from "./query";
 import { Actions } from "./Actions";
 import { IdentGenerators } from "./util/IdentGenerator";

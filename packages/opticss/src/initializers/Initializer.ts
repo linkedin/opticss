@@ -1,7 +1,6 @@
 import { ParsedCssFile } from "../CssFile";
 import { OptimizationPass } from "../OptimizationPass";
-import { TemplateAnalysis } from "../TemplateAnalysis";
-import { TemplateTypes } from "../TemplateInfo";
+import { TemplateTypes, TemplateAnalysis } from "@opticss/template-api";
 import { OptiCSSOptions, TemplateIntegrationOptions } from "../OpticssOptions";
 
 export type Initializer = (

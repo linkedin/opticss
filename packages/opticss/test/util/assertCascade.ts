@@ -15,19 +15,13 @@ import {
 } from '../../src/Optimizer';
 import {
   TemplateAnalysis,
-} from '../../src/TemplateAnalysis';
+} from '@opticss/template-api';
 import {
   SimpleAnalyzer,
-} from './SimpleAnalyzer';
-import {
   SimpleTemplateRewriter,
-} from './SimpleTemplateRewriter';
-import {
   SimpleTemplateRunner,
-} from './SimpleTemplateRunner';
-import {
   TestTemplate,
-} from './TestTemplate';
+} from '@opticss/simple-template';
 
 export interface TestedMarkup {
   originalBody: string;

@@ -1,10 +1,8 @@
 import { SingleFileOptimization } from "./Optimization";
 import { ParsedCssFile } from "../CssFile";
 import { OptiCSSOptions } from "../OpticssOptions";
-import { TemplateAnalysis } from "../TemplateAnalysis";
-import { TemplateTypes } from "../TemplateInfo";
-import { Element } from "../Selectable";
-import { matches } from "../Match";
+import { Element, TemplateTypes, TemplateAnalysis } from "@opticss/template-api";
+import { matches, ElementMatcher } from "../Match";
 import { RemoveRule } from "../actions/RemoveRule";
 import { ChangeSelector } from "../actions/ChangeSelector";
 import { walkRules } from "./util";
@@ -33,7 +31,7 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
       let reason: string | undefined = undefined;
       let found = parsedSelectors.filter((value) => {
         return value.eachCompoundSelector((selector) => {
-          let found = elements.find((element) => matches(element.matchSelectorComponent(selector)));
+          let found = elements.find((element) => matches(ElementMatcher.instance.matchSelectorComponent(element, selector)));
           if (!found || selector === value.key) {
             if (!found) {
               reason = `no element found that matches ${selector.toString(true)}`;

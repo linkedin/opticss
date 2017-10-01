@@ -9,11 +9,9 @@ import {
 } from '../query';
 import {
   SourcePosition,
-} from '../SourceLocation';
-import {
   SimpleAttribute,
   simpleAttributeToString,
-} from '../StyleMapping';
+} from "@opticss/template-api";
 import {
   MultiAction,
 } from './Action';

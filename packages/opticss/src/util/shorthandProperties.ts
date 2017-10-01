@@ -1,5 +1,5 @@
 import * as propParser from "css-property-parser";
-import { StringDict } from "./UtilityTypes";
+import { StringDict } from "@opticss/util";
 
 export function expandPropertyName(prop: string, recursively = false): string[] {
   let props = propParser.getShorthandComputedProperties(prop);

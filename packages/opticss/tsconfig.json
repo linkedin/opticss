@@ -53,6 +53,9 @@
       ],
       "inline-source-map-comment": [
         "../../types-local/inline-source-map-comment"
+      ],
+      "@opticss/simple-template": [
+        "../simple-template"
       ]
     }
   },

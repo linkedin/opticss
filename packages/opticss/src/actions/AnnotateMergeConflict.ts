@@ -3,8 +3,7 @@ import {
 } from '../parseSelector';
 import * as postcss from 'postcss';
 import { Action } from "./Action";
-import { Element } from '../Selectable';
-import { SourcePosition } from "../SourceLocation";
+import { Element, SourcePosition } from "@opticss/template-api";
 import { Optimizations } from "../OpticssOptions";
 
 /**

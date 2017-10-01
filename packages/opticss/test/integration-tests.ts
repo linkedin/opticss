@@ -16,10 +16,8 @@ import {
 } from './util/assertCascade';
 import {
   walkElements,
-} from './util/SimpleTemplateRunner';
-import {
   TestTemplate,
-} from './util/TestTemplate';
+} from '@opticss/simple-template';
 
 function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(

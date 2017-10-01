@@ -1,7 +1,6 @@
 import { ParsedCssFile } from "../CssFile";
-import { TemplateAnalysis } from "../TemplateAnalysis";
+import { TemplateTypes, TemplateAnalysis } from "@opticss/template-api";
 import { OptiCSSOptions, TemplateIntegrationOptions } from "../OpticssOptions";
-import { TemplateTypes } from "../TemplateInfo";
 import { OptimizationPass } from "../OptimizationPass";
 import { Initializers } from "../initializers";
 

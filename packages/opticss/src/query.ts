@@ -1,7 +1,7 @@
 import postcss = require("postcss");
-import parseSelector, { ParsedSelector } from "./parseSelector";
-import { Element } from "./Selectable";
-import { rejects, matches } from "./Match";
+import { parseSelector, ParsedSelector } from "./parseSelector";
+import { Element } from "@opticss/template-api";
+import { rejects, matches, ElementMatcher } from "./Match";
 import { walkRules } from "./optimizations/util";
 
 export interface SelectorQuery {
@@ -82,7 +82,7 @@ export class QuerySelectorReferences implements SelectorQuery {
       let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node.selector);
       let found = parsedSelectors.filter((value: ParsedSelector) => {
          return this.targets.find((element) => {
-          let match = element.matchSelector(value, false);
+          let match = ElementMatcher.instance.matchSelector(element, value, false);
           return this.negate ? rejects(match) : matches(match);
         }) !== undefined;
       });
@@ -114,7 +114,7 @@ export class QueryKeySelector implements SelectorQuery {
     };
     walkRules(container, (node) => {
       let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node.selector);
-      let found = parsedSelectors.filter((value: ParsedSelector) => matches(this.target.matchSelector(value)));
+      let found = parsedSelectors.filter((value: ParsedSelector) => matches(ElementMatcher.instance.matchSelector(this.target, value, true)));
       found.forEach((sel) => {
         let key = sel.key;
         if (key.pseudoelement !== undefined) {

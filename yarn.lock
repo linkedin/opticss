@@ -3933,6 +3933,10 @@ simple-get@^1.4.2:
     unzip-response "^1.0.0"
     xtend "^4.0.0"
 
+simple-template@*:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/simple-template/-/simple-template-0.0.1.tgz#94bb63923b652d321a85f8668a92c36fa796f640"
+
 sinon@^2.4.1:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/sinon/-/sinon-2.4.1.tgz#021fd64b54cb77d9d2fb0d43cdedfae7629c3a36"

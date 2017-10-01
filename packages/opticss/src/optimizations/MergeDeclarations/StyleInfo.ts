@@ -4,7 +4,7 @@ import { MultiDictionary } from 'typescript-collections';
 
 import { ParsedCssFile } from '../../CssFile';
 import { ParsedSelector } from '../../parseSelector';
-import { Element } from '../../Selectable';
+import { Element } from '@opticss/template-api';
 import { RuleScope } from '../util';
 
 export interface SelectorInfo {

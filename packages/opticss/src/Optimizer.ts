@@ -25,13 +25,9 @@ import {
 } from './optimizations';
 import {
   StyleMapping,
-} from './StyleMapping';
-import {
   TemplateAnalysis,
-} from './TemplateAnalysis';
-import {
   TemplateTypes,
-} from './TemplateInfo';
+} from '@opticss/template-api';
 import { OptimizationPass } from './OptimizationPass';
 
 export interface OptimizationResult {

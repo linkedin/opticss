@@ -18,7 +18,7 @@ import {
 import clean from './util/clean';
 import {
   TestTemplate,
-} from './util/TestTemplate';
+} from '@opticss/simple-template';
 
 function testAll(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(

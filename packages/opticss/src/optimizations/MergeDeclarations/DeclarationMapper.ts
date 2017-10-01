@@ -3,11 +3,9 @@ import * as postcss from 'postcss';
 import * as specificity from 'specificity';
 import { BSTree, MultiDictionary } from 'typescript-collections';
 
-import { TemplateTypes } from '../..';
+import { TemplateTypes, Element, TemplateAnalysis } from '@opticss/template-api';
 import { ParsedCssFile } from '../../CssFile';
 import { OptimizationPass } from '../../OptimizationPass';
-import { Element } from '../../Selectable';
-import { TemplateAnalysis } from '../../TemplateAnalysis';
 import {
   expandIfNecessary,
   expandPropertyName,
@@ -15,6 +13,8 @@ import {
 import { walkRules } from '../util';
 import { SelectorInfo, DeclarationInfo } from './StyleInfo';
 import { OptimizationContexts } from './OptimizationContext';
+import { matches,  ElementMatcher} from "../../Match";
+import { ParsedSelector } from '../../parseSelector';
 
 /**
  * Efficient navigation of the selectors and declarations of a stylesheet
@@ -64,7 +64,7 @@ export class DeclarationMapper {
         selectors.forEach(selector => {
           let elements = new Array<Element>();
           analyses.forEach(analysis => {
-            elements.splice(elements.length, 0, ...analysis.querySelector(selector));
+            elements.splice(elements.length, 0, ...querySelector(analysis, selector));
           });
           let selectorInfo: SelectorInfo = {
             rule,
@@ -190,4 +190,11 @@ function compare(n1: number, n2: number): -1 | 0 | 1 {
   if (n1 < n2) return -1;
   if (n1 > n2) return 1;
   return 0;
+}
+
+function querySelector<T extends keyof TemplateTypes>(
+  analysis: TemplateAnalysis<T>, selector: ParsedSelector
+): Array<Element> {
+  return analysis.elements.filter(e =>
+    matches(ElementMatcher.instance.matchSelector(e, selector, true)));
 }
