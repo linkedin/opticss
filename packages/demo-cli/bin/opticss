@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+
+const { DemoOptimizer } = require("@opticss/demo-cli");
+
+let optimizer = new DemoOptimizer("demo/input.html", "demo/input.css", "demo");
+optimizer.run();

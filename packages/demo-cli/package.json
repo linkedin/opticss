@@ -1,0 +1,51 @@
+{
+  "name": "@opticss/demo-cli",
+  "version": "0.1.0",
+  "description": "Demonstrates OptiCSS on simple html and css files.",
+  "main": "dist/src/DemoOptimizer.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "demo": "bin/opticss",
+    "compile": "rm -rf dist && tsc",
+    "pretest": "yarn run compile && tslint --project tsconfig.json --type-check",
+    "prepublish": "rm -rf dist && tsc",
+    "tslint": "tslint --project tsconfig.json",
+    "test": "mocha dist/test --opts test/mocha.opts",
+    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "typedoc --out ./docs ."
+  },
+  "bin": "bin/opticss",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/css-blocks/opticss.git"
+  },
+  "author": "Chris Eppstein",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/css-blocks/opticss/issues"
+  },
+  "homepage": "https://github.com/css-blocks/opticss#readme",
+  "dependencies": {
+    "@opticss/simple-template": "^0.1.0",
+    "opticss": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.5.2",
+    "@types/mkdirp": "^0.5.1",
+    "@types/nearley": "^2.9.0",
+    "@types/node": "^8.0.26",
+    "@types/rimraf": "^2.0.2",
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.5",
+    "mkdirp": "^0.5.1",
+    "mocha": "^3.4.2",
+    "mocha-typescript": "^1.0.23",
+    "moo": "^0.4.1",
+    "nearley": "^2.10.3",
+    "remap-istanbul": "^0.9.5",
+    "rimraf": "^2.6.2",
+    "tslint": "^5.1.0",
+    "typescript": "^2.4.1"
+  }
+}

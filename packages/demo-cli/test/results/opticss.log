@@ -1,0 +1,10 @@
+test/fixtures/single-file/input.css:1:8 [mergeDeclarations] Declaration moved from ".foo" into generated rule (.b { color: red; }). Duplication 1 of 2.
+test/fixtures/single-file/input.css:3:8 [mergeDeclarations] Declaration moved from ".bip" into generated rule (.b { color: red; }). Duplication 2 of 2.
+test/fixtures/single-file/input.css:1:1 [mergeDeclarations] Removed empty rule with selector ".foo".
+test/fixtures/single-file/input.css:3:1 [mergeDeclarations] Removed empty rule with selector ".bip".
+[mergeDeclarations] Attribute class="bip" will be removed from templates. All selectors referencing it were removed.
+test/fixtures/single-file/input.css:3:1 [mergeDeclarations]   Was used in selector: .bip
+[mergeDeclarations] Attribute class="foo" will be removed from templates. All selectors referencing it were removed.
+test/fixtures/single-file/input.css:1:1 [mergeDeclarations]   Was used in selector: .foo
+[rewriteIdents] Rewrote selector's idents from ".a" to ".b".
+test/fixtures/single-file/input.css:2:1 [rewriteIdents] Rewrote selector's idents from ".bar" to ".c".
