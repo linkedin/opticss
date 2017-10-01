@@ -1,0 +1,50 @@
+{
+  "name": "@opticss/template-api",
+  "version": "0.1.0",
+  "description": "Simple templates for use in testing with OptiCSS.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "compile": "rm -rf dist && tsc",
+    "pretest": "yarn run compile && tslint --project tsconfig.json --type-check",
+    "prepublish": "rm -rf dist && tsc",
+    "tslint": "tslint --project tsconfig.json",
+    "test": "mocha dist/test --opts test/mocha.opts",
+    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "typedoc --out ./docs ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/css-blocks/opticss.git"
+  },
+  "keywords": [
+    "css",
+    "cascade"
+  ],
+  "author": "Chris Eppstein",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/css-blocks/opticss/issues"
+  },
+  "homepage": "https://github.com/css-blocks/opticss#readme",
+  "peerDependencies": {
+    "opticss": "*"
+  },
+  "dependencies": {
+    "@types/source-map": "^0.5.0",
+    "@opticss/util": "*",
+    "css-select": "^1.3.0-rc0",
+    "parse5": "^3.0.2",
+    "postcss": "^6.0.12",
+    "postcss-selector-parser": "^2.2.3",
+    "source-map": "^0.5.6",
+    "specificity": "^0.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.26",
+    "mocha-typescript": "^1.1.9",
+    "tslint": "^5.1.0",
+    "typescript": "^2.4.1"
+  }
+}
