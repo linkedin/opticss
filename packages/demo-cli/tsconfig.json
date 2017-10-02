@@ -1,44 +1,20 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    // Compilation Configuration
-    "target": "es2015",
-    "inlineSources": false,
-    "inlineSourceMap": true,
-    "declaration": true,
-    "allowSyntheticDefaultImports": true,
-
-    // Environment Configuration
-    "experimentalDecorators": true,
-    "moduleResolution": "node",
-
-    // Enhance Strictness
-    "noImplicitAny": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "noUnusedParameters": true,
-    "allowUnreachableCode": false,
-    "strictNullChecks": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "preserveConstEnums": true,
-    "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true,
-    "alwaysStrict": true,
-
-    // output options
-    "newLine": "LF",
     "outDir": "dist",
-    "module": "commonjs",
-    "traceResolution": false,
-    "baseUrl": "dist"
+    "baseUrl": "dist",
+    "types": [
+      "@types/chai",
+      "@types/node",
+      "@types/mocha"
+    ]
   },
   "include": [
     "src",
     "test"
   ],
   "exclude": [
-    "sanity",
     "dist",
-    "tsbuild",
     "node_modules"
   ]
 }
