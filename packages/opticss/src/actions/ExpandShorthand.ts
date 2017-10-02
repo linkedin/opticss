@@ -40,7 +40,9 @@ export class ExpandShorthand extends Action {
 
   perform(): this {
     for (let decl of this.decls) {
-      this.rule.insertBefore(this.decl, declString(decl));
+      let declNode = postcss.decl(decl);
+      declNode.raws = { before:' ', after: ' '};
+      this.rule.insertBefore(this.decl, declNode);
       let newDecl = <postcss.Declaration>this.decl.prev();
       this.newDecls.push(newDecl);
     }
