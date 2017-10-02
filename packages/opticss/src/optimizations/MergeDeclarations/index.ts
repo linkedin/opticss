@@ -35,7 +35,6 @@ import {
 } from '../../parseSelector';
 import {
   expandIfNecessary,
-  expandPropertyName,
 } from '../../util/shorthandProperties';
 import * as propParser from 'css-property-parser';
 import * as postcss from 'postcss';
@@ -110,7 +109,7 @@ export class MergeDeclarations implements MultiFileOptimization {
     for (let context of mapper.contexts) {
       let contextMergeables = this.mergeablesForContext(context);
       let shorthands = mergedShorthandsForContext(contextMergeables);
-      let segmentedContextMergeables = this.segmentByCascadeConflicts(pass.actions, mapper, contextMergeables);
+      let segmentedContextMergeables = this.segmentByCascadeConflicts(pass.actions, context, mapper, contextMergeables);
       segmentedContextMergeables = this.checkAndExpandShorthands(pass, mapper, shorthands, segmentedContextMergeables);
       for (let mergeableSets of segmentedContextMergeables) {
         for (let mergeableSet of mergeableSets) {
@@ -331,6 +330,7 @@ export class MergeDeclarations implements MultiFileOptimization {
    */
   private segmentByCascadeConflicts(
     actions: Actions,
+    context: OptimizationContext,
     mapper: DeclarationMapper,
     mergeables: Array<MergeableDeclarationSet>
   ): Array<Array<MergeableDeclarationSet>> {
@@ -343,15 +343,14 @@ export class MergeDeclarations implements MultiFileOptimization {
       if (declInfos.length === 0) {
         continue;
       }
-      let props = expandPropertyName(declInfos[0].prop);
-      let expanded = expandIfNecessary(new Set(props), declInfos[0].prop, declInfos[0].value);
+      let expanded = expandIfNecessary(context.authoredProps, declInfos[0].prop, declInfos[0].value);
 
       nextMerge:
       for (let unmergedDecl of declInfos) {
         nextGroup:
         for (let segment of segmentedMergeables) {
           for (let mergedDecl of segment.decls) {
-            let conflict = isMergeConflicted(mapper, props, expanded, unmergedDecl, mergedDecl);
+            let conflict = isMergeConflicted(mapper, Object.keys(expanded), expanded, unmergedDecl, mergedDecl);
             if (conflict) {
               actions.perform(conflict);
               continue nextGroup;

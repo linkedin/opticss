@@ -2,15 +2,12 @@ import * as propParser from "css-property-parser";
 import { StringDict } from "@opticss/util";
 
 export function expandPropertyName(prop: string, recursively = false): string[] {
-  let props = propParser.getShorthandComputedProperties(prop);
-  if (!recursively) return props;
-  while (props.find(p => propParser.isShorthandProperty(p))) {
-    props = props.reduce((prev, p) => {
-      prev.splice(prev.length, 0, ...propParser.getShorthandComputedProperties(p));
-      return prev;
-    }, new Array<string>());
+  let props = propParser.getShorthandComputedProperties(prop, recursively);
+  if (recursively) {
+    return props.filter(p => propParser.isShorthandProperty(p));
+  } else {
+    return props;
   }
-  return props;
 }
 
 export function fullyExpandShorthandProperty(prop: string, value: string) {
