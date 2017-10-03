@@ -12,6 +12,9 @@ import {
   isNotNull as assertNotNull,
   isDefined as assertDefined
 } from "@opticss/util";
+import {
+  normalizeTemplateOptions,
+} from '../src/TemplateIntegrationOptions';
 
 function sAttr(name: string, value: string): SimpleAttribute {
   return {name, value};
@@ -60,7 +63,7 @@ function element(tag: string, ...attrs: Array<Attribute>): Element {
 @suite("StyleMapping")
 export class StyleMappingTest {
   @test "can rewrite an attribute"() {
-    let mapping = new StyleMapping();
+    let mapping = new StyleMapping(normalizeTemplateOptions({}));
     mapping.rewriteAttribute(sClass("test"), sClass("a"));
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "test")));
     assertNotNull(rewrite).and(rewrite => {
@@ -71,7 +74,7 @@ export class StyleMappingTest {
     });
   }
   @test "can link an attribute"() {
-    let mapping = new StyleMapping();
+    let mapping = new StyleMapping(normalizeTemplateOptions({}));
     mapping.linkAttributes(sClass("a"), [{existing: [sClass("test")], unless: []}]);
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "test")));
     assertNotNull(rewrite).and(rewrite => {
@@ -87,7 +90,7 @@ export class StyleMappingTest {
     });
   }
   @test "can obsolete an attribute"() {
-    let mapping = new StyleMapping();
+    let mapping = new StyleMapping(normalizeTemplateOptions({}));
     mapping.attributeIsObsolete(sClass("test"));
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "test")));
     assertNotNull(rewrite).and(rewrite => {

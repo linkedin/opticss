@@ -1,15 +1,17 @@
 import * as parse5 from "parse5";
-import { Tagname, Element, Attr, AttributeNS, Attribute, StyleMapping, RewriteMapping, BooleanExpression, AndExpression, OrExpression, NotExpression, RewriteableAttrName, SimpleAttribute, SimpleTagname, isSimpleTagname } from "@opticss/template-api";
+import { TemplateIntegrationOptions, Tagname, Element, Attr, AttributeNS, Attribute, StyleMapping, RewriteMapping, BooleanExpression, AndExpression, OrExpression, NotExpression, RewriteableAttrName, SimpleAttribute, SimpleTagname, isSimpleTagname } from "@opticss/template-api";
 import { assertNever } from "@opticss/util";
 import { allElements, bodyContents, bodyElement } from "./SimpleTemplateRunner";
 import { AttributeValueParser } from "./AttributeValueParser";
 import { TestTemplate } from "./TestTemplate";
 
 export class SimpleTemplateRewriter {
+  templateOptions: TemplateIntegrationOptions;
   styleMapping: StyleMapping;
 
-  constructor(styleMapping: StyleMapping) {
+  constructor(styleMapping: StyleMapping, templateOptions: TemplateIntegrationOptions) {
     this.styleMapping = styleMapping;
+    this.templateOptions = templateOptions;
   }
 
   rewrite(template: TestTemplate, html: string) {
@@ -42,8 +44,12 @@ export class SimpleTemplateRewriter {
       let rewriteMapping = this.styleMapping.rewriteMapping(elementInfo);
       if (rewriteMapping) {
         let inputAttrs = element.attrs.slice();
-        this.rewriteAttribute("id", rewriteMapping, element, inputAttrs);
-        this.rewriteAttribute("class", rewriteMapping, element, inputAttrs);
+        let rewriteAttributes = Object.keys(this.templateOptions.rewriteIdents);
+        for (let rewriteAttr of rewriteAttributes) {
+          if (this.templateOptions.rewriteIdents[rewriteAttr]) {
+            this.rewriteAttribute(<RewriteableAttrName>rewriteAttr, rewriteMapping, element, inputAttrs);
+          }
+        }
       }
     }
     return bodyContents(document);

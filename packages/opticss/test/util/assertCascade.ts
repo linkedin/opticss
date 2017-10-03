@@ -72,7 +72,7 @@ export function testOptimizationCascade(
     });
   }).then(() => {
     return optimizer.optimize("optimized.css").then(optimization => {
-      let rewriter = new SimpleTemplateRewriter(optimization.styleMapping);
+      let rewriter = new SimpleTemplateRewriter(optimization.styleMapping, templateOptions);
       let allTemplateRuns = new Array<Promise<CascadeAssertionResults>>();
       templates.forEach(template => {
         let runner = new SimpleTemplateRunner(template);

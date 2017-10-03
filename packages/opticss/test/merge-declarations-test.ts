@@ -25,6 +25,10 @@ import clean from './util/clean';
 import {
   TestTemplate,
 } from '@opticss/simple-template';
+import {
+  TemplateIntegrationOptions,
+  normalizeTemplateOptions
+} from '@opticss/template-api';
 
 function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -34,6 +38,16 @@ function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplat
       analyzedAttributes: [],
       analyzedTagnames: true
     },
+    ...stylesAndTemplates);
+}
+
+function testMergeDeclarationsWithConfig(
+  templateOptions: Partial<TemplateIntegrationOptions>,
+  ...stylesAndTemplates: Array<string | TestTemplate>
+): Promise<CascadeTestResult> {
+  return testOptimizationCascade(
+    { only: ["mergeDeclarations"] },
+    normalizeTemplateOptions(templateOptions),
     ...stylesAndTemplates);
 }
 
@@ -412,6 +426,127 @@ export class MergeDeclarationsTest {
           </div></body>
         `);
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
+    }).catch((e) => {
+      debugError(css1, e);
+      throw e;
+    });
+  }
+  @test "handles id selectors when ids are analyzed but rewriting is off"() {
+    let css1 = clean`
+      #id1 { color: blue; float: right; }
+      #id2 { color: blue; float: left; }
+      #id3 { color: blue; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="a">
+        <span id="id1">id 1</span>
+        <span id="id2">id 2</span>
+        <span id="id3">id 3</span>
+      </div>
+    `);
+    let templateConfig: Partial<TemplateIntegrationOptions> = {
+      rewriteIdents: {id: false, class: true},
+      analyzedAttributes: ["id"]
+    };
+    return testMergeDeclarationsWithConfig(templateConfig, css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .b { color: blue; }
+          #id1 { float: right; }
+          #id2 { float: left; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a">
+          <span id="id1" class="b">id 1</span>
+          <span id="id2" class="b">id 2</span>
+          <span id="id3" class="b">id 3</span>
+          </div></body>
+        `, "The id attribute should not be removed.");
+      // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
+    }).catch((e) => {
+      debugError(css1, e);
+      throw e;
+    });
+  }
+  @test "ignores id selectors when ids aren't analyzed and rewriting is off"() {
+    let css1 = clean`
+      #id1 { color: blue; float: right; }
+      #id2 { color: blue; float: left; }
+      #id3 { color: blue; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="a">
+        <span id="id1">id 1</span>
+        <span id="id2">id 2</span>
+        <span id="id3">id 3</span>
+      </div>
+    `);
+    let templateConfig: Partial<TemplateIntegrationOptions> = {
+      rewriteIdents: {id: false, class: true},
+      analyzedAttributes: []
+    };
+    return testMergeDeclarationsWithConfig(templateConfig, css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          #id1 { color: blue; float: right; }
+          #id2 { color: blue; float: left; }
+          #id3 { color: blue; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a">
+          <span id="id1">id 1</span>
+          <span id="id2">id 2</span>
+          <span id="id3">id 3</span>
+          </div></body>
+        `, "No optimization should have occurred.");
+      // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
+    }).catch((e) => {
+      debugError(css1, e);
+      throw e;
+    });
+  }
+  @test "merges from other analyzed attributes and tag names into classes"() {
+    let css1 = clean`
+      .field { float: left; }
+      input[type=text] { float: left; }
+      input[disabled] { background-color: gray; }
+      .label { background-color: gray; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="field">
+        <label for="name-field" class="label">First Name:</label>
+        <input id="name-field" type="text" disabled>
+      </div>
+    `);
+    let templateConfig: Partial<TemplateIntegrationOptions> = {
+      rewriteIdents: {id: false, class: true},
+      analyzedAttributes: ["disabled", "type"]
+    };
+    return testMergeDeclarationsWithConfig(templateConfig, css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a { float: left; }
+          .b { background-color: gray; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a">
+          <label for="name-field" class="b">First Name:</label>
+          <input id="name-field" type="text" disabled="" class="a b">
+          </div></body>
+        `);
+      // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
     }).catch((e) => {
       debugError(css1, e);
       throw e;

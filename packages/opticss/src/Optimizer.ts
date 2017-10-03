@@ -157,7 +157,7 @@ export class Optimizer {
   }
 
   optimize(outputFilename: string): Promise<OptimizationResult> {
-    let pass = new OptimizationPass();
+    let pass = new OptimizationPass(this.templateOptions);
     return this.parseFiles(this.sources).then(parsedFiles => {
       this.initialize(pass, parsedFiles);
       return parsedFiles;
