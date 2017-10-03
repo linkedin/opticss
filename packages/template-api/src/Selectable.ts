@@ -497,6 +497,9 @@ export type Selectable = Element | Tag | Attr;
 export interface TagnameValueChoice {
   oneOf: Array<string>;
 }
+export function isTagnameValueChoice(v: TagnameValue): v is TagnameValueChoice {
+  return Object.keys(v).includes("oneOf");
+}
 
 export type TagnameValue =
   ValueUnknown |

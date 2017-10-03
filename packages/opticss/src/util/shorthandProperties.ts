@@ -11,16 +11,36 @@ export function expandPropertyName(prop: string, recursively = false): string[] 
 }
 
 export function fullyExpandShorthandProperty(prop: string, value: string) {
-  let expanded = propParser.expandShorthandProperty(prop, value, true);
-  for (let p of Object.keys(expanded)) {
-    if (propParser.isShorthandProperty(p)) {
-      delete expanded[p];
+  try {
+    if (/rgba?\(.*\)/.test(value)) {
+      // https://github.com/css-blocks/css-property-parser/issues/6
+      throw new Error(`invalid parsing shorthand property: ${prop}: ${value}`);
+    }
+    let expanded = propParser.expandShorthandProperty(prop, value, true);
+    for (let p of Object.keys(expanded)) {
+      if (propParser.isShorthandProperty(p)) {
+        delete expanded[p];
+      }
+    }
+    return expanded;
+  } catch (e) {
+    if (/parsing shorthand property/.test(e.message)) {
+      console.error(e);
+      return {
+        [prop]: value
+      };
+    } else {
+      throw e;
     }
   }
-  return expanded;
 }
 
 export function expandIfNecessary(authoredProps: Set<string>, prop: string, value: string): StringDict {
+  try {
+    if (/rgba?\(.*\)/.test(value)) {
+      // https://github.com/css-blocks/css-property-parser/issues/6
+      throw new Error(`invalid parsing shorthand property: ${prop}: ${value}`);
+    }
   if (!propParser.isShorthandProperty(prop)) {
     return {[prop]: value};
   }
@@ -41,4 +61,14 @@ export function expandIfNecessary(authoredProps: Set<string>, prop: string, valu
     longhandDeclarations[prop] = value;
   }
   return longhandDeclarations;
+  } catch (e) {
+    if (/parsing shorthand property/.test(e.message)) {
+      console.error(e);
+      return {
+        [prop]: value
+      };
+    } else {
+      throw e;
+    }
+  }
 }

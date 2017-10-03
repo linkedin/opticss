@@ -1,9 +1,9 @@
 import { ParsedCssFile } from "../CssFile";
 import { OptimizationPass } from "../OptimizationPass";
-import { TemplateTypes, TemplateAnalysis } from "@opticss/template-api";
+import { TemplateIntegrationOptions, TemplateTypes, TemplateAnalysis, rewriteOptions } from "@opticss/template-api";
 import { isClass, isIdentifier } from "../parseSelector";
 import { eachFileIdent } from "../optimizations/util";
-import { OptiCSSOptions, TemplateIntegrationOptions, rewriteOptions } from "../OpticssOptions";
+import { OptiCSSOptions } from "../OpticssOptions";
 import { assertNever } from "@opticss/util";
 
 export default function initKnownIdents(

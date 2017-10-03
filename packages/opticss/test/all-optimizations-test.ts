@@ -23,7 +23,11 @@ import {
 function testAll(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
     { },
-    { rewriteIdents: { id: true, class: true } },
+    {
+      rewriteIdents: { id: true, class: true },
+      analyzedAttributes: [],
+      analyzedTagnames: true
+    },
     ...stylesAndTemplates);
 }
 

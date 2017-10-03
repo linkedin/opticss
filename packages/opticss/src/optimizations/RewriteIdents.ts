@@ -1,7 +1,7 @@
 import { MultiFileOptimization } from "./Optimization";
 import { ParsedCssFile } from "../CssFile";
-import { OptiCSSOptions, TemplateIntegrationOptions, NormalizedRewriteOptions, rewriteOptions } from "../OpticssOptions";
-import { TemplateAnalysis, TemplateTypes } from "@opticss/template-api";
+import { OptiCSSOptions } from "../OpticssOptions";
+import { TemplateAnalysis, TemplateTypes, TemplateIntegrationOptions, NormalizedRewriteOptions, rewriteOptions } from "@opticss/template-api";
 import { RuleIdents, RewriteRuleIdents } from "../actions/RewriteRuleIdents";
 import { eachFileIdent } from "./util";
 import { OptimizationPass } from "../OptimizationPass";

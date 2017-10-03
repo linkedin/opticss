@@ -11,16 +11,23 @@ import {
   CompoundSelector,
   isClass,
   isUniversal,
+  isAttribute,
+  isIdentifier,
   ParsedSelector,
+  isTag,
+  isPseudo,
+  isPseudoelement,
 } from '../parseSelector';
 import {
   ParsedSelectorAndRule,
   SelectorCache,
 } from '../query';
 import {
+  TemplateIntegrationOptions,
   SourcePosition,
   ElementAttributes,
   SimpleAttribute as ElementAttribute,
+  SimpleTagname as ElementTagname,
   StyleMapping,
 } from '@opticss/template-api';
 import {
@@ -32,6 +39,8 @@ import {
 import {
   MultiAction,
 } from './Action';
+
+const REWRITEABLE_ATTR_OPS = ["=", "~=", undefined];
 
 export interface Declaration {
   prop: string;
@@ -50,6 +59,7 @@ export interface DeclarationInfo {
  * Merges duplicate declarations from multiple rule sets into a new rule set.
  */
 export class MergeDeclarations extends MultiAction {
+  private templateOptions: TemplateIntegrationOptions;
   removedSelectors: ParsedSelectorAndRule[];
   selectorContext: ParsedSelector | undefined;
   removedAtRules: postcss.AtRule[];
@@ -64,6 +74,7 @@ export class MergeDeclarations extends MultiAction {
   cache: SelectorCache;
 
   constructor(
+    templateOptions: TemplateIntegrationOptions,
     pass: OptimizationPass,
     container: postcss.Container,
     selectorContext: ParsedSelector | undefined,
@@ -73,6 +84,7 @@ export class MergeDeclarations extends MultiAction {
     reason: string
   ) {
     super(optimization);
+    this.templateOptions = templateOptions;
     this.styleMapping = pass.styleMapping;
     this.reason = reason;
     this.container = container;
@@ -109,9 +121,13 @@ export class MergeDeclarations extends MultiAction {
     let sourceAttributes = new Array<ElementAttributes>();
     for (let declInfo of this.declInfos) {
       let sel: CompoundSelector = declInfo.selector.key;
+      let inputs = inputsFromSelector(this.templateOptions, sel);
+      if (!inputs) {
+        throw new Error("internal error");
+      }
       sourceAttributes.push({
-        existing: classNames(sel).map(value => ({name: "class", value})),
-        unless: new Array<ElementAttribute>() // TODO: cascade resolution of exclusion classes.
+        existing: inputs,
+        unless: new Array<ElementTagname | ElementAttribute>() // TODO: cascade resolution of exclusion classes.
       });
       if (declInfo.decl.parent === undefined) {
         continue;
@@ -161,16 +177,53 @@ export class MergeDeclarations extends MultiAction {
   get sourcePosition(): SourcePosition | undefined {
     return this.nodeSourcePosition(this.declInfos[0].decl);
   }
+
 }
 
-function classNames(sel: CompoundSelector): Array<string> {
-  let classes = new Array<string>();
+function isAttributeAnalyzed(templateOptions: TemplateIntegrationOptions, node: selectorParser.Attribute): boolean {
+  if (node.ns) return false;
+  return templateOptions.analyzedAttributes.includes(node.attribute);
+}
+
+  /**
+   * Returns the concrete html traits that the selector would match
+   * or undefined if html traits aren't deducible from the selector.
+   */
+export function inputsFromSelector(templateOptions: TemplateIntegrationOptions, sel: CompoundSelector): Array<ElementTagname | ElementAttribute> | undefined {
+  let inputs = new Array<ElementTagname | ElementAttribute>();
   for (let node of sel.nodes) {
-    if (isClass(node)) {
-      classes.push(node.value);
+    if (isTag(node)) {
+      if (templateOptions.analyzedTagnames) {
+        inputs.push({ tagname: node.value });
+      } else {
+        return undefined;
+      }
+    } else if (isClass(node)) {
+      if (templateOptions.analyzedAttributes.includes("class")) {
+        inputs.push({ name: "class", value: node.value });
+      } else {
+        return undefined;
+      }
+    } else if (isIdentifier(node)) {
+      if (templateOptions.analyzedAttributes.includes("id")) {
+        inputs.push({ name: "id", value: node.value });
+      } else {
+        return undefined;
+      }
+    } else if (isAttribute(node)) {
+      if (REWRITEABLE_ATTR_OPS.includes(node.operator)
+        && isAttributeAnalyzed(templateOptions, node)) {
+        inputs.push({ name: node.attribute, value: node.value || "" });
+      } else {
+        return undefined;
+      }
+    } else if (isPseudo(node) || isPseudoelement(node)) {
+      // pass
+    } else {
+      return undefined;
     }
   }
-  return classes;
+  return inputs;
 }
 
 function hasMeaningfulChildren(container: postcss.Container | undefined) {

@@ -1,5 +1,5 @@
 import * as parse5 from "parse5";
-import { Tagname, Element, Attr, AttributeNS, Attribute, StyleMapping, RewriteMapping, BooleanExpression, AndExpression, OrExpression, NotExpression } from "@opticss/template-api";
+import { Tagname, Element, Attr, AttributeNS, Attribute, StyleMapping, RewriteMapping, BooleanExpression, AndExpression, OrExpression, NotExpression, RewriteableAttrName, SimpleAttribute, SimpleTagname, isSimpleTagname } from "@opticss/template-api";
 import { assertNever } from "@opticss/util";
 import { allElements, bodyContents, bodyElement } from "./SimpleTemplateRunner";
 import { AttributeValueParser } from "./AttributeValueParser";
@@ -39,53 +39,65 @@ export class SimpleTemplateRewriter {
         }
       });
       let elementInfo = new Element(tagname, attrs);
-      element.attrs.forEach(attr => {
-        if (attr.name === "class") {
-          return;
-        }
-        let toAttr = this.styleMapping.getRewriteOf(attr);
-        if (toAttr) {
-          if (attr.name === toAttr.name) {
-            attr.value = toAttr.value;
-          } else {
-            throw new Error("cannot rewrite to different attribute at this time");
-          }
-        }
-      });
-      let classMapping = this.styleMapping.rewriteMapping(elementInfo);
-      if (classMapping) {
-        let classAttr = element.attrs.find(a => isClassAttr(a));
-        let presentClassnames = new Set(classAttr ? classAttr.value.split(/\s+/) : []);
-        let classValue = classMapping.staticClasses.slice();
-        let dynamicClassNames = Object.keys(classMapping.dynamicClasses);
-        dynamicClassNames.forEach(dcn => {
-          let expression = classMapping!.dynamicClasses[dcn]!;
-          if (evaluateExpression(expression, classMapping!, element, presentClassnames)) {
-            classValue.push(dcn);
-          }
-        });
-        if (classAttr) {
-          if (classValue.length === 0) {
-            element.attrs = element.attrs.reduce((m,a) => {
-              if (!isClassAttr(a)) {
-                m.push(a);
-              }
-              return m;
-            }, new Array<parse5.AST.Default.Attribute>());
-          } else {
-            classAttr.value = classValue.join(" ");
-          }
-        } else {
-          if (classValue.length > 0) {
-            element.attrs.push({
-              name: "class",
-              value: classValue.join(" ")
-            });
-          }
-        }
+      let rewriteMapping = this.styleMapping.rewriteMapping(elementInfo);
+      if (rewriteMapping) {
+        let inputAttrs = element.attrs.slice();
+        this.rewriteAttribute("id", rewriteMapping, element, inputAttrs);
+        this.rewriteAttribute("class", rewriteMapping, element, inputAttrs);
       }
     }
     return bodyContents(document);
+  }
+  rewriteAttribute(
+    name: RewriteableAttrName,
+    rewriteMapping: RewriteMapping,
+    element: parse5.AST.Default.Element,
+    inputAttrs: Array<parse5.AST.Default.Attribute>,
+  ) {
+    let attrIndex = element.attrs.findIndex(a => a.name === name);
+    let attr = attrIndex >= 0 ? element.attrs[attrIndex] : undefined;
+    let rewrittenValue = rewriteMapping.staticAttributes[name]!.slice();
+    let dynamicExpressions = Object.keys(rewriteMapping.dynamicAttributes[name]!);
+    for (let dyn of dynamicExpressions) {
+      let expression = rewriteMapping!.dynamicAttributes[name]![dyn]!;
+      if (evaluateExpression(expression, rewriteMapping!, element, inputAttrs)) {
+        rewrittenValue.push(dyn);
+      }
+    }
+    if (rewrittenValue.length > 1 && name !== "class") {
+      throw new Error("Invalid analysis or internal error: " +
+        "multiple values returned for non-whitespace delimited attribute");
+    }
+    if (attr) {
+      if (rewrittenValue.length === 0) {
+        element.attrs.splice(attrIndex, 1);
+      } else {
+        attr.value = rewrittenValue.join(" ");
+      }
+    } else {
+      if (rewrittenValue.length > 0) {
+        element.attrs.push({ name, value: rewrittenValue.join(" ") });
+      }
+    }
+  }
+}
+
+function elementHas(
+  element: parse5.AST.Default.Element,
+  trait: SimpleTagname | SimpleAttribute,
+  inputAttrs: Array<parse5.AST.Default.Attribute>,
+): boolean {
+  if (isSimpleTagname(trait)) {
+    return element.tagName === trait.tagname;
+  } else {
+    let attr = trait;
+    let elAttr = inputAttrs.find((a) => attr.name === a.name);
+    if (!elAttr) return false;
+    if (attr.name === "class") {
+      return attr.value && elAttr.value.split(/\s+/).includes(attr.value) || false;
+    } else {
+      return attr.value === elAttr.value;
+    }
   }
 }
 
@@ -93,41 +105,37 @@ function evaluateExpression(
   expression: BooleanExpression<number>,
   classMapping: RewriteMapping,
   element: parse5.AST.Default.Element,
-  presentClassnames: Set<string>
+  inputAttrs: Array<parse5.AST.Default.Attribute>,
 ): boolean {
   if (isAndExpression(expression)) {
     return expression.and.every(e => {
       if (typeof e === "number") {
-        let classname = classMapping.inputClassnames[e];
-        return presentClassnames.has(classname);
+        let attr = classMapping.inputs[e];
+        return elementHas(element, attr, inputAttrs);
       } else {
-        return evaluateExpression(e, classMapping, element, presentClassnames);
+        return evaluateExpression(e, classMapping, element, inputAttrs);
       }
     });
   } else if (isOrExpression(expression)) {
     return expression.or.some(e => {
       if (typeof e === "number") {
-        let classname = classMapping.inputClassnames[e];
-        return presentClassnames.has(classname);
+        let attr = classMapping.inputs[e];
+        return elementHas(element, attr, inputAttrs);
       } else {
-        return evaluateExpression(e, classMapping, element, presentClassnames);
+        return evaluateExpression(e, classMapping, element, inputAttrs);
       }
     });
   } else if (isNotExpression(expression)) {
     let e = expression.not;
     if (typeof e === "number") {
-      let classname = classMapping.inputClassnames[e];
-      return !presentClassnames.has(classname);
+      let attr = classMapping.inputs[e];
+      return !elementHas(element, attr, inputAttrs);
     } else {
-      return evaluateExpression(e, classMapping, element, presentClassnames);
+      return evaluateExpression(e, classMapping, element, inputAttrs);
     }
   } else {
     return assertNever(expression);
   }
-}
-
-function isClassAttr(attr: parse5.AST.Default.Attribute): boolean {
-  return attr.namespace === undefined && attr.name === "class";
 }
 
 function isAndExpression<T>(expression: BooleanExpression<T>): expression is AndExpression<T> {

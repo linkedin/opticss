@@ -64,7 +64,7 @@ export class StyleMappingTest {
     mapping.rewriteAttribute(sClass("test"), sClass("a"));
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "test")));
     assertNotNull(rewrite).and(rewrite => {
-      let dyn = rewrite.dynamicClasses["a"];
+      let dyn = rewrite.dynamicAttributes.class!["a"];
       assertDefined(dyn).and(dyn => {
         assert.deepEqual(dyn, and(0));
       });
@@ -75,12 +75,12 @@ export class StyleMappingTest {
     mapping.linkAttributes(sClass("a"), [{existing: [sClass("test")], unless: []}]);
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "test")));
     assertNotNull(rewrite).and(rewrite => {
-      assert.equal(rewrite.inputClassnames[0], "test");
-      let dyn = rewrite.dynamicClasses["a"];
+      assert.deepEqual(rewrite.inputs[0], {name: "class", value: "test"});
+      let dyn = rewrite.dynamicAttributes.class!["a"];
       assertDefined(dyn).and(dyn => {
         assert.deepEqual(dyn, and(0));
       });
-      let source = rewrite.dynamicClasses["test"];
+      let source = rewrite.dynamicAttributes.class!["test"];
       assertDefined(source).and(source => {
         assert.deepEqual(source, and(0));
       });
@@ -91,9 +91,9 @@ export class StyleMappingTest {
     mapping.attributeIsObsolete(sClass("test"));
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "test")));
     assertNotNull(rewrite).and(rewrite => {
-      assert.equal(rewrite.inputClassnames[0], "test");
-      assert.equal(Object.keys(rewrite.dynamicClasses).length, 0);
-      assert.equal(rewrite.staticClasses.length, 0);
+      assert.deepEqual(rewrite.inputs[0], {name: "class", value: "test"});
+      assert.equal(Object.keys(rewrite.dynamicAttributes.class!).length, 0);
+      assert.equal(rewrite.staticAttributes.class!.length, 0);
     });
   }
 }

@@ -39,6 +39,10 @@ export function isUniversal(node: selectorParser.Node | undefined): node is sele
   return !!node && node.type === selectorParser.UNIVERSAL;
 }
 
+export function isTag(node: selectorParser.Node | undefined): node is selectorParser.Universal {
+  return !!node && node.type === selectorParser.TAG;
+}
+
 export interface CombinatorAndSelector<SelectorType> {
   combinator: selectorParser.Combinator;
   selector: SelectorType;

@@ -10,5 +10,8 @@
     "typescriptHero.resolver.multiLineTrailingComma": true,
     "typescriptHero.resolver.organizeOnSave": true,
     "tslint.configFile": "tslint.json",
-    "tslint.enable": true
-}
+    "tslint.enable": true,
+    "cSpell.words": [
+      "Rewriteable"
+    ]
+  }

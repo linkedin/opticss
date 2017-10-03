@@ -22,7 +22,11 @@ import {
 function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
     { },
-    { rewriteIdents: {id: true, class: true} },
+    {
+      rewriteIdents: { id: true, class: true },
+      analyzedAttributes: [],
+      analyzedTagnames: true
+    },
     ...stylesAndTemplates).catch((e: CascadeTestError) => {
       debugError(stylesAndTemplates.filter(s => typeof s === "string").join("\n"), e);
       throw e;

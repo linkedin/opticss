@@ -14,7 +14,6 @@ import {
 } from './initializers';
 import {
   OptiCSSOptions,
-  TemplateIntegrationOptions,
   DEFAULT_OPTIONS,
 } from './OpticssOptions';
 import {
@@ -27,6 +26,8 @@ import {
   StyleMapping,
   TemplateAnalysis,
   TemplateTypes,
+  TemplateIntegrationOptions,
+  normalizeTemplateOptions,
 } from '@opticss/template-api';
 import { OptimizationPass } from './OptimizationPass';
 
@@ -65,12 +66,12 @@ export class Optimizer {
    *   those conflicts must be resolvable by having analysis information that proves
    *   they don't conflict or by having selectors that unambiguously resolve the conflict.
    */
-  constructor(options: Partial<OptiCSSOptions>, templateOptions: TemplateIntegrationOptions) {
+  constructor(options: Partial<OptiCSSOptions>, templateOptions: Partial<TemplateIntegrationOptions>) {
     this.sources = [];
     this.analyses = [];
     // TODO: give an error if the options conflict with the template integration abilities?
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
-    this.templateOptions = templateOptions;
+    this.templateOptions = normalizeTemplateOptions(templateOptions);
     this.optimizations = [];
     this.timings = {};
     this.initializers = new Array<keyof Initializers>();

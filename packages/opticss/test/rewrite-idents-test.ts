@@ -8,12 +8,10 @@ import {
 import * as path from 'path';
 
 import {
-  RewritableIdents,
-} from '../src/OpticssOptions';
-import {
   Attribute,
   Element,
   Tagname,
+  RewritableIdents,
 } from '@opticss/template-api';
 import {
   IdentGenerator,
@@ -31,7 +29,11 @@ import {
 function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
     { only: ["rewriteIdents"] },
-    { rewriteIdents: templateRewriteOpts },
+    {
+      rewriteIdents: templateRewriteOpts,
+      analyzedAttributes: [],
+      analyzedTagnames: true
+    },
     ...stylesAndTemplates);
 }
 
@@ -168,8 +170,11 @@ export class RewriteIdentsTest {
       let classAttr = new Attribute("class", {constant: "a"});
       let mapping = result.optimization.styleMapping.rewriteMapping(new Element(tag, [classAttr]));
       if (mapping) {
-        assert.deepEqual(mapping.dynamicClasses, {b: {and: [0]}});
-        assert.deepEqual(mapping.inputClassnames[0], "a");
+        assert.deepEqual(mapping.inputs, [
+            { "tagname": "div" },
+            { "name": "class", "value": "a" }
+          ]);
+        assert.deepEqual(mapping.dynamicAttributes["class"], {b: {and: [1]}});
       }
     });
   }

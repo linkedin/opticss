@@ -26,6 +26,7 @@ import {
   Tagname,
   ValueAbsent,
   ValueConstant,
+  TemplateIntegrationOptions,
 } from '@opticss/template-api';
 import {
   isClass,
@@ -46,7 +47,7 @@ import {
   ExpandShorthand,
 } from '../../actions/ExpandShorthand';
 import {
-  MergeDeclarations as MergeDeclarationsAction,
+  MergeDeclarations as MergeDeclarationsAction, inputsFromSelector,
 } from '../../actions/MergeDeclarations';
 import {
   ParsedCssFile,
@@ -56,7 +57,6 @@ import {
 } from '../../initializers';
 import {
   OptiCSSOptions,
-  TemplateIntegrationOptions,
 } from '../../OpticssOptions';
 import {
   OptimizationPass,
@@ -107,7 +107,7 @@ export class MergeDeclarations implements MultiFileOptimization {
     let mapper = new DeclarationMapper(pass, analyses, files);
     let removedSelectors = new Array<ParsedSelectorAndRule>();
     for (let context of mapper.contexts) {
-      let contextMergeables = this.mergeablesForContext(context);
+      let contextMergeables = this.mergeablesForContext(pass, context);
       let shorthands = mergedShorthandsForContext(contextMergeables);
       let segmentedContextMergeables = this.segmentByCascadeConflicts(pass.actions, context, mapper, contextMergeables);
       segmentedContextMergeables = this.checkAndExpandShorthands(pass, mapper, shorthands, segmentedContextMergeables);
@@ -130,18 +130,30 @@ export class MergeDeclarations implements MultiFileOptimization {
       pass.actions.perform(new MarkAttributeValueObsolete(pass, referencedSelectors, attr, "All selectors referencing it were removed."));
     }
   }
+  private isMergeable(options: TemplateIntegrationOptions, pass: OptimizationPass, declInfo: DeclarationInfo): boolean {
+    let rule: postcss.Rule = <postcss.Rule>declInfo.decl.parent;
+    let parsedSelectors = pass.cache.getParsedSelectors(rule);
+    for (let sel of parsedSelectors) {
+      let kSel = sel.key;
+      if (!inputsFromSelector(options, kSel)) {
+        return false;
+      }
+    }
+    return true;
+  }
   /**
    * Returns all the sets of mergeable declaration sets that exist in the given
    * optimization context. The sets returned from this method do not
    * respect the cascade or take into account whether the merge would be a net
    * benefit.
    */
-  private mergeablesForContext(context: OptimizationContext) {
+  private mergeablesForContext(pass: OptimizationPass, context: OptimizationContext) {
     let contextMergeables = new Array<MergeableDeclarationSet>();
     for (let prop of context.declarationMap.keys()) {
       let values = context.declarationMap.getValue(prop);
       for (let value of values.keys()) {
         let decls = values.getValue(value);
+        decls = decls.filter(d => this.isMergeable(this.templateOptions, pass, d));
         let importantDecls = decls.filter(d => d.important);
         let normalDecls = decls.filter(d => !d.important);
         if (importantDecls.length > 1) {
@@ -175,8 +187,14 @@ export class MergeDeclarations implements MultiFileOptimization {
     let attrGroups = groupAttrsByName(attrs);
     let elementAttributes = new Array<Attr>();
     for (let group of attrGroups) {
+      // Removing an attribute is part of rewriting.
+      // We only rewrite ids and classes for now but if we allow others
+      // they'll probably be enumerated in the `rewriteIdents` object.
+      if (group.ns || !this.templateOptions.rewriteIdents[group.name]) {
+        continue;
+      }
       let values: AttributeValueChoice = {oneOf: group.values!.map(v => v ? <ValueConstant>{constant: v} : <ValueAbsent>{absent: true})};
-      if (group.ns) {
+      if (group.ns) { // this never happens right now -- handled for completeness.
         elementAttributes.push(new AttributeNS(group.ns, group.name, values));
       } else {
         elementAttributes.push(new Attribute(group.name, values));
@@ -245,6 +263,7 @@ export class MergeDeclarations implements MultiFileOptimization {
     let scope = context.scopes[0];
     let container = scope.length > 0 ? scope[scope.length - 1] : context.root;
     let action = new MergeDeclarationsAction(
+      this.templateOptions,
       pass,
       container,
       context.selectorContext,

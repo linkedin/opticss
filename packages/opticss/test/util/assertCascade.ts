@@ -7,7 +7,6 @@ import {
 
 import {
   OptiCSSOptions,
-  TemplateIntegrationOptions,
 } from '../../src/OpticssOptions';
 import {
   OptimizationResult,
@@ -15,6 +14,7 @@ import {
 } from '../../src/Optimizer';
 import {
   TemplateAnalysis,
+  TemplateIntegrationOptions,
 } from '@opticss/template-api';
 import {
   SimpleAnalyzer,

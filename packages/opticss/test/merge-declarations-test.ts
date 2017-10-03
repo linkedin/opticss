@@ -29,7 +29,11 @@ import {
 function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
     { only: ["mergeDeclarations"] },
-    { rewriteIdents: { id: false, class: true } },
+    {
+      rewriteIdents: { id: true, class: true },
+      analyzedAttributes: [],
+      analyzedTagnames: true
+    },
     ...stylesAndTemplates);
 }
 
@@ -67,6 +71,7 @@ export class MergeDeclarationsTest {
         return assertSmaller(css1, result, {gzip: { notBiggerThan: 1}});
       }).catch(e => {
         debugError(css1, e);
+        throw e;
       });
     });
   }
@@ -373,6 +378,43 @@ export class MergeDeclarationsTest {
           .a .d { float: left; }
         `);
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
+    });
+  }
+  @test "handles id selectors"() {
+    let css1 = clean`
+    #id1 { color: blue; float: right; }
+    #id2 { color: blue; float: left; }
+    #id3 { color: blue; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="a">
+      <span id="id1">id 1</span>
+      <span id="id2">id 2</span>
+      <span id="id3">id 3</span>
+    </div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .b { color: blue; }
+          #id1 { float: right; }
+          #id2 { float: left; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a">
+          <span id="id1" class="b">id 1</span>
+          <span id="id2" class="b">id 2</span>
+          <span class="b">id 3</span>
+          </div></body>
+        `);
+      return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
+    }).catch((e) => {
+      debugError(css1, e);
+      throw e;
     });
   }
 

@@ -3,6 +3,7 @@ export * from "./Selectable";
 export * from "./SourceLocation";
 export * from "./StyleMapping";
 export * from "./TemplateError";
+export * from "./TemplateIntegrationOptions";
 
 // These files are inlined here to work around this bug:
 // https://github.com/Microsoft/TypeScript/issues/18877
@@ -21,7 +22,7 @@ export interface SerializedTemplateInfo<K extends keyof TemplateTypes> {
   type: K;
 
   /**
-   * any identifier that can be used to look up a template by the templateinfo.
+   * any identifier that can be used to look up a template by the TemplateInfo.
    * Usually a relative path to a file.
    */
   identifier: string;

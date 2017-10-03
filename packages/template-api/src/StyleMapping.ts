@@ -11,41 +11,67 @@ import {
   ElementInfo,
   FlattenedAttributeValue,
   isAbsent,
+  isConstant,
+  isEndsWith,
+  isFlattenedSet,
+  isStartsAndEndsWith,
+  isStartsWith,
+  isTagnameValueChoice,
   isUnknown,
   isUnknownIdentifier,
-  isConstant,
-  isStartsWith,
-  isEndsWith,
-  isStartsAndEndsWith,
-  isFlattenedSet
- } from "./Selectable";
+} from './Selectable';
 import { BooleanExpression, AndExpression, isOrExpression } from "./BooleanExpression";
 
-export interface DynamicClasses {
-  [classname: string]: BooleanExpression<number> | undefined;
+export interface DynamicExpressions {
+  [outputValue: string]: BooleanExpression<number> | undefined;
 }
 
 export interface RewriteMapping {
   /**
-   * class names as they appear in the source template.
+   * attributes as they appear in the source template.
    */
-  inputClassnames: string[];
+  inputs: Array<SimpleTagname | SimpleAttribute>;
 
   /**
-   * output class names that are always on the element independent of any dynamic changes.
+   * output attributes that are always on the element independent of any dynamic changes.
    */
-  staticClasses: string[];
+  staticAttributes: {
+    /**
+     * The id attribute will have at most one value unless the element
+     * analysis is invalid.
+     */
+    id?: string[];
+    class?: string[];
+  };
 
   /**
-   * The numbers in the boolean expression represents indexes into the inputClassnames array.
+   * The numbers in the boolean expressions represents indexes into the inputAttributes array.
    */
-  dynamicClasses: DynamicClasses;
+  dynamicAttributes: {
+    /**
+     * At most, one id value will evaluate to true unless the element analysis
+     * is invalid.
+     */
+    id?: DynamicExpressions;
+    class?: DynamicExpressions;
+  };
 }
 
+export interface SimpleTagname {
+  ns?: string;
+  tagname: string;
+}
+export function isSimpleTagname(v: Object): v is SimpleTagname {
+  return typeof (<SimpleTagname>v).tagname === "string";
+}
 export interface SimpleAttribute {
   ns?: string;
   name: string;
   value: string;
+}
+export function isSimpleAttribute(v: Object): v is SimpleAttribute {
+  return typeof (<SimpleAttribute>v).value === "string"
+      && typeof (<SimpleAttribute>v).name  === "string";
 }
 
 export function simpleAttributeToString(attr: SimpleAttribute): string {
@@ -66,13 +92,13 @@ export function simpleAttributeToString(attr: SimpleAttribute): string {
 
 export interface ElementAttributes {
   /**
-   * A list of attributes that should be on the element.
+   * A list of traits that should be on the element.
    */
-  existing: Array<SimpleAttribute>;
+  existing: Array<SimpleTagname | SimpleAttribute>;
   /**
-   * a list of attributes that shouldn't be on the element.
+   * a list of traits that shouldn't be on the element.
    */
-  unless: Array<SimpleAttribute>;
+  unless: Array<SimpleTagname | SimpleAttribute>;
 }
 
 interface PrimaryAttributeLink {
@@ -81,13 +107,13 @@ interface PrimaryAttributeLink {
    */
   to: SimpleAttribute;
   /**
-   * A list of attributes that must be present to create the link.
+   * A list of traits that must be present to create the link.
    */
-  from: Array<SimpleAttribute>;
+  from: Array<SimpleTagname | SimpleAttribute>;
   /**
-   * A list of attributes that must not be present to to create the link.
+   * A list of traits that must not be present to to create the link.
    */
-  unless: Array<SimpleAttribute>;
+  unless: Array<SimpleTagname | SimpleAttribute>;
 }
 
 export class StyleMapping {
@@ -125,10 +151,11 @@ export class StyleMapping {
     for (let attrCondition of toAttrs) {
       let link: PrimaryAttributeLink = {
         to: newAttr,
-        from: attrCondition.existing.map(a => this.sourceAttributes.add(a)),
-        unless: attrCondition.unless.map(a => this.sourceAttributes.add(a))
+        from: attrCondition.existing.map(a => isSimpleAttribute(a) ? this.sourceAttributes.add(a) : a),
+        unless: attrCondition.unless.map(a => isSimpleAttribute(a) ? this.sourceAttributes.add(a) : a)
       };
       for (let sourceAttr of link.from) {
+        if (isSimpleTagname(sourceAttr)) continue;
         this.linkedAttributes.setValue(sourceAttr, link);
       }
     }
@@ -136,70 +163,94 @@ export class StyleMapping {
   getRewriteOf(from: SimpleAttribute): SimpleAttribute | undefined {
     return this.replacedAttributes.getValue(from);
   }
-  rewriteMapping(element: ElementInfo): RewriteMapping | null {
-    let classAttr = element.attributes.find((a) => isClassAttr(a));
-    let inputClassnames = classAttr ? classValues(classAttr) : [];
-    let dynamicClasses: DynamicClasses = { };
-    for (let i = 0; i < inputClassnames.length; i++) {
-      let icn = inputClassnames[i];
-      let rwc = this.getRewriteOf({name: "class", value: icn});
-      if (rwc) {
-        dynamicClasses[rwc.value] = {and: [i]};
-      } else if (!this.obsoleteAttributes.has({name: "class", value: icn})) {
-        dynamicClasses[icn] = {and: [i]};
+  private getInputs(element: ElementInfo): Array<SimpleTagname | SimpleAttribute> {
+    // TODO: base the input attributes on all attributes on the element
+    let tags = new Array<SimpleTagname>();
+    if (isConstant(element.tagname.value)) {
+      tags.push({tagname: element.tagname.value.constant});
+    } else if (isTagnameValueChoice(element.tagname.value)) {
+      for (let v of element.tagname.value.oneOf) {
+        tags.push({tagname: v});
       }
-      let linkages = this.linkedAttributes.getValue({name: "class", value: icn});
+    }
+
+    let idAttr = element.attributes.find((a) => isIdAttr(a));
+    let classAttr = element.attributes.find((a) => isClassAttr(a));
+    let inputIds = idAttr ? this.attributeValues("id", idAttr) : [];
+    let inputClassnames = classAttr ? this.attributeValues("class", classAttr) : [];
+    return new Array<SimpleTagname | SimpleAttribute>(...tags, ...inputIds, ...inputClassnames);
+  }
+  rewriteMapping(element: ElementInfo): RewriteMapping | null {
+    let inputs = this.getInputs(element);
+    let dynamicAttributes = {
+      id: <DynamicExpressions>{},
+      class: <DynamicExpressions>{}
+    };
+    for (let i = 0; i < inputs.length; i++) {
+      let input = inputs[i];
+      if (isSimpleTagname(input)) continue;
+      let inputAttr = input;
+      let rwc = inputAttr && this.getRewriteOf(inputAttr);
+      if (rwc) {
+        dynamicAttributes[toIdOrClass(rwc.name)][rwc.value] = {and: [i]};
+      } else if (inputAttr && !this.obsoleteAttributes.has(inputAttr)) {
+        dynamicAttributes[toIdOrClass(inputAttr.name)][inputAttr.value] = {and: [i]};
+      }
+      let linkages = this.linkedAttributes.getValue(inputAttr);
       for (let linked of linkages) {
         if (linked) {
-          if (!(linked.from.every(a => a.name === "class")
-                && linked.unless.every(a => a.name === "class"))) {
-            // TODO: Handle attributes that aren't classes at some point.
-            throw new Error("only classes can be linked.");
-          }
-          let condition: AndExpression<number> = { and: linked.from.map(linkedAttr => inputClassnames.findIndex(c => c === linkedAttr.value)) };
+          let condition: AndExpression<number> = { and: linked.from.map(linkedAttr => inputs.findIndex(input => sameElementTrait(input, linkedAttr))) };
           if (condition.and.some(c => c < 0)) {
-            // this condition can never be met if this class never has all the required source classes
+            // this condition can never be met if this class never has all the required source attributes
             continue;
           }
           for (let linkedAttr of linked.unless) {
-            let idx = inputClassnames.findIndex(c => c === linkedAttr.name);
+            let idx = inputs.findIndex(input => sameElementTrait(input, linkedAttr));
             if (idx >= 0) {
               condition.and.push({ not: idx });
             }
           }
-          let dynClass = dynamicClasses[linked.to.value];
-          if (dynClass) {
-            if (isOrExpression(dynClass)) {
-              dynClass.or.push(condition);
+          let dynExpr = dynamicAttributes[toIdOrClass(linked.to.name)][linked.to.value];
+          if (dynExpr) {
+            if (isOrExpression(dynExpr)) {
+              dynExpr.or.push(condition);
             } else {
-              dynClass = { or: [dynClass, condition] };
+              dynExpr = { or: [dynExpr, condition] };
             }
           } else {
-            dynClass = condition;
+            dynExpr = condition;
           }
-          dynamicClasses[linked.to.value] = dynClass;
+          dynamicAttributes[toIdOrClass(linked.to.name)][linked.to.value] = dynExpr;
         }
       }
     }
     return {
-      inputClassnames,
-      staticClasses: [],
-      dynamicClasses
+      inputs,
+      staticAttributes: {id: [], class: []},
+      dynamicAttributes
     };
   }
   replacedAttributeCount(): number {
     return this.replacedAttributes.size();
   }
-}
-
-function classValues(attr: SelectableAttribute): string[] {
-  let names = new Set<string>();
-  attr.flattenedValue().forEach(v => {
-    stringsForValue(v).forEach(sv => names.add(sv));
-  });
-  let nameArray = new Array(...names);
-  nameArray.sort();
-  return nameArray;
+  attributeValues(name: string, attr: SelectableAttribute): SimpleAttribute[] {
+    // TODO: this needs to come from values found in the stylesheet that may
+    // match the value descriptors -- not to be derived from the analysis for
+    // our immediate needs this works tho and it's much faster than
+    // deriving it from the styles.
+    let names = new Set<string>();
+    attr.flattenedValue().forEach(v => {
+      stringsForValue(v).forEach(sv => names.add(sv));
+    });
+    let nameArray = new Array(...names);
+    nameArray.sort();
+    return nameArray.map(value => {
+      return {
+        name,
+        value
+      };
+    });
+  }
 }
 
 function stringsForValue(v: FlattenedAttributeValue): string[] {
@@ -222,14 +273,31 @@ function stringsForValue(v: FlattenedAttributeValue): string[] {
     }
 }
 
-// function sameAttribute(attr1: Attribute, attr2: Attribute) {
-//   return attr1.ns === attr2.ns &&
-//          attr1.name === attr2.name &&
-//          attr1.value === attr2.value;
-// }
+function sameElementTrait<T extends SimpleTagname | SimpleAttribute>(trait1: T, trait2: T): boolean {
+  if (isSimpleTagname(trait1)) {
+    return sameTagname(trait1, <SimpleTagname>trait2);
+  } else if (isSimpleAttribute(trait1)) {
+    return sameAttribute(trait1, <SimpleAttribute>trait2);
+  } else {
+    return false;
+  }
+}
+function sameTagname(tag1: SimpleTagname, tag2: SimpleTagname) {
+  return tag1.ns === tag2.ns &&
+         tag1.tagname === tag2.tagname;
+}
+function sameAttribute(attr1: SimpleAttribute, attr2: SimpleAttribute) {
+  return attr1.ns === attr2.ns &&
+         attr1.name === attr2.name &&
+         attr1.value === attr2.value;
+}
 
 function isClassAttr(attr: Attr): boolean {
   return attr.namespaceURL === null && attr.name === "class";
+}
+
+function isIdAttr(attr: Attr): boolean {
+  return attr.namespaceURL === null && attr.name === "id";
 }
 
 function attributeDictionary<V = SimpleAttribute>(): Dictionary<SimpleAttribute, V> {
@@ -245,4 +313,21 @@ function attributeMultiDictionary<V>(
 
 function attrToKey(attr: SimpleAttribute): string {
   return `${attr.ns || ''}|${attr.name}=${attr.value}`;
+}
+
+export type RewriteableAttrName = "id" | "class";
+
+function isIdOrClass(name: string): name is RewriteableAttrName {
+  if (name === "id" || name === "class") {
+    return true;
+  } else {
+    return false;
+  }
+}
+function toIdOrClass(name: string): RewriteableAttrName {
+  if (isIdOrClass(name)) {
+    return name;
+  } else {
+    throw new Error("id or class required");
+  }
 }
