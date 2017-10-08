@@ -4,3 +4,4 @@ export * from "./IdentityDictionary";
 export * from "./UtilityTypes";
 export * from "./OptiCSSError";
 export * from "./typedAssert";
+export * from "./MultiMap";
