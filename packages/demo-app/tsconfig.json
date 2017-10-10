@@ -1,13 +1,22 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "lib": [ "es2016", "dom" ],
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "removeComments": false,
     "outDir": "dist",
     "baseUrl": "dist",
     "types": [
       "@types/chai",
       "@types/node",
       "@types/mocha"
-    ]
+    ],
+    "paths": {
+      "codemirror/*": [ "../types-local/codemirror" ]
+    }
   },
   "include": [
     "src",

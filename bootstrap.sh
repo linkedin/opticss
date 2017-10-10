@@ -20,7 +20,7 @@ yarn link css-select
 yarn link postcss
 yarn link css-size
 
-for PACKAGE in resolve-cascade util template-api simple-template opticss demo-cli
+for PACKAGE in resolve-cascade util template-api simple-template opticss demo-app
 do
   cd packages/$PACKAGE
   yarn link postcss

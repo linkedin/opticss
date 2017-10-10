@@ -2,7 +2,9 @@
   "private": true,
   "name": "opticss",
   "devDependencies": {
-    "lerna": "^2.2.0"
+    "lerna": "^2.2.0",
+    "pre-commit": "^1.2.2",
+    "watch": "^1.0.2"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap"
