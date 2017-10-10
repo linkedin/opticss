@@ -1,25 +1,9 @@
-// import { DemoOptimizer } from '../src/index';
-// import {
-//   assert,
-// } from 'chai';
-import {
-  suite,
-  skip,
-} from 'mocha-typescript';
-import * as path from "path";
-// import * as fs from "fs";
-import * as rimraf from "rimraf";
-import * as mkdirp from "mkdirp";
+import { assert } from 'chai';
+import { suite, skip } from 'mocha-typescript';
 
-const testDir = path.resolve(__dirname, "../../test");
-let outputDir = path.join(testDir, "results");
-console.log(testDir);
-
-@suite("Demo APP")
-export class DemoCLITest {
-  before() {
-    rimraf.sync(outputDir);
-    mkdirp.sync(outputDir);
+@suite("Demo App")
+export class DemoAppTest {
+  @skip "TODO: Write tests"() {
+    assert.ok(1);
   }
-  @skip "TODO: Write tests"() { }
 }
