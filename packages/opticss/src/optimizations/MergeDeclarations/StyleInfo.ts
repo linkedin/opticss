@@ -64,4 +64,8 @@ export interface DeclarationInfo {
    */
   ordinal: number;
   dupeCount: number;
+  /** whether this decl has been expanded yet. */
+  expanded: boolean;
+  /** whether this decl has been merged yet. */
+  merged: boolean;
 }

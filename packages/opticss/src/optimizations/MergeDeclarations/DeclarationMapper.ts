@@ -4,6 +4,7 @@ import * as specificity from 'specificity';
 import { BSTree, MultiDictionary } from 'typescript-collections';
 
 import { TemplateTypes, Element, TemplateAnalysis } from '@opticss/template-api';
+import { MultiMap } from "@opticss/util";
 import { ParsedCssFile } from '../../CssFile';
 import { OptimizationPass } from '../../OptimizationPass';
 import {
@@ -12,8 +13,11 @@ import {
 } from '../../util/shorthandProperties';
 import { walkRules } from '../util';
 import { SelectorInfo, DeclarationInfo } from './StyleInfo';
-import { OptimizationContexts } from './OptimizationContext';
-import { matches,  ElementMatcher} from "../../Match";
+import {
+  OptimizationContext,
+  OptimizationContexts,
+} from './OptimizationContext';
+import { matches, ElementMatcher } from "../../Match";
 import { ParsedSelector } from '../../parseSelector';
 
 /**
@@ -33,15 +37,18 @@ export class DeclarationMapper {
   /** binary search tree of selectors. sorts as they are added and allows in order traversal. */
   selectorTree: BSTree<SelectorInfo>;
 
-  /** map of all shorthand declarations to their expanded declaration information. */
-  shortHands: Map<postcss.Declaration, DeclarationInfo[]>;
+  /** Each entry for the declaration represents a selector it was duplicated for,
+   * and each decl info in that entry, if more than one, represents a longhand
+   * it was expanded into from a shorthand.
+   */
+  declarationInfos: MultiMap<postcss.Declaration, DeclarationInfo[]>;
 
   constructor(
     pass: OptimizationPass,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
     files: Array<ParsedCssFile>
   ) {
-    this.shortHands = new Map<postcss.Declaration, DeclarationInfo[]>();
+    this.declarationInfos = new MultiMap<postcss.Declaration, DeclarationInfo[]>();
     this.contexts = new OptimizationContexts();
     this.selectorTree = new BSTree<SelectorInfo>((s1, s2) => {
       let cmp = specificity.compare(s1.specificity.specificityArray, s2.specificity.specificityArray);
@@ -53,7 +60,6 @@ export class DeclarationMapper {
     files.forEach((file, fileIndex) => {
       let sourceIndex = 0;
       walkRules(file.content.root!, (rule, scope) => {
-        sourceIndex++;
         let selectors = pass.cache.getParsedSelectors(rule);
         /** all the declarations of this rule after expanding longhand properties. */
         let declarations = new MultiDictionary<string,[string, boolean, postcss.Declaration]>(undefined, undefined, true);
@@ -62,6 +68,7 @@ export class DeclarationMapper {
           declarations.setValue(decl.prop, [decl.value, decl.important, decl]);
         });
         selectors.forEach(selector => {
+          sourceIndex++;
           let elements = new Array<Element>();
           analyses.forEach(analysis => {
             elements.splice(elements.length, 0, ...querySelector(analysis, selector));
@@ -108,9 +115,10 @@ export class DeclarationMapper {
             // values because selectors can conflict across different optimization contexts.
             let longhandDeclarations = expandIfNecessary(context.authoredProps, decl.prop, decl.value);
             let longHandProps = Object.keys(longhandDeclarations);
+            let longHandDeclInfos = new Array<DeclarationInfo>();
             for (let longHandProp of longHandProps) {
               let declInfo = this.makeDeclInfo(selectorInfo, longHandProp, longhandDeclarations[longHandProp], important, decl, declarationOrdinal);
-              this.trackShorthand(declInfo);
+              longHandDeclInfos.push(declInfo);
               if (important) {
                 importantDeclInfos.push(declInfo);
               }
@@ -124,9 +132,11 @@ export class DeclarationMapper {
                 }
               }
             }
+            this.trackDeclarationInfo(context, longHandDeclInfos);
           } else {
             // normal long hand props are just set directly
             let declInfo = this.makeDeclInfo(selectorInfo, prop, v, important, decl, declarationOrdinal);
+            this.trackDeclarationInfo(context, [declInfo]);
             if (important) {
               importantDeclInfos.push(declInfo);
             }
@@ -136,8 +146,6 @@ export class DeclarationMapper {
           }
         });
       });
-      // If we want important property precedence to be pre-calculated it can be
-      // done here. It's not clear that's helpful yet.
     });
     // we add the max declaration ordinal to all the important declaration infos
     // this makes those declarations resolve higher than all the non-important values.
@@ -154,22 +162,24 @@ export class DeclarationMapper {
     ordinal: number,
     dupeCount = 0
   ): DeclarationInfo {
-    return {
+    let declInfo: DeclarationInfo = {
       decl,
       prop,
       value,
       important,
       selectorInfo,
       ordinal,
-      dupeCount
+      dupeCount,
+      merged: false,
+      expanded: false,
     };
+    return declInfo;
   }
-  private trackShorthand(declInfo: DeclarationInfo) {
-    if (this.shortHands.has(declInfo.decl)) {
-      this.shortHands.get(declInfo.decl)!.push(declInfo);
-    } else {
-      this.shortHands.set(declInfo.decl, [declInfo]);
+  private trackDeclarationInfo(context: OptimizationContext, declInfos: DeclarationInfo[]) {
+    for (let info of declInfos) {
+      context.declarationInfos.add(info);
     }
+    this.declarationInfos.set(declInfos[0].decl, declInfos);
   }
 
   private addDeclInfoToElements(elements: Element[], property: string, declInfo: DeclarationInfo) {

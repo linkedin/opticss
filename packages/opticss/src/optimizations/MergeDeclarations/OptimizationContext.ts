@@ -20,10 +20,15 @@ export class OptimizationContext {
 
   /**
    * map of property keys to a dictionary of values multi-mapped to
-   * the selector information that references them. The multi-mapped values
+   * the declaration info for this context. The multi-mapped values
    * are in the order of stylesheet precedence.
    */
   declarationMap: Dictionary<string, MultiDictionary<string, DeclarationInfo>>;
+
+  /**
+   * Declaration infos that belong to this optimization context;
+   */
+  declarationInfos: Set<DeclarationInfo>;
 
   /**
    * A set of properties that are declared within this optimization context.
@@ -37,6 +42,7 @@ export class OptimizationContext {
     this.selectorContext = selectorContext;
     this.declarationMap = new Dictionary<string, MultiDictionary<string, DeclarationInfo>>();
     this.authoredProps = new Set();
+    this.declarationInfos = new Set();
   }
 
   getDeclarationValues(prop: string): MultiDictionary<string, DeclarationInfo> {

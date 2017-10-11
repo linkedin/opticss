@@ -67,6 +67,10 @@ export function isRule(node: postcss.Node): node is postcss.Rule {
   return (node.type === "rule");
 }
 
+export function isDeclaration(node: postcss.Node): node is postcss.Declaration {
+  return (node.type === "decl");
+}
+
 export function isContainer(node: postcss.Node): node is postcss.Container {
   return (<postcss.Container>node).each !== undefined;
 }

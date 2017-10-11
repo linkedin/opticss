@@ -11,13 +11,16 @@ import * as path from 'path';
 import {
   CascadeTestError,
   CascadeTestResult,
+  debugCascadeError,
   debugError,
   testOptimizationCascade,
+  logOptimizations,
 } from './util/assertCascade';
 import {
   walkElements,
   TestTemplate,
 } from '@opticss/simple-template';
+import { debugSize } from './util/assertSmaller';
 
 function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -44,17 +47,24 @@ export class IntegrationTests {
       // return debugSize(css, result).then(() => {
       //   // debugResult(css, result);
       // });
+    }).catch(e => {
+      debugError(css, e);
     });
   }
   @test "NYT Homepage"() {
     let markup = fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/integration-tests/nytimes-homepage/markup.html"), "utf-8");
     let css = fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/integration-tests/nytimes-homepage/styles.css"), "utf-8");
     let template = new TestTemplate("test", markup, true);
-    return testDefaults(css, template).then(_result => {
+    return testDefaults(css, template).then(result => {
+      return debugSize(result);
       // logOptimizations(result.optimization);
       // return debugSize(css, result).then(() => {
       //   debugResult(css, result);
       // });
+    }).catch(e => {
+      debugCascadeError(e);
+      logOptimizations(e.optimization);
+      throw e;
     });
   }
 }

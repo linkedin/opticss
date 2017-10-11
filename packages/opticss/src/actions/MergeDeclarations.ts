@@ -29,6 +29,7 @@ import {
   SimpleAttribute as ElementAttribute,
   SimpleTagname as ElementTagname,
   StyleMapping,
+  isSimpleTagname,
 } from '@opticss/template-api';
 import {
   isAtRule
@@ -223,6 +224,7 @@ export function inputsFromSelector(templateOptions: TemplateIntegrationOptions, 
       return undefined;
     }
   }
+  if (inputs.every(input => isSimpleTagname(input))) return undefined;
   return inputs;
 }
 

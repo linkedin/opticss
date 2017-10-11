@@ -352,7 +352,7 @@ export class ParsedSelector {
   toContext(): ParsedSelector {
     let context = this.clone();
     let key = context.key;
-    key.nodes = key.nodes.filter(node => isPseudo(node));
+    key.nodes = key.nodes.filter(node => isPseudo(node)).sort((a, b) => a.value!.localeCompare(b.value!));
     key.nodes.unshift(selectorParser.universal());
     return context;
   }
