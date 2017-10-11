@@ -1,11 +1,22 @@
 export class MultiMap<K extends Object, V> {
+  private _allowDuplicates: boolean;
   readonly [Symbol.toStringTag] = "MultiMap";
-  private store: Map<K, V[]>;
+  private store: Map<K, V[] | Set<V>>;
   private _size: number;
 
-  constructor() {
+  /**
+   * Creates an instance of MultiMap.
+   * @param [allowDuplicates=true] whether or not duplicate values are stored as unique entries in the MultiMap.
+   *   When false, values for a given key are deduplicated using a Set.
+   */
+  constructor(allowDuplicates = true) {
+    this._allowDuplicates = allowDuplicates;
     this.store = new Map();
     this._size = 0;
+  }
+
+  get allowDuplicates(): boolean {
+    return this._allowDuplicates;
   }
 
   /** Alias for `sizeOfKeys()`. */
@@ -33,20 +44,37 @@ export class MultiMap<K extends Object, V> {
     return this.copyValueList(res);
   }
 
-  private copyValueList(values: V[]): V[] {
-    return values.slice(0, values.length);
+  private copyValueList(values: V[] | Set<V>): V[] {
+    return [...values];
+  }
+
+  private isSet(v: V[] | Set<V>): v is Set<V> {
+    return v instanceof Set;
   }
 
   set(key: K, ...values: V[]): this {
     if (values.length === 0) return this;
     let res = this.store.get(key);
+    let originalSize: number;
     if (res) {
-      res.push(...values);
+      if (this.isSet(res)) {
+        originalSize = res.size;
+        for (let v of values) { res.add(v); }
+      } else {
+        originalSize = res.length;
+        res.push(...values);
+      }
     } else {
-      res = [...values];
-      this.store.set(key, res);
+      originalSize = 0;
+      if (this.allowDuplicates) {
+        res = [...values];
+        this.store.set(key, res);
+      } else {
+        res = new Set(values);
+        this.store.set(key, res);
+      }
     }
-    this._size += values.length;
+    this._size += (this.isSet(res) ? res.size : res.length) - originalSize;
     return this;
   }
 
@@ -62,7 +90,7 @@ export class MultiMap<K extends Object, V> {
     let hasValue = this.store.has(key);
     if (!hasValue) return false;
     let valuesForKey = this.store.get(key)!;
-    this._size -= valuesForKey.length;
+    this._size -= this.isSet(valuesForKey) ? valuesForKey.size : valuesForKey.length;
     this.store.delete(key);
     return hasValue;
   }
@@ -75,16 +103,27 @@ export class MultiMap<K extends Object, V> {
     if (!this.store.has(key)) return found;
     for (let value of valuesToDelete) {
       let valuesForKey = this.store.get(key)!;
-      let start = valuesForKey.indexOf(value);
-      while (start >= 0) {
-        this._size -= 1;
-        valuesForKey.splice(start, 1);
-        found.push(value);
-        if (valuesForKey.length === 0) {
-          this.store.delete(key);
-          return found;
+      if (!valuesForKey) continue;
+      if (this.isSet(valuesForKey)) {
+        if (valuesForKey.delete(value)) {
+          this._size -= 1;
+          found.push(value);
+          if (valuesForKey.size === 0) {
+            this.store.delete(key);
+          }
         }
-        start = valuesForKey.indexOf(value);
+      } else {
+        let start = valuesForKey.indexOf(value);
+        while (start >= 0) {
+          this._size -= 1;
+          valuesForKey.splice(start, 1);
+          found.push(value);
+          if (valuesForKey.length === 0) {
+            this.store.delete(key);
+            return found;
+          }
+          start = valuesForKey.indexOf(value);
+        }
       }
     }
     return found;
@@ -115,7 +154,16 @@ export class MultiMap<K extends Object, V> {
    * checks if the MultiMap has the specified value for the key.
    */
   hasValue(key: K, value: V): boolean {
-    return this.store.has(key) && this.store.get(key)!.indexOf(value) >= 0;
+    let values = this.store.get(key);
+    if (values) {
+      if (this.isSet(values)) {
+        return values.has(value);
+      } else {
+        return values.indexOf(value) >= 0;
+      }
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -127,8 +175,7 @@ export class MultiMap<K extends Object, V> {
 
   *entries(): IterableIterator<[K, V[]]> {
     for (let entry of this.store.entries()) {
-      entry[1] = this.copyValueList(entry[1]);
-      yield entry;
+      yield [entry[0], this.copyValueList(entry[1])];
     }
   }
 
