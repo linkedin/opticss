@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/node_modules/codemirror/lib/codemirror.css">
+    <link rel="stylesheet" href="/node_modules/codemirror/theme/material.css">
+    <link rel="stylesheet" href="/node_modules/codemirror/theme/mdn-like.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./app.css">
+  </head>
+
+  <body>
+    <nav>
+      <button id="preview-toggle" class="fa fa-camera" aria-hidden="true"></button>
+      <button id="terminal-toggle" class="fa fa-terminal" aria-hidden="true"></button>
+      <button id="settings-toggle" class="fa fa-gear" aria-hidden="true"></button>
+      <div class="nav__arrow">
+        <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        <span id="build-time-output">--</span>
+      </div>
+    </nav>
+
+    <section class="editors">
+      <div id="css-code-editor" class="code-container"></div>
+      <div id="tmpl-code-editor" class="code-container"></div>
+    </section>
+
+    <section class="output">
+      <div id="css-code-output" class="code-container"></div>
+      <div id="tmpl-code-output" class="code-container"></div>
+      <iframe id="tmpl-live-demo" seamless></iframe>
+    </section>
+
+    <section id="terminal"></section>
+
+    <script src="./dist/out.js"></script>
+  </body>
+</html>

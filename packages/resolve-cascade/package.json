@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "mocha-typescript": "^1.1.9",
+    "mocha": "^3.4.2",
     "tslint": "^5.1.0"
   }
 }

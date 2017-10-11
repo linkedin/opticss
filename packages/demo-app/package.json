@@ -1,24 +1,29 @@
 {
-  "name": "@opticss/demo-cli",
+  "name": "@opticss/demo-app",
   "version": "0.1.0",
   "description": "Demonstrates OptiCSS on simple html and css files.",
   "main": "dist/src/DemoOptimizer.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
     "demo": "bin/opticss",
-    "compile": "rm -rf dist && tsc",
+    "compile": "rm -rf dist && tsc && babel dist --out-dir dist && browserify ./dist/src/index.js > ./dist/out.js",
     "pretest": "yarn run compile && tslint --project tsconfig.json --type-check",
     "prepublish": "rm -rf dist && tsc",
     "tslint": "tslint --project tsconfig.json",
     "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "docs": "typedoc --out ./docs ."
+    "docs": "typedoc --out ./docs .",
+    "start": "node server.js",
+    "watch": "watch 'yarn run compile' './src' './static' './test' --wait=1"
   },
   "bin": "bin/opticss",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/css-blocks/opticss.git"
+  },
+  "browser": {
+    "css-size": "./dist/src/css-size-fake.js"
   },
   "author": "Chris Eppstein",
   "license": "BSD-2-Clause",
@@ -28,7 +33,14 @@
   "homepage": "https://github.com/css-blocks/opticss#readme",
   "dependencies": {
     "@opticss/simple-template": "^0.1.0",
-    "opticss": "^0.1.0"
+    "@types/codemirror": "^0.0.27-alpha",
+    "@types/prettier": "^1.7.0",
+    "@types/split.js": "^1.3.0",
+    "codemirror": "^5.15.2",
+    "express": "^4.15.5",
+    "opticss": "^0.1.0",
+    "prettier": "^1.7.4",
+    "split.js": "^1.3.5"
   },
   "devDependencies": {
     "@types/chai": "^3.5.2",
@@ -36,7 +48,12 @@
     "@types/nearley": "^2.9.0",
     "@types/node": "^8.0.26",
     "@types/rimraf": "^2.0.2",
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "browserify": "amiller-gh/browserify",
     "chai": "^3.5.0",
+    "gzip-js": "^0.3.2",
     "istanbul": "^0.4.5",
     "mkdirp": "^0.5.1",
     "mocha": "^3.4.2",
@@ -46,6 +63,7 @@
     "remap-istanbul": "^0.9.5",
     "rimraf": "^2.6.2",
     "tslint": "^5.1.0",
-    "typescript": "^2.4.1"
+    "typescript": "^2.4.1",
+    "watch": "^1.0.2"
   }
 }
