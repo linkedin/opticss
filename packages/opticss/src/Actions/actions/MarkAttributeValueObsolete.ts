@@ -1,12 +1,12 @@
 import {
   OptimizationPass,
-} from '../OptimizationPass';
+} from '../../OptimizationPass';
 import {
   Optimizations,
-} from '../optimizations';
+} from '../../optimizations';
 import {
   ParsedSelectorAndRule,
-} from '../query';
+} from '../../query';
 import {
   SourcePosition,
   SimpleAttribute,
@@ -14,7 +14,7 @@ import {
 } from "@opticss/template-api";
 import {
   MultiAction,
-} from './Action';
+} from '../Action';
 
 /**
  * Note that an attribute value is not used and will be removed from the

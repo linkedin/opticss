@@ -1,8 +1,8 @@
 import * as postcss from "postcss";
-import { Action, stripNL } from "./Action";
+import { Action, stripNL } from "../Action";
 import { SourcePosition } from "@opticss/template-api";
-import { Optimizations } from "../OpticssOptions";
-import { SelectorCache } from "../query";
+import { Optimizations } from "../../OpticssOptions";
+import { SelectorCache } from "../../query";
 
 /**
  * Changes a Rule's selector string.

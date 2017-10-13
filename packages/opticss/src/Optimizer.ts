@@ -1,27 +1,19 @@
 import * as postcss from 'postcss';
 import Concat = require('concat-with-sourcemaps');
 
-import {
-  Actions,
-} from './Actions';
-import {
-  CssFile,
-  ParsedCssFile,
-} from './CssFile';
-import {
-  default as initializers,
-  Initializers,
-} from './initializers';
-import {
-  OptiCSSOptions,
-  DEFAULT_OPTIONS,
-} from './OpticssOptions';
+import { OptiCSSOptions, DEFAULT_OPTIONS } from './OpticssOptions';
+import initializers, { Initializers } from './initializers';
+import { OptimizationPass } from './OptimizationPass';
+import { CssFile, ParsedCssFile } from './CssFile';
+import Actions from './Actions';
+
 import {
   isMultiFileOptimization,
   isSingleFileOptimization,
   Optimization,
   optimizations,
 } from './optimizations';
+
 import {
   StyleMapping,
   TemplateAnalysis,
@@ -29,7 +21,6 @@ import {
   TemplateIntegrationOptions,
   normalizeTemplateOptions,
 } from '@opticss/template-api';
-import { OptimizationPass } from './OptimizationPass';
 
 export interface OptimizationResult {
   output: CssFile;
@@ -38,23 +29,27 @@ export interface OptimizationResult {
 }
 
 export interface TimingData {
-  [optimization: string]: number;
+  [timingName: string]: {
+    start: number;
+    end: number;
+  };
 }
 
 export class Optimizer {
-  /**
-   * CSS Sources to be optimized.
-   */
-  sources: Array<CssFile>;
 
+  // CSS Sources and TemplateAnalyses to use in this optimization.
+  sources: Array<CssFile>;
   analyses: Array<TemplateAnalysis<keyof TemplateTypes>>;
 
   options: OptiCSSOptions;
   templateOptions: TemplateIntegrationOptions;
+
+  // Timing data from each optimization step stored here.
   timings: TimingData;
 
-  private optimizations: Array<Optimization>;
-  private initializers: Array<keyof Initializers>;
+  // Initializers and optimizations allowed by template and app options loaded here in the constructor.
+  private initializers: Set<keyof Initializers>;
+  private optimizations: Set<Optimization>;
 
   /**
    * Creates a new OptiCSS Optimizer.
@@ -72,57 +67,102 @@ export class Optimizer {
     // TODO: give an error if the options conflict with the template integration abilities?
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
     this.templateOptions = normalizeTemplateOptions(templateOptions);
-    this.optimizations = [];
+    this.optimizations = new Set;
+    this.initializers = new Set;
     this.timings = {};
-    this.initializers = new Array<keyof Initializers>();
-    if (!this.options.enabled) {
-      return;
-    }
+
+    // If disabled, short circuit.
+    if ( !this.options.enabled ) { return; }
+
+    // Load all Initializers and optimizations alloed by template and app options.
+    let only: string[] = this.options.only || [];
+    let except: string[] = this.options.except || [];
     Object.keys(optimizations).forEach(opt => {
-      // TODO using any here because of a typescript type resolution bug of some sort.
-      if (this.options.only && this.options.only.indexOf(<any>opt) === -1) {
-        return;
-      }
-      if (this.options.except && this.options.except.indexOf(<any>opt) >= 0) {
-        return;
-      }
+
+      // If optimization is excluded by the `only` or `except` options, skip it.
+      if ( (only.length && !only.includes(opt)) || (except.length && except.includes(opt)) ) { return; }
+
+      // If this optimization is included by config, add it and its initializers to our list.
       if (this.options[opt]) {
-        let Optimization = optimizations[opt];
-        let optimization = new Optimization(this.options, this.templateOptions);
+        let optimization = new optimizations[opt](this.options, this.templateOptions);
+        this.optimizations.add(optimization);
         for (let initializerName of optimization.initializers) {
-          if (!this.initializers.includes(initializerName)) {
-            this.initializers.push(initializerName);
-          }
+          this.initializers.add(initializerName);
         }
-        this.optimizations.push(optimization);
       }
     });
+    console.log(this.optimizations);
   }
 
+  /**
+   * Add another souce file to include in this optimization.
+   * @param {CssFile} CSS File to add
+   */
   addSource(file: CssFile) {
     this.sources.push(file);
   }
 
+  /**
+   * Add another TemplateAnalysis to use in this optimization.
+   * @param {TempalteAnalysis} TemplateAnalysis to use.
+   */
   addAnalysis(analysis: TemplateAnalysis<keyof TemplateTypes>) {
     this.analyses.push(analysis);
   }
 
-  private initialize(pass: OptimizationPass, files: Array<ParsedCssFile>) {
-    this.initializers.forEach(initializerName => {
-      initializers[initializerName](pass, this.analyses, files, this.options, this.templateOptions);
-    });
+  /**
+   * Utility method to save timing data.
+   * @param {name} Timing measurement name.
+   * @param {start} Timing measurement start.
+   * @param {end} Timing measurement end.
+   */
+  private logTiming(name: string, start: Date, end: Date) {
+    this.timings[name] = {
+      start: start.getUTCMilliseconds(),
+      end: end.getUTCMilliseconds()
+    };
   }
 
+  /**
+   * Parse all CSS files this optimizer is concerned with.
+   * @param {sources} All sources registered with this Optimizer.
+   * @returns {Promise<Array<ParsedCssFile>>} All files we're working on, now represented as postcss trees.
+   */
   private parseFiles(sources: Array<CssFile>): Promise<Array<ParsedCssFile>> {
+    let start = new Date();
     let promises = new Array<Promise<ParsedCssFile>>();
     for (let source of sources) {
       promises.push(parseCss(source));
     }
-    return Promise.all(promises);
+    return Promise.all(promises).then((res) => {
+      this.logTiming('parse', start, new Date);
+      return res;
+    });
   }
 
+  /**
+   * Run all opmitimizations' initializers.
+   * @param {pass} This optimization pass instance.
+   * @param {files} All files we're working on, parsed as postcss trees.
+   */
+  private initialize(pass: OptimizationPass, files: Array<ParsedCssFile>) {
+    let start = new Date();
+    this.initializers.forEach(initializerName => {
+      initializers[initializerName](pass, this.analyses, files, this.options, this.templateOptions);
+    });
+    this.logTiming('initialize', start, new Date);
+  }
+
+  /**
+   * Run all of this optimizer's optimizations.
+   * @param {pass} This optimization pass instance.
+   * @param {files} All files we're working on, parsed as postcss trees.
+   * @returns {Promise<Array<ParsedCssFile>>} All the files we're just transformed.
+   */
   private optimizeFiles(pass: OptimizationPass, files: Array<ParsedCssFile>): Promise<Array<ParsedCssFile>> {
-    for (let optimization of this.optimizations) {
+    let begin = new Date();
+    this.optimizations.forEach((optimization) => {
+      console.log(optimization);
       let start = new Date();
       if (isSingleFileOptimization(optimization)) {
         for (let file of files) {
@@ -132,13 +172,20 @@ export class Optimizer {
       if (isMultiFileOptimization(optimization)) {
         optimization.optimizeAllFiles(pass, this.analyses, files);
       }
-      let end = new Date();
-      this.timings[optimization.name] = end.getUTCMilliseconds() - start.getUTCMilliseconds();
-    }
+      this.logTiming(optimization.name, start, new Date);
+    });
+    this.logTiming('optimize', begin, new Date);
     return Promise.resolve(files);
   }
 
+  /**
+   * Concatenate all of this Optimizer's files into a single output.
+   * @param {files} All postcss ASTs we're working on.
+   * @param {outputFilename} The expected output's filename.
+   * @returns {Concat} The concatted file.
+   */
   private concatenateFiles(files: Array<ParsedCssFile>, outputFilename: string): Concat {
+    let start = new Date();
     let output = new Concat(true, outputFilename, "\n");
     for (let file of files) {
       let resultOpts = {
@@ -153,43 +200,68 @@ export class Optimizer {
       let result = file.content.root!.toResult(resultOpts);
       output.add(file.filename || "optimized.css", result.css, result.map.toJSON());
     }
+    this.logTiming('concatenate', start, new Date);
     return output;
   }
 
+  /**
+   * Main runner method for the Optimizer. After all Sources and Analyses are registered,
+   * calling this method executes all requested optimizations and returns an optimization result.
+   * @param {outputFilename} The output's filename.
+   * @returns {Promise<OptimizationResult>} The optimization result.
+   */
   optimize(outputFilename: string): Promise<OptimizationResult> {
     let pass = new OptimizationPass(this.templateOptions);
-    return this.parseFiles(this.sources).then(parsedFiles => {
-      this.initialize(pass, parsedFiles);
-      return parsedFiles;
-    }).then(files => {
+    let start = new Date();
+
+    // Parse all input files.
+    return this.parseFiles(this.sources)
+
+    // Run all initializers on parsed files.
+    .then(files => {
+      this.initialize(pass, files);
+      return files;
+    })
+
+    // Run all optimizers on parsed files.
+    .then(files => {
       return this.optimizeFiles(pass, files);
-    }).then((files) => {
+    })
+
+    // Concatenate all files and return optimization result.
+    .then((files) => {
       let output = this.concatenateFiles(files, outputFilename);
+      this.logTiming('total', start, new Date);
       return {
         output: {
+          filename: outputFilename,
           content: output.content.toString(),
-          sourceMap: output.sourceMap,
-          filename: outputFilename
+          sourceMap: output.sourceMap
         },
         styleMapping: pass.styleMapping,
         actions: pass.actions
       };
     });
+
   }
 }
 
+  /**
+   * Given a CssFile (contents represented as a string), return the ParsedCssFile (contents represented as a postcss AST.
+   * @param {file} Input CssFile.
+   * @returns {Promise<ParsedCssFile>} The ParsedCssFile.
+   */
 function parseCss(file: CssFile): Promise<ParsedCssFile> {
   if (typeof file.content === "string") {
     return new Promise<postcss.Result>((resolve, reject) => {
-      let sourceMapOptions = {
-        inline: false,
-        prev: file.sourceMap,
-        sourcesContent: true,
-        annotation: false
-      };
       let processOpts = {
         from: file.filename,
-        map: sourceMapOptions
+        map: {
+          inline: false,
+          prev: file.sourceMap,
+          sourcesContent: true,
+          annotation: false
+        }
       };
       postcss().process(file.content, processOpts).then(resolve, reject);
     }).then(result => {

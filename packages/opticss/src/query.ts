@@ -2,7 +2,7 @@ import postcss = require("postcss");
 import { parseSelector, ParsedSelector } from "./parseSelector";
 import { Element } from "@opticss/template-api";
 import { rejects, matches, ElementMatcher } from "./Match";
-import { walkRules } from "./optimizations/util";
+import { walkRules } from "./util/cssIntrospection";
 
 export interface SelectorQuery {
   execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors;

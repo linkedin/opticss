@@ -2,7 +2,7 @@ import * as postcss from 'postcss';
 import { Dictionary, MultiDictionary } from 'typescript-collections';
 
 import { ParsedSelector } from '../../parseSelector';
-import { RuleScope } from '../util';
+import { RuleScope } from '../../util/cssIntrospection';
 import { DeclarationInfo } from './StyleInfo';
 
 export class OptimizationContext {

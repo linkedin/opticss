@@ -9,10 +9,10 @@ import * as path from 'path';
 
 import {
   ChangeSelector,
-} from '../src/actions/ChangeSelector';
+} from '../src/Actions/ChangeSelector';
 import {
   RemoveRule,
-} from '../src/actions/RemoveRule';
+} from '../src/Actions/RemoveRule';
 import {
   OptimizationResult,
   Optimizer,

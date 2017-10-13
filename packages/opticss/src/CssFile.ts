@@ -1,6 +1,9 @@
 import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
+/**
+ * Represents a single CSS file and its associated meta-data.
+ */
 export interface CssFile {
   /**
    * A CSS file's contents. If this was previously processed with postcss, just
@@ -33,6 +36,11 @@ export interface ParsedCssFile {
   filename?: string;
 }
 
+/**
+ * Given a CssFile, return the source map.
+ * @param file CssFile
+ * @returns The RawSourceMap or source map string, if present.
+ */
 export function sourceMapFromCssFile(file: CssFile): RawSourceMap | string | undefined {
   let sourceMap: RawSourceMap | string | undefined = file.sourceMap;
   if (!sourceMap && (<postcss.Result>file.content).map) {

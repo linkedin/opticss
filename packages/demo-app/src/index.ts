@@ -103,7 +103,14 @@ export class DemoOptimizer {
         let out = prettier.format(String(result.output.content), { filepath: 'input.css' });
         cssOutEditor.setValue(out);
         let runner = new SimpleTemplateRunner(template);
-        let rewriter = new SimpleTemplateRewriter(result.styleMapping);
+        let rewriter = new SimpleTemplateRewriter(result.styleMapping, {
+          rewriteIdents: {
+            id: true,
+            class: true
+          },
+          analyzedAttributes: [],
+          analyzedTagnames: false
+        });
         let rewritten = '';
         let demo = '';
 
@@ -134,10 +141,7 @@ export class DemoOptimizer {
           terminal.innerHTML = '';
           terminal.appendChild(log);
 
-          let timingTotal = 0;
-          for (let key in optimizer.timings){
-            timingTotal += optimizer.timings[key];
-          }
+          let timingTotal = optimizer.timings.total.end - optimizer.timings.total.start;
 
           (document.getElementById('build-time-output') as HTMLElement).innerHTML = `${timingTotal}ms`;
           let sizes = [

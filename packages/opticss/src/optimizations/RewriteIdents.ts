@@ -2,8 +2,8 @@ import { MultiFileOptimization } from "./Optimization";
 import { ParsedCssFile } from "../CssFile";
 import { OptiCSSOptions } from "../OpticssOptions";
 import { TemplateAnalysis, TemplateTypes, TemplateIntegrationOptions, NormalizedRewriteOptions, rewriteOptions } from "@opticss/template-api";
-import { RuleIdents, RewriteRuleIdents } from "../actions/RewriteRuleIdents";
-import { eachFileIdent } from "./util";
+import { RuleIdents, RewriteRuleIdents } from "../Actions/RewriteRuleIdents";
+import { eachFileIdent } from "../util/cssIntrospection";
 import { OptimizationPass } from "../OptimizationPass";
 import { Initializers } from "../initializers";
 
@@ -17,8 +17,7 @@ export class RewriteIdents implements MultiFileOptimization {
   constructor(options: OptiCSSOptions, templateOptions: TemplateIntegrationOptions) {
     this.options = options;
     this.templateOptions = templateOptions;
-    this.rewriteOptions = rewriteOptions(options.rewriteIdents,
-                                         templateOptions.rewriteIdents);
+    this.rewriteOptions = rewriteOptions(options.rewriteIdents, templateOptions.rewriteIdents);
   }
   optimizeAllFiles(
     pass: OptimizationPass,

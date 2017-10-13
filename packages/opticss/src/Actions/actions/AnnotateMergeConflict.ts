@@ -1,10 +1,10 @@
 import {
   ParsedSelector,
-} from '../parseSelector';
+} from '../../parseSelector';
 import * as postcss from 'postcss';
-import { Action } from "./Action";
+import { Action } from "../Action";
 import { Element, SourcePosition } from "@opticss/template-api";
-import { Optimizations } from "../OpticssOptions";
+import { Optimizations } from "../../OpticssOptions";
 
 /**
  * Changes a Rule's selector string.

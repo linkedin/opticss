@@ -1,6 +1,6 @@
 import { StyleMapping, TemplateIntegrationOptions } from "@opticss/template-api";
 import { SelectorCache } from "./query";
-import { Actions } from "./Actions";
+import Actions from "./Actions";
 import { IdentGenerators } from "./util/IdentGenerator";
 
 export class OptimizationPass {

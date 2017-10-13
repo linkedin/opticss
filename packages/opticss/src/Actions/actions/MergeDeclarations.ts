@@ -3,10 +3,10 @@ import * as selectorParser from 'postcss-selector-parser';
 
 import {
   Optimizations,
-} from '../OpticssOptions';
+} from '../../OpticssOptions';
 import {
   OptimizationPass,
-} from '../OptimizationPass';
+} from '../../OptimizationPass';
 import {
   CompoundSelector,
   isClass,
@@ -17,11 +17,11 @@ import {
   isTag,
   isPseudo,
   isPseudoelement,
-} from '../parseSelector';
+} from '../../parseSelector';
 import {
   ParsedSelectorAndRule,
   SelectorCache,
-} from '../query';
+} from '../../query';
 import {
   TemplateIntegrationOptions,
   SourcePosition,
@@ -32,13 +32,13 @@ import {
 } from '@opticss/template-api';
 import {
   isAtRule
-} from '../optimizations/util';
+} from '../../util/cssIntrospection';
 import {
   IdentGenerators,
-} from '../util/IdentGenerator';
+} from '../../util/IdentGenerator';
 import {
   MultiAction,
-} from './Action';
+} from '../Action';
 
 const REWRITEABLE_ATTR_OPS = ["=", "~=", undefined];
 
@@ -121,7 +121,7 @@ export class MergeDeclarations extends MultiAction {
     let sourceAttributes = new Array<ElementAttributes>();
     for (let declInfo of this.declInfos) {
       let sel: CompoundSelector = declInfo.selector.key;
-      let inputs = inputsFromSelector(this.templateOptions, sel);
+      let inputs = MergeDeclarations.inputsFromSelector(this.templateOptions, sel);
       if (!inputs) {
         throw new Error("internal error");
       }
@@ -178,52 +178,52 @@ export class MergeDeclarations extends MultiAction {
     return this.nodeSourcePosition(this.declInfos[0].decl);
   }
 
+  /**
+   * Returns the concrete html traits that the selector would match
+   * or undefined if html traits aren't deducible from the selector.
+   */
+  static inputsFromSelector(templateOptions: TemplateIntegrationOptions, sel: CompoundSelector): Array<ElementTagname | ElementAttribute> | undefined {
+    let inputs = new Array<ElementTagname | ElementAttribute>();
+    for (let node of sel.nodes) {
+      if (isTag(node)) {
+        if (templateOptions.analyzedTagnames) {
+          inputs.push({ tagname: node.value });
+        } else {
+          return undefined;
+        }
+      } else if (isClass(node)) {
+        if (templateOptions.analyzedAttributes.includes("class")) {
+          inputs.push({ name: "class", value: node.value });
+        } else {
+          return undefined;
+        }
+      } else if (isIdentifier(node)) {
+        if (templateOptions.analyzedAttributes.includes("id")) {
+          inputs.push({ name: "id", value: node.value });
+        } else {
+          return undefined;
+        }
+      } else if (isAttribute(node)) {
+        if (REWRITEABLE_ATTR_OPS.includes(node.operator)
+          && isAttributeAnalyzed(templateOptions, node)) {
+          inputs.push({ name: node.attribute, value: node.value || "" });
+        } else {
+          return undefined;
+        }
+      } else if (isPseudo(node) || isPseudoelement(node)) {
+        // pass
+      } else {
+        return undefined;
+      }
+    }
+    return inputs;
+  }
+
 }
 
 function isAttributeAnalyzed(templateOptions: TemplateIntegrationOptions, node: selectorParser.Attribute): boolean {
   if (node.ns) return false;
   return templateOptions.analyzedAttributes.includes(node.attribute);
-}
-
-  /**
-   * Returns the concrete html traits that the selector would match
-   * or undefined if html traits aren't deducible from the selector.
-   */
-export function inputsFromSelector(templateOptions: TemplateIntegrationOptions, sel: CompoundSelector): Array<ElementTagname | ElementAttribute> | undefined {
-  let inputs = new Array<ElementTagname | ElementAttribute>();
-  for (let node of sel.nodes) {
-    if (isTag(node)) {
-      if (templateOptions.analyzedTagnames) {
-        inputs.push({ tagname: node.value });
-      } else {
-        return undefined;
-      }
-    } else if (isClass(node)) {
-      if (templateOptions.analyzedAttributes.includes("class")) {
-        inputs.push({ name: "class", value: node.value });
-      } else {
-        return undefined;
-      }
-    } else if (isIdentifier(node)) {
-      if (templateOptions.analyzedAttributes.includes("id")) {
-        inputs.push({ name: "id", value: node.value });
-      } else {
-        return undefined;
-      }
-    } else if (isAttribute(node)) {
-      if (REWRITEABLE_ATTR_OPS.includes(node.operator)
-        && isAttributeAnalyzed(templateOptions, node)) {
-        inputs.push({ name: node.attribute, value: node.value || "" });
-      } else {
-        return undefined;
-      }
-    } else if (isPseudo(node) || isPseudoelement(node)) {
-      // pass
-    } else {
-      return undefined;
-    }
-  }
-  return inputs;
 }
 
 function hasMeaningfulChildren(container: postcss.Container | undefined) {

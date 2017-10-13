@@ -1,6 +1,6 @@
 import {
   MarkAttributeValueObsolete,
-} from '../../actions/MarkAttributeValueObsolete';
+} from '../../Actions/MarkAttributeValueObsolete';
 import {
   allParsedSelectors,
   ParsedSelectorAndRule,
@@ -42,13 +42,6 @@ import * as postcss from 'postcss';
 import {
   inspect,
 } from 'util';
-
-import {
-  ExpandShorthand,
-} from '../../actions/ExpandShorthand';
-import {
-  MergeDeclarations as MergeDeclarationsAction, inputsFromSelector,
-} from '../../actions/MergeDeclarations';
 import {
   ParsedCssFile,
 } from '../../CssFile';
@@ -73,8 +66,11 @@ import {
 import {
   DeclarationInfo,
 } from './StyleInfo';
-import { Actions } from '../../Actions';
-import { AnnotateMergeConflict } from '../../actions/AnnotateMergeConflict';
+import Actions, {
+  AnnotateMergeConflict,
+  ExpandShorthand,
+  MergeDeclarations as MergeDeclarationsAction
+} from '../../Actions';
 import { matchToBool, matches, AttributeMatcher } from '../../Match';
 
 const attrMatcher = AttributeMatcher.instance;
@@ -135,7 +131,7 @@ export class MergeDeclarations implements MultiFileOptimization {
     let parsedSelectors = pass.cache.getParsedSelectors(rule);
     for (let sel of parsedSelectors) {
       let kSel = sel.key;
-      if (!inputsFromSelector(options, kSel)) {
+      if (!MergeDeclarationsAction.inputsFromSelector(options, kSel)) {
         return false;
       }
     }

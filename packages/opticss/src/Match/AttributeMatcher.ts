@@ -1,12 +1,6 @@
 import {
   Attr,
-  Element,
   HasSelectorNodes,
-  Selectable,
-  Tag,
-  Attribute,
-  AttributeNS,
-  ElementInfo,
   AttributeValue,
   isAbsent,
   isUnknown,
@@ -17,140 +11,28 @@ import {
   isStartsAndEndsWith,
   isSet,
   isChoice,
-  isTagChoice,
 } from '@opticss/template-api';
 import { inspect } from "util";
 import { Memoize } from 'typescript-memoize';
 import * as SelectorParser from 'postcss-selector-parser';
-import { ParsedSelector } from "./parseSelector";
-
 import { assertNever } from "@opticss/util";
 
-export enum Match {
-  /**
-   * The element will definitively match the selector or selector component in
-   * at least dynamic one state.
-   */
-  yes = 1,
-  /**
-   * The element may match the selector or selector component; information is
-   * ambiguous.
-   */
-  maybe,
-  /** The element will not match the selector or selector component. */
-  no,
-  /**
-   * The element is unrelated to the selector or selector component and no
-   * information about whether the element matches can be determined.
-   */
-  pass
-}
+import { Match, boolToMatch, matches } from "./Match";
+import { Matcher } from "./Matcher";
 
-/**
- * true => Match.yes
- * false => Match.no
- * null => Match.pass
- * undefined => Match.maybe
- */
-export function boolToMatch(value: boolean | null | undefined): Match {
-  if (value === true) {
-    return Match.yes;
-  } else if (value === false) {
-    return Match.no;
-  } else if (value === undefined) {
-    return Match.maybe;
+export function isAttrNode(node: SelectorParser.Node): node is SelectorParser.Attribute {
+  if (node.type === SelectorParser.ATTRIBUTE) {
+    return true;
   } else {
-    return Match.pass;
+    return false;
   }
 }
 
-export interface Matcher {
-  matchSelector(selectable: Selectable, selector: ParsedSelector, keySelectorOnly: boolean): Match;
-  matchSelectorComponent(selectable: Selectable, selector: HasSelectorNodes): Match;
-  matchSelectorNode(selectable: Selectable, node: SelectorParser.Node): Match;
-}
-
-export class ElementMatcher implements Matcher {
-  private constructor() { }
-  private static _instance = new ElementMatcher();
-  public static get instance() {
-    return ElementMatcher._instance;
-  }
-
-  matchSelector(element: Element, selector: ParsedSelector, keySelectorOnly: boolean): Match {
-    return matchSelectorImpl(this, element, selector, keySelectorOnly);
-  }
-
-  matchSelectorComponent(element: Element, selector: HasSelectorNodes): Match {
-    let maybe = false;
-    for (let i = 0; i < selector.nodes.length; i++) {
-      let match = this.matchSelectorNode(element, selector.nodes[i]);
-      if (match === Match.no) {
-        return match;
-      } else if (match === Match.maybe) {
-        maybe = true;
-      }
-    }
-    if (maybe) {
-      return Match.maybe;
-    } else {
-      return Match.yes;
-    }
-  }
-  matchSelectorNode(element: Element, node: SelectorParser.Node): Match {
-    switch(node.type) {
-      case "comment":  // never matters
-      case "string":   // only used as a child of other selector nodes.
-      case "selector": // only used as a child of other selector nodes.
-        return Match.pass;
-      case "root":
-      case "nesting":
-      case "combinator":
-        // This is indicative of some sort of programming error.
-        throw new Error(`[Internal Error] Illegal selector node: ${inspect(node)}`);
-      case "pseudo":
-        let pseudo = <SelectorParser.Pseudo>node;
-        if (pseudo.value === ":not") {
-          let negSelector = pseudo.nodes[0];
-          if (isSelector(negSelector)) {
-            return negate(this.matchSelectorComponent(element, negSelector));
-          }
-        }
-        // falls through on purpose
-        // most pseudos are equivalent to the universal selector
-      case "universal":
-        return Match.yes;
-      case "class":
-      case "id":
-        let idOrClass = attr(element, node.type);
-        if (idOrClass) {
-          return AttributeMatcher.instance.matchSelectorNode(idOrClass, node);
-        } else {
-          return Match.no;
-        }
-      case "tag":
-        return TagMatcher.instance.matchSelectorNode(element.tagname, node) ;
-      case "attribute":
-        let anAttr = attr(element, (<SelectorParser.Attribute>node).attribute);
-        if (anAttr) {
-          return AttributeMatcher.instance.matchSelectorNode(anAttr, node);
-        } else {
-          return Match.no;
-        }
-      default:
-        return assertNever(node);
-    }
-  }
-}
-
-export class AttributeMatcher implements Matcher {
-  private constructor() { }
+export class AttributeMatcher extends Matcher<Attr> {
+  private constructor() { super(); }
   private static _instance = new AttributeMatcher();
   public static get instance() {
     return AttributeMatcher._instance;
-  }
-  matchSelector(attr: Attr, selector: ParsedSelector, keySelectorOnly: boolean): Match {
-    return matchSelectorImpl(this, attr, selector, keySelectorOnly);
   }
 
   matchSelectorComponent(attr: Attr, selector: HasSelectorNodes): Match {
@@ -158,7 +40,7 @@ export class AttributeMatcher implements Matcher {
     let maybe = false;
     selector.nodes.forEach(node => {
       let match = this.matchSelectorNode(attr, node);
-      switch(match) {
+      switch (match) {
         case Match.no:
           no = true;
           break;
@@ -182,7 +64,7 @@ export class AttributeMatcher implements Matcher {
   }
 
   matchSelectorNode(attr: Attr, node: SelectorParser.Node): Match {
-    switch(node.type) {
+    switch (node.type) {
       case "string":
       case "selector":
       case "root":
@@ -248,7 +130,7 @@ export class AttributeMatcher implements Matcher {
       return boolToMatch(identifier.endsWith(value.endsWith));
     } else if (isStartsAndEndsWith(value)) {
       return boolToMatch(identifier.startsWith(value.startsWith) &&
-                         identifier.endsWith(value.endsWith));
+        identifier.endsWith(value.endsWith));
     } else if (isSet(value)) {
       // This is a tricky case. There really shouldn't be an `allOf` used
       // for an identifier match. In theory a regex could be constructed?
@@ -360,129 +242,5 @@ export class AttributeMatcher implements Matcher {
     } else {
       return assertNever(condition);
     }
-  }
-}
-
-export class TagMatcher implements Matcher {
-  private constructor() { }
-  private static _instance = new TagMatcher();
-  public static get instance() {
-    return TagMatcher._instance;
-  }
-  matchSelector(tag: Tag, selector: ParsedSelector, keySelectorOnly: boolean): Match {
-    return matchSelectorImpl(this, tag, selector, keySelectorOnly);
-  }
-  matchSelectorNode(tag: Tag, node: SelectorParser.Node): Match {
-    if (isTag(node)) {
-      if (isConstant(tag.value)) {
-        return boolToMatch(node.value === tag.value.constant);
-      } else if (isTagChoice(tag.value)) {
-        return boolToMatch(tag.value.oneOf.some(v => v === node.value));
-      } else if (isUnknown(tag.value)) {
-        return Match.maybe;
-      } else {
-        return assertNever(<never>node);
-      }
-    } else {
-      return Match.pass;
-    }
-  }
-
-  matchSelectorComponent(tag: Tag, selector: HasSelectorNodes): Match {
-    let tagNode = this.getTag(selector);
-    if (tagNode) {
-      return this.matchSelectorNode(tag, tagNode);
-    } else {
-      return Match.pass;
-    }
-  }
-
-  private getTag(selector: HasSelectorNodes): SelectorParser.Tag | undefined {
-    let node = selector.nodes.find((node) => isTag(node));
-    if (node) {
-      return node as SelectorParser.Tag;
-    } else {
-      return undefined;
-    }
-  }
-
-}
-
-export function matchToBool(match: Match): boolean | null | undefined {
-  switch(match) {
-    case Match.yes:
-      return true;
-    case Match.no:
-      return false;
-    case Match.maybe:
-      return undefined;
-    case Match.pass:
-      return null;
-    default:
-      return assertNever(match);
-  }
-}
-
-export function matches(m: Match): boolean {
-  return m === Match.yes || m === Match.maybe;
-}
-
-export function rejects(m: Match): boolean {
-  return m === Match.no;
-}
-
-export function negate(m: Match): Match {
-  if (matches(m)) {
-    return Match.no;
-  } else if (rejects(m)) {
-    return Match.yes;
-  } else {
-    return m;
-  }
-}
-
-/**
- * @param [keySelectorOnly=true] When false, this selector can match against
- *   any compound selector in the parsed selector.
- */
-function matchSelectorImpl(matcher: Matcher, selectable: Selectable, parsedSelector: ParsedSelector, keySelectorOnly = true): Match {
-  let matched = parsedSelector.eachCompoundSelector((selector) => {
-    if (selector !== parsedSelector.key && keySelectorOnly) return;
-    let match = matcher.matchSelectorComponent(selectable, selector);
-    if (matches(match)) return match;
-    return;
-  });
-  return matched || Match.no;
-}
-
-function attr(element: ElementInfo, name: string, namespaceURL: string | null = null): Attribute | AttributeNS | undefined {
-  let attr = element.attributes.find(attr => {
-    return attr.name === name &&
-           attr.namespaceURL === namespaceURL;
-  });
-  return attr;
-}
-
-function isAttrNode(node: SelectorParser.Node): node is SelectorParser.Attribute {
-  if (node.type === SelectorParser.ATTRIBUTE) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function isTag(tag: {type: string} | undefined): tag is SelectorParser.Tag {
-  if (tag) {
-    return tag.type === SelectorParser.TAG;
-  } else {
-    return false;
-  }
-}
-
-function isSelector(node: {type: string} | undefined): node is SelectorParser.Selector {
-  if (node) {
-    return node.type === SelectorParser.SELECTOR;
-  } else {
-    return false;
   }
 }

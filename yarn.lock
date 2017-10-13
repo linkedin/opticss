@@ -2097,7 +2097,7 @@ domutils@1.5.1:
     dom-serializer "0"
     domelementtype "1"
 
-domutils@^1.5.1:
+domutils@^1.5.1, domutils@^1.6.2:
   version "1.6.2"
   resolved "https://registry.yarnpkg.com/domutils/-/domutils-1.6.2.tgz#1958cc0b4c9426e9ed367fb1c8e854891b0fa3ff"
   dependencies:
@@ -3194,16 +3194,6 @@ ini@^1.3.2, ini@~1.3.0:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.4.tgz#0537cb79daf59b59a1a517dff706c86ec039162e"
 
-inline-source-map-comment@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/inline-source-map-comment/-/inline-source-map-comment-1.0.5.tgz#50a8a44c2a790dfac441b5c94eccd5462635faf6"
-  dependencies:
-    chalk "^1.0.0"
-    get-stdin "^4.0.1"
-    minimist "^1.1.1"
-    sum-up "^1.0.1"
-    xtend "^4.0.0"
-
 inline-source-map@~0.6.0:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/inline-source-map/-/inline-source-map-0.6.2.tgz#f9393471c18a79d1724f863fa38b586370ade2a5"
@@ -4082,7 +4072,7 @@ minimist@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.1.0.tgz#99df657a52574c21c9057497df742790b2b4c0de"
 
-minimist@^1.1.0, minimist@^1.1.1, minimist@^1.1.3, minimist@^1.2.0, minimist@~1.2.0:
+minimist@^1.1.0, minimist@^1.1.3, minimist@^1.2.0, minimist@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"
 
@@ -5797,12 +5787,6 @@ subarg@^1.0.0:
   resolved "https://registry.yarnpkg.com/subarg/-/subarg-1.0.0.tgz#f62cf17581e996b48fc965699f54c06ae268b8d2"
   dependencies:
     minimist "^1.1.0"
-
-sum-up@^1.0.1:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/sum-up/-/sum-up-1.0.3.tgz#1c661f667057f63bcb7875aa1438bc162525156e"
-  dependencies:
-    chalk "^1.0.0"
 
 supports-color@3.1.2:
   version "3.1.2"

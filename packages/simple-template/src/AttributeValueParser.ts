@@ -2,6 +2,11 @@ import { AttributeValue } from "@opticss/template-api";
 import * as nearley from "nearley";
 const grammar = require("./grammar/attrvalue");
 
+// All attributes that are considered plaintext and cannot contain expressions.
+const TEXT_ATTRIBUTES = {
+  "title": 1, "media": 1, "content": 1, "style": 1
+};
+
 export class AttributeValueParser {
   plainHtml: boolean;
   constructor(plainHtml: boolean) {
@@ -9,25 +14,27 @@ export class AttributeValueParser {
     this.plainHtml = plainHtml;
   }
   parse(attrNamespace: string | null | undefined, attrName: string, value: string): AttributeValue {
+
+    // Attributes are whitespace delimited if they are `class` attributes with now namespace.
     let whitespaceDelimited = attrName === "class" && !attrNamespace;
-    if (attrName.match(/^on/) || value.startsWith("javascript:")) { // it's script -- ignore
-      return {absent: true};
-    } else if (isTextAttribute(attrNamespace, attrName, value)) { // it's text. return constant.
-      return {constant: value};
+
+    // If begins with `javascript:`, or is an `onEvent` attr, it's script -- ignore
+    if ( attrName.match(/^on/) || value.startsWith("javascript:") ) {
+      return { absent: true };
     }
-    if (!whitespaceDelimited && this.plainHtml) {
-      return {constant: value};
+
+    // If it's a plain text attribute, or is a non-whitespace delimited attr in
+    // an HTML document, return the constant value.
+    if ( TEXT_ATTRIBUTES[attrName] || (!whitespaceDelimited && this.plainHtml) ) {
+      return { constant: value };
     }
-    let startProduction = whitespaceDelimited ? "whitespaceDelimitedAttribute" : "attribute";
+
+    // Parse the grammar, return AttributeValue object.
     let grammarObj = nearley.Grammar.fromCompiled(<any>grammar);
-    (<any>grammarObj).start = startProduction; // because this api is stupid.
+    (<any>grammarObj).start = whitespaceDelimited ? "whitespaceDelimitedAttribute" : "attribute"; // because this api is stupid.
     let parser = new nearley.Parser(grammarObj);
     parser.feed(value);
     let res = parser.finish();
     return res[0];
   }
-}
-
-function isTextAttribute(_attrNamespace: string | null | undefined, attrName: string, _value: string): boolean {
-  return ["title", "media", "content", "style"].indexOf(attrName) !== -1;
 }

@@ -10,7 +10,7 @@ import {
   expandIfNecessary,
   expandPropertyName,
 } from '../../util/shorthandProperties';
-import { walkRules } from '../util';
+import { walkRules } from '../../util/cssIntrospection';
 import { SelectorInfo, DeclarationInfo } from './StyleInfo';
 import { OptimizationContexts } from './OptimizationContext';
 import { matches,  ElementMatcher} from "../../Match";

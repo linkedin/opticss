@@ -8,7 +8,12 @@
       "@types/debug",
       "@types/mocha",
       "@types/source-map"
-    ]
+    ],
+    "paths": {
+      "concat-with-sourcemaps": [
+        "../types-local/concat-with-sourcemaps"
+      ]
+    }
   },
   "include": [
     "src",
