@@ -1,7 +1,6 @@
-import {
-  ParsedSelector,
-} from '../../parseSelector';
 import * as postcss from 'postcss';
+
+import { ParsedSelector } from '../../parseSelector';
 import { Action } from "../Action";
 import { Element, SourcePosition } from "@opticss/template-api";
 import { Optimizations } from "../../OpticssOptions";

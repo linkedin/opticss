@@ -1,6 +1,4 @@
-import {
-  MarkAttributeValueObsolete,
-} from '../../Actions/MarkAttributeValueObsolete';
+import { MarkAttributeValueObsolete } from '../../Actions';
 import {
   allParsedSelectors,
   ParsedSelectorAndRule,

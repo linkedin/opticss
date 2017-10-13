@@ -91,7 +91,6 @@ export class Optimizer {
         }
       }
     });
-    console.log(this.optimizations);
   }
 
   /**
@@ -162,7 +161,6 @@ export class Optimizer {
   private optimizeFiles(pass: OptimizationPass, files: Array<ParsedCssFile>): Promise<Array<ParsedCssFile>> {
     let begin = new Date();
     this.optimizations.forEach((optimization) => {
-      console.log(optimization);
       let start = new Date();
       if (isSingleFileOptimization(optimization)) {
         for (let file of files) {

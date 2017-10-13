@@ -1,30 +1,13 @@
-import {
-  assert,
-} from 'chai';
-import {
-  suite,
-  test,
-} from 'mocha-typescript';
 import * as path from 'path';
 
-import {
-  ChangeSelector,
-} from '../src/Actions/ChangeSelector';
-import {
-  RemoveRule,
-} from '../src/Actions/RemoveRule';
-import {
-  OptimizationResult,
-  Optimizer,
-} from '../src/Optimizer';
-import {
-  TemplateAnalysis,
-} from '@opticss/template-api';
+import { assert } from 'chai';
+import { suite, test } from 'mocha-typescript';
+import { TemplateAnalysis } from '@opticss/template-api';
+import { SimpleAnalyzer, TestTemplate } from '@opticss/simple-template';
+
+import { ChangeSelector, RemoveRule } from '../src/Actions';
+import { OptimizationResult, Optimizer } from '../src/Optimizer';
 import clean from './util/clean';
-import {
-  SimpleAnalyzer,
-  TestTemplate,
-} from '@opticss/simple-template';
 
 function testRemoveUnusedStyles(stylesAndTemplates: Array<string | TestTemplate>, expectedOutput: string): Promise<OptimizationResult> {
   let optimizer = new Optimizer({

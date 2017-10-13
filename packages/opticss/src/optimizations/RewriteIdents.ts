@@ -2,7 +2,7 @@ import { MultiFileOptimization } from "./Optimization";
 import { ParsedCssFile } from "../CssFile";
 import { OptiCSSOptions } from "../OpticssOptions";
 import { TemplateAnalysis, TemplateTypes, TemplateIntegrationOptions, NormalizedRewriteOptions, rewriteOptions } from "@opticss/template-api";
-import { RuleIdents, RewriteRuleIdents } from "../Actions/RewriteRuleIdents";
+import { RuleIdents, RewriteRuleIdents } from "../Actions/actions/RewriteRuleIdents";
 import { eachFileIdent } from "../util/cssIntrospection";
 import { OptimizationPass } from "../OptimizationPass";
 import { Initializers } from "../initializers";

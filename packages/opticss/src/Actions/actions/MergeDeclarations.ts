@@ -1,12 +1,19 @@
 import * as postcss from 'postcss';
 import * as selectorParser from 'postcss-selector-parser';
+import {
+  TemplateIntegrationOptions,
+  SourcePosition,
+  ElementAttributes,
+  SimpleAttribute as ElementAttribute,
+  SimpleTagname as ElementTagname,
+  StyleMapping,
+} from '@opticss/template-api';
 
-import {
-  Optimizations,
-} from '../../OpticssOptions';
-import {
-  OptimizationPass,
-} from '../../OptimizationPass';
+import { Optimizations } from '../../OpticssOptions';
+import { OptimizationPass } from '../../OptimizationPass';
+import { isAtRule } from '../../util/cssIntrospection';
+import { IdentGenerators } from '../../util/IdentGenerator';
+import { MultiAction } from '../Action';
 import {
   CompoundSelector,
   isClass,
@@ -22,23 +29,6 @@ import {
   ParsedSelectorAndRule,
   SelectorCache,
 } from '../../query';
-import {
-  TemplateIntegrationOptions,
-  SourcePosition,
-  ElementAttributes,
-  SimpleAttribute as ElementAttribute,
-  SimpleTagname as ElementTagname,
-  StyleMapping,
-} from '@opticss/template-api';
-import {
-  isAtRule
-} from '../../util/cssIntrospection';
-import {
-  IdentGenerators,
-} from '../../util/IdentGenerator';
-import {
-  MultiAction,
-} from '../Action';
 
 const REWRITEABLE_ATTR_OPS = ["=", "~=", undefined];
 
