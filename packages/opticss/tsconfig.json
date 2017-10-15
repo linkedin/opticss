@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": "dist",
+    "types": [
+      "@types/chai",
+      "@types/debug",
+      "@types/mocha",
+      "@types/source-map"
+    ],
+    "paths": {
+      "concat-with-sourcemaps": [
+        "../types-local/concat-with-sourcemaps"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}

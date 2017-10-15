@@ -1,0 +1,40 @@
+{
+  "name": "@opticss/util",
+  "version": "0.1.0",
+  "description": "Utility library for misc shared code for @opticss packages.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "compile": "rm -rf dist && tsc",
+    "pretest": "yarn run compile && tslint --project tsconfig.json --type-check",
+    "prepublish": "rm -rf dist && tsc",
+    "tslint": "tslint --project tsconfig.json",
+    "test": "mocha dist/test --opts test/mocha.opts",
+    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "typedoc --out ./docs ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/css-blocks/opticss.git"
+  },
+  "keywords": [
+    "css",
+    "cascade"
+  ],
+  "author": "Chris Eppstein",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/css-blocks/opticss/issues"
+  },
+  "homepage": "https://github.com/css-blocks/opticss#readme",
+  "dependencies": {
+    "typescript-collections": "^1.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.26",
+    "mocha": "^3.4.2",
+    "mocha-typescript": "^1.1.9",
+    "tslint": "^5.1.0"
+  }
+}
