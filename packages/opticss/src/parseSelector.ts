@@ -15,6 +15,25 @@ export function isPseudoelement(node: selectorParser.Node | undefined): node is 
     );
 }
 
+const NODE_TYPES = new Set([
+  selectorParser.TAG,
+  selectorParser.STRING,
+  selectorParser.SELECTOR,
+  selectorParser.ROOT,
+  selectorParser.PSEUDO,
+  selectorParser.NESTING,
+  selectorParser.ID,
+  selectorParser.COMMENT,
+  selectorParser.COMBINATOR,
+  selectorParser.CLASS,
+  selectorParser.ATTRIBUTE,
+  selectorParser.UNIVERSAL]
+);
+
+export function isNode(node: any): node is selectorParser.Node {
+  return (typeof node === "object" && NODE_TYPES.has(node.type));
+}
+
 export function isPseudo(node: selectorParser.Node | undefined): node is selectorParser.Pseudo {
   return !!node && node.type === selectorParser.PSEUDO;
 }
@@ -41,6 +60,10 @@ export function isUniversal(node: selectorParser.Node | undefined): node is sele
 
 export function isTag(node: selectorParser.Node | undefined): node is selectorParser.Universal {
   return !!node && node.type === selectorParser.TAG;
+}
+
+export function isRoot(node: selectorParser.Node | undefined): node is selectorParser.Root {
+  return !!node && node.type === selectorParser.ROOT;
 }
 
 export interface CombinatorAndSelector<SelectorType> {
@@ -243,13 +266,18 @@ function isContainer(
  * list and provides a number of convenience methods for interacting with it.
  */
 export class ParsedSelector {
+  /**
+   * The raw string the selector was parsed from, if any.
+   */
+  source: string | undefined;
   private _key: CompoundSelector | undefined;
   selector: CompoundSelector;
 
   /**
    * @param Root `CompoundSelector` of linked list to track.
    */
-  constructor(selector: CompoundSelector) {
+  constructor(selector: CompoundSelector, source?: string) {
+    this.source = source;
     this.selector = selector;
   }
 
@@ -484,6 +512,17 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
  * @return Array of `ParsedSelector` objects.
  */
 export function parseSelector(selector: Selectorish): ParsedSelector[] {
+  let source: string | undefined = undefined;
+  if (typeof selector === "string") {
+    let parsedSelectors = new Array<ParsedSelector>();
+    for (let source of selector.split(",")) {
+      let compoundSelector = parseCompoundSelectors(source)[0];
+      parsedSelectors.push(new ParsedSelector(compoundSelector, source));
+    }
+    return parsedSelectors;
+  } else if (isNode(selector) && isRoot(selector)) {
+    source = selector.toString();
+  }
   let compoundSelectors = parseCompoundSelectors(selector);
-  return compoundSelectors.map(cs => new ParsedSelector(cs));
+  return compoundSelectors.map(cs => new ParsedSelector(cs, source));
 }
