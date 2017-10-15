@@ -17,8 +17,8 @@ function _walkRulesWithScope(container: postcss.Container, eachRule: RuleIterato
     if (isRule(node)) {
       eachRule(node, scope);
     } else if (isAtRule(node)) {
-      if (node.name.includes("keyframes")) {
-        // skip it, keyframe stops aren't optimizable.
+      if (node.name.includes("keyframes") || node.name.includes("font-face")) {
+        // skip it, keyframe and font-face at-rules aren't optimizable.
       } else {
         _walkRulesWithScope(node, eachRule, scope.concat(node));
       }

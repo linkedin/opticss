@@ -14,7 +14,7 @@ export interface SelectorInfo {
   scope: RuleScope;
   /** The selector parsed into compound selectors */
   selector: ParsedSelector;
-  container: postcss.Node;
+  container: postcss.Container;
   /** The specificity of this selector */
   specificity: specificity.Specificity;
   /** The file this selector came from */
@@ -59,10 +59,21 @@ export interface DeclarationInfo {
   important: boolean;
   /**
    * A single number that can be compared with another DeclarationInfo
+   * to understand which one came first in the document source order.
+   * Smaller numbers are closer to the start of the file.
+   */
+  sourceOrdinal: number;
+  /** the original source ordinal value before the declaration was moved. */
+  originalSourceOrdinal: number;
+  /**
+   * A single number that can be compared with another DeclarationInfo
    * to understand which one wins if both are applied on the same element.
    * Bigger numbers win.
    */
   ordinal: number;
+  /** the original ordinal value before the declaration was moved. */
+  originalOrdinal: number;
+  /** How many declarations this one can be merged with. */
   dupeCount: number;
   /** whether this decl has been expanded yet. */
   expanded: boolean;

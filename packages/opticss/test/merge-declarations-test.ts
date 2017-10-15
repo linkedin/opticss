@@ -290,21 +290,18 @@ export class MergeDeclarationsTest {
   `);
     return testMergeDeclarations(css1, template).then(result => {
       debugResult(css1, result);
-      assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
-        <body><div class="a d b"></div>
-        <div class="c d"></div></body>
-      `);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
         clean`
           .d { color: red; }
           @media (min-device-width: 500px) {
-            .a { color: blue; }
-          }
-          @media (min-device-width: 500px) {
-            .c { color: blue; }
+            .e { color: blue; }
           }
         `);
+      assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
+        <body><div class="d e b"></div>
+        <div class="d e"></div></body>
+      `);
       // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
     });
   }
@@ -733,6 +730,296 @@ export class MergeDeclarationsTest {
         `);
     }).catch((e) => {
       debugError(css1, e);
+      throw e;
+    });
+  }
+  @test "flex test"() {
+    let css1 = clean`
+    .a.b {
+        flex: 0 1 auto;
+    }
+    .d {
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+    .c.d {
+      flex: 0 1 auto;
+    }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="a b">
+    <div class="c d">
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a.b {
+            flex: 0 1 auto;
+          }
+          .d {
+           display: inline-block;
+           flex: 0 0 auto;
+          }
+          .c.d {
+           flex: 0 1 auto;
+          }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a b">
+          <div class="c d"></div></div></body>
+        `);
+    }).catch((e) => {
+      debugError(css1, e);
+      throw e;
+    });
+  }
+  // TODO: should this merge `.bar` with `.red` and remove the `.bar` selector
+  // from the shared rule set?
+  @test "handles rules with multiple selectors where only one can be merged"() {
+    let css1 = clean`
+    .scope .foo, .bar { color: red; }
+    .red { color: red; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="bar"></div>
+    <div class="scope"><div class="foo"></div></div>
+    <div class="red"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .scope .foo, .bar { color: red; }
+          .red { color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="bar"></div>
+          <div class="scope"><div class="foo"></div></div>
+          <div class="red"></div></body>
+        `);
+    }).catch((e) => {
+      debugError(css1, e);
+      throw e;
+    });
+  }
+  @test "handles shorthand with longhand override"() {
+    // must ensure that the order of progressive enhancement declarations
+    // is preserved.
+    let css = clean`
+      .duplicate-override {
+        border-top-color: #ccc;
+      }
+      .duplicate-shorthand {
+        border-top: 1px solid red;
+      }
+      .duplicate-longhand {
+        border-top-color: red;
+      }
+      .has-override {
+        /* progressive enhancement */
+        border-top: 1px solid red;
+        border-top-color: #ccc;
+      }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="duplicate-override"></div>
+      <div class="duplicate-shorthand"></div>
+      <div class="duplicate-longhand"></div>
+      <div class="has-override"></div>
+    `);
+    return testMergeDeclarations(css, template).then(result => {
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .duplicate-override {
+            border-top-color: #ccc;
+          }
+          .a { border-top-color: red; }
+          .b { border-top-width: 1px; }
+          .c { border-top-style: solid; }
+          .has-override {
+            /* progressive enhancement */
+            border-top-color: #ccc;
+          }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="duplicate-override"></div>
+          <div class="a b c"></div>
+          <div class="a"></div>
+          <div class="has-override a b c"></div></body>
+        `);
+    }).catch((e) => {
+      // logOptimizations(e.optimization);
+      // debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles shorthand with longhand override partial shorthand merge expansion"() {
+    // must ensure that the order of progressive enhancement declarations
+    // is preserved.
+    let css = clean`
+      .duplicate-override {
+        border-top-color: #ccc;
+        border-bottom-color: #ccc;
+        border-left-color: #ccc;
+        border-right-color: #ccc;
+      }
+      .duplicate-shorthand {
+        border-width: 1px;
+        border-style: solid;
+        border-top-color: red;
+        border-bottom-color: red;
+        border-left-color: red;
+      }
+      .has-override {
+        /* progressive enhancement */
+        border: 1px solid red;
+        border-color: #ccc;
+      }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="duplicate-override"></div>
+      <div class="duplicate-shorthand"></div>
+      <div class="has-override"></div>
+    `);
+    return testMergeDeclarations(css, template).then(result => {
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .duplicate-override {
+            border-top-color: #ccc;
+            border-bottom-color: #ccc;
+            border-left-color: #ccc;
+            border-right-color: #ccc;
+          }
+          .a { border-top-color: red; }
+          .b { border-bottom-color: red; }
+          .c { border-left-color: red; }
+          .d { border-width: 1px; }
+          .e { border-style: solid; }
+          .has-override {
+            /* progressive enhancement */ border-right-color: red;
+            border-color: #ccc;
+          }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="duplicate-override"></div>
+          <div class="a b c d e"></div>
+          <div class="has-override a b c d e"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles shorthand with longhand override partial shorthand merge expansion again"() {
+    // must ensure that the order of progressive enhancement declarations
+    // is preserved.
+    let css = clean`
+      .tc1 {
+        border-top-color: #ccc;
+      }
+      .tc2 {
+        border-bottom-color: #ccc;
+      }
+      .tc3 {
+        border-width: 1px;
+      }
+      .tc4 {
+        border-style: solid;
+      }
+      .gc1 {
+        border-color: #aaa;
+      }
+      .has-override {
+        /* progressive enhancement */
+        border: 1px solid #ccc;
+        border-color: #aaa;
+      }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="tc1 tc2"></div>
+      <div class="tc3 tc4"></div>
+      <div class="has-override"></div>
+    `);
+    return testMergeDeclarations(css, template).then(result => {
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+        .a { border-top-color: #ccc; }
+        .b { border-bottom-color: #ccc; }
+        .c { border-width: 1px; }
+        .d { border-style: solid; }
+        .gc1 {
+          border-color: #aaa;
+        }
+        .has-override {
+          /* progressive enhancement */ border-left-color: #ccc; border-right-color: #ccc;
+          border-color: #aaa;
+        }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a b"></div>
+          <div class="c d"></div>
+          <div class="has-override a b c d"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles shorthand with longhand override only one merged"() {
+    // must ensure that the order of progressive enhancement declarations
+    // is preserved.
+    let css = clean`
+      .duplicate-override {
+        border-top-color: rgba(127, 0, 0, 0.3);
+      }
+      .has-override {
+        /* progressive enhancement */
+        border-top: 1px solid red;
+        border-top-color: rgba(127, 0, 0, 0.3);
+      }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="duplicate-override"></div>
+      <div class="has-override"></div>
+    `);
+    return testMergeDeclarations(css, template).then(result => {
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .duplicate-override {
+            border-top-color: rgba(127, 0, 0, 0.3);
+          }
+          .has-override {
+            /* progressive enhancement */
+            border-top: 1px solid red;
+            border-top-color: rgba(127, 0, 0, 0.3);
+          }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="duplicate-override"></div>
+            <div class="has-override"></div></body>
+        `);
+    }).catch((e) => {
+      logOptimizations(e.optimization);
+      debugCascadeError(e);
       throw e;
     });
   }

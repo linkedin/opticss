@@ -9,7 +9,6 @@ import { ParsedCssFile } from '../../CssFile';
 import { OptimizationPass } from '../../OptimizationPass';
 import {
   expandIfNecessary,
-  expandPropertyName,
 } from '../../util/shorthandProperties';
 import { walkRules } from '../util';
 import { SelectorInfo, DeclarationInfo } from './StyleInfo';
@@ -56,6 +55,8 @@ export class DeclarationMapper {
       if (cmp === 0) cmp = compare(s1.sourceIndex, s2.sourceIndex);
       return cmp;
     });
+    let declSourceIndex = 0;
+    let declSourceIndexMap = new Map<postcss.Declaration, number>();
     this.elementDeclarations = new Map<Element, MultiDictionary<string, DeclarationInfo>>();
     files.forEach((file, fileIndex) => {
       let sourceIndex = 0;
@@ -64,6 +65,7 @@ export class DeclarationMapper {
         /** all the declarations of this rule after expanding longhand properties. */
         let declarations = new MultiDictionary<string,[string, boolean, postcss.Declaration]>(undefined, undefined, true);
         rule.walkDecls(decl => {
+          declSourceIndexMap.set(decl, declSourceIndex++);
           // TODO: normalize values. E.g colors of different formats, etc.
           declarations.setValue(decl.prop, [decl.value, decl.important, decl]);
         });
@@ -104,9 +106,12 @@ export class DeclarationMapper {
 
       // map properties to selector info
       let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContext());
-      selectorInfo.declarations.keys().forEach(prop => {
+      for (let prop of selectorInfo.declarations.keys()) {
+        if (/\.gb_fa/.test(selectorInfo.rule.selector) && /border/.test(prop)) {
+          console.log(selectorInfo.selector.toString());
+        }
         let values = selectorInfo.declarations.getValue(prop);
-        values.forEach(value => {
+        for (let value of values) {
           declarationOrdinal++;
           let [v, important, decl] = value;
           if (propParser.isShorthandProperty(decl.prop)) {
@@ -117,7 +122,7 @@ export class DeclarationMapper {
             let longHandProps = Object.keys(longhandDeclarations);
             let longHandDeclInfos = new Array<DeclarationInfo>();
             for (let longHandProp of longHandProps) {
-              let declInfo = this.makeDeclInfo(selectorInfo, longHandProp, longhandDeclarations[longHandProp], important, decl, declarationOrdinal);
+              let declInfo = this.makeDeclInfo(selectorInfo, longHandProp, longhandDeclarations[longHandProp], important, decl, declSourceIndexMap.get(decl)!, declarationOrdinal);
               longHandDeclInfos.push(declInfo);
               if (important) {
                 importantDeclInfos.push(declInfo);
@@ -125,17 +130,12 @@ export class DeclarationMapper {
               selectorInfo.declarationInfos.setValue([prop, v], declInfo);
               let valueInfo = context.getDeclarationValues(longHandProp);
               valueInfo.setValue(longhandDeclarations[longHandProp], declInfo);
-              if (propParser.isShorthandProperty(longHandProp)) {
-                let allDecls = expandIfNecessary(new Set(expandPropertyName(longHandProp, true)), longHandProp, longhandDeclarations[longHandProp]);
-                for (let longHandProp of Object.keys(allDecls)) {
-                  this.addDeclInfoToElements(selectorInfo.elements, longHandProp, declInfo);
-                }
-              }
+              this.addDeclInfoToElements(selectorInfo.elements, longHandProp, declInfo);
             }
             this.trackDeclarationInfo(context, longHandDeclInfos);
           } else {
             // normal long hand props are just set directly
-            let declInfo = this.makeDeclInfo(selectorInfo, prop, v, important, decl, declarationOrdinal);
+            let declInfo = this.makeDeclInfo(selectorInfo, prop, v, important, decl, declSourceIndexMap.get(decl)!, declarationOrdinal);
             this.trackDeclarationInfo(context, [declInfo]);
             if (important) {
               importantDeclInfos.push(declInfo);
@@ -144,8 +144,8 @@ export class DeclarationMapper {
             valueInfo.setValue(v, declInfo);
             this.addDeclInfoToElements(selectorInfo.elements, prop, declInfo);
           }
-        });
-      });
+        }
+      }
     });
     // we add the max declaration ordinal to all the important declaration infos
     // this makes those declarations resolve higher than all the non-important values.
@@ -159,6 +159,7 @@ export class DeclarationMapper {
     value: string,
     important: boolean,
     decl: postcss.Declaration,
+    sourceOrdinal: number,
     ordinal: number,
     dupeCount = 0
   ): DeclarationInfo {
@@ -168,7 +169,10 @@ export class DeclarationMapper {
       value,
       important,
       selectorInfo,
+      sourceOrdinal,
+      originalSourceOrdinal: sourceOrdinal,
       ordinal,
+      originalOrdinal: ordinal,
       dupeCount,
       merged: false,
       expanded: false,

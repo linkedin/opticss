@@ -377,11 +377,15 @@ export class ParsedSelector {
     return this.selector.toString();
   }
 
-  toContext(): ParsedSelector {
+  toContext(...keyNodes: Array<selectorParser.Node>): ParsedSelector {
     let context = this.clone();
     let key = context.key;
     key.nodes = key.nodes.filter(node => isPseudo(node)).sort((a, b) => a.value!.localeCompare(b.value!));
-    key.nodes.unshift(selectorParser.universal());
+    if (keyNodes.length > 0) {
+      key.nodes.unshift(...keyNodes);
+    } else {
+      key.nodes.unshift(selectorParser.universal());
+    }
     return context;
   }
 
