@@ -5,3 +5,4 @@ export * from "./UtilityTypes";
 export * from "./OptiCSSError";
 export * from "./typedAssert";
 export * from "./MultiMap";
+export * from "./TwoKeyMultiMap";
