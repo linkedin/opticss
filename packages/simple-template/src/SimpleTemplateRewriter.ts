@@ -47,6 +47,15 @@ export class SimpleTemplateRewriter {
         let rewriteAttributes = Object.keys(this.templateOptions.rewriteIdents);
         for (let rewriteAttr of rewriteAttributes) {
           if (this.templateOptions.rewriteIdents[rewriteAttr]) {
+            let attrIndex = inputAttrs.findIndex(attr => attr.namespace === undefined && attr.name === rewriteAttr);
+            if (attrIndex >= 0) {
+              let attr = inputAttrs[attrIndex];
+              inputAttrs[attrIndex] = {...attr};
+            }
+          }
+        }
+        for (let rewriteAttr of rewriteAttributes) {
+          if (this.templateOptions.rewriteIdents[rewriteAttr]) {
             this.rewriteAttribute(<RewriteableAttrName>rewriteAttr, rewriteMapping, element, inputAttrs);
           }
         }
