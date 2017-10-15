@@ -24,7 +24,7 @@ import { debugSize } from './util/assertSmaller';
 
 function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
-    { },
+    { except: ["removeUnusedStyles"] },
     {
       rewriteIdents: { id: true, class: true },
       analyzedAttributes: [],
@@ -36,7 +36,7 @@ function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Prom
     });
 }
 
-@suite("Integration Tests", slow(3000), timeout(4000))
+@suite("Integration Tests", slow(3000), timeout(5000))
 export class IntegrationTests {
   @test "Google Homepage"() {
     let css = fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/integration-tests/google-homepage/styles.css"), "utf-8");
@@ -48,7 +48,9 @@ export class IntegrationTests {
       //   // debugResult(css, result);
       // });
     }).catch(e => {
-      debugError(css, e);
+      logOptimizations(e.optimization);
+      debugCascadeError(e);
+      throw e;
     });
   }
   @test "NYT Homepage"() {
