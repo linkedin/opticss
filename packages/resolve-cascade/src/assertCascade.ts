@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as parse5 from 'parse5';
+import * as propParser from 'css-property-parser';
 
 import {
   allElements,
@@ -51,14 +52,45 @@ export class ElementStyleMismatch extends assert.AssertionError implements Casca
   actualCascade: ElementStyle;
   expectedStyles: ComputedStyle | undefined;
   actualStyles: ComputedStyle | undefined;
-  constructor(details: CascadeInformation) {
+  constructor(details: CascadeInformation, message?: string) {
     super({
       expected: details.expectedStyles,
       actual: details.actualStyles,
-      message: "Styles do not match."
+      message: message || "Styles do not match."
     });
     Object.assign(this, details);
   }
+}
+
+/**
+ * This function makes sure two styles are functionally equivalent.
+ * for the given css property.
+ *
+ * Currently this assures that initial values which can be different
+ * but functionally equivalent, are treated as the same value.
+ *
+ * it also does a case insensitive value check and some whitespace
+ * normalization.
+ *
+ * @param property The css property
+ * @param actualValue a css value for the property
+ * @param expectedValue a css value for the property
+ */
+export function assertSameStyle(
+  property: string,
+  actualValue: string,
+  expectedValue: string,
+) {
+  if (propParser.isInitialValue(property, expectedValue)) {
+    if (!propParser.isInitialValue(property, actualValue)) {
+      assert.fail(`Expected ${actualValue} to be an initial value for ${property}.`);
+    } else {
+      return;
+    }
+  }
+  expectedValue = expectedValue.toLowerCase().trim().replace(/\s+/g, " ");
+  actualValue = actualValue.toLowerCase().trim().replace(/\s+/g, " ");
+  assert.equal(actualValue, expectedValue);
 }
 
 export function assertSameCascade(
@@ -95,7 +127,21 @@ export function assertSameCascade(
         let expectedStyles = expectedCascade && expectedCascade.compute();
         let actualStyles = actualCascade && actualCascade.compute();
         try {
-          assert.deepEqual(actualStyles, expectedStyles);
+          if (actualStyles && expectedStyles) {
+            let actualProps = Object.keys(actualStyles).sort();
+            let expectedProps = Object.keys(expectedStyles).sort();
+            assert.deepEqual(actualProps, expectedProps);
+            for (let prop of actualProps) {
+              assertSameStyle(prop, actualStyles[prop], expectedStyles[prop]);
+            }
+          } else {
+            if (actualStyles) {
+              assert.fail("Styles were not expected for the element");
+            }
+            if (expectedStyles) {
+              assert.fail("Expected styles were not assigned to the element");
+            }
+          }
         } catch (e) {
           throw new ElementStyleMismatch({
             expectedHtml,
@@ -108,7 +154,7 @@ export function assertSameCascade(
             actualCascade,
             expectedStyles,
             actualStyles,
-          });
+          }, e.message);
         }
       }
     }

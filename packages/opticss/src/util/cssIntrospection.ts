@@ -17,8 +17,8 @@ function _walkRulesWithScope(container: postcss.Container, eachRule: RuleIterato
     if (isRule(node)) {
       eachRule(node, scope);
     } else if (isAtRule(node)) {
-      if (node.name.includes("keyframes")) {
-        // skip it, keyframe stops aren't optimizable.
+      if (node.name.includes("keyframes") || node.name.includes("font-face")) {
+        // skip it, keyframe and font-face at-rules aren't optimizable.
       } else {
         _walkRulesWithScope(node, eachRule, scope.concat(node));
       }
@@ -110,9 +110,16 @@ export function isRule(node: postcss.Node): node is postcss.Rule {
 }
 
 /**
+ * Test if a postcss node is a declaration.
+ */
+export function isDeclaration(node: postcss.Node): node is postcss.Declaration {
+  return (node.type === "decl");
+}
+
+/**
  * Test if a postcss node is a container (Root, At-Rule, or Rule).
  * @param node postcss node to test.
- * @returns True or false if node is a container.
+ * @returns whether the node is a container.
  */
 export function isContainer(node: postcss.Node): node is postcss.Container {
   return (<postcss.Container>node).each !== undefined;

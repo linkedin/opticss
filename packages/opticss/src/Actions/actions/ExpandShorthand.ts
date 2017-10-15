@@ -2,18 +2,7 @@ import * as postcss from "postcss";
 import { Action } from "../Action";
 import { SourcePosition } from "@opticss/template-api";
 import { Optimizations } from "../../OpticssOptions";
-import { ParsedSelector } from "../../parseSelector";
-
-export interface Declaration {
-  prop: string;
-  value: string;
-  important: boolean;
-}
-
-export interface DeclarationInfo {
-  selector: ParsedSelector;
-  decl: postcss.Declaration;
-}
+import { DeclarationInfo } from "../../optimizations/MergeDeclarations/StyleInfo";
 
 /**
  * Merges duplicate declarations from multiple rule sets into a new rule set.
@@ -21,12 +10,12 @@ export interface DeclarationInfo {
 export class ExpandShorthand extends Action {
   decl: postcss.Declaration;
   rule: postcss.Rule;
-  decls: Array<Declaration>;
+  decls: Array<DeclarationInfo>;
   newDecls: Array<postcss.Declaration>;
   reason: string;
   constructor(
     decl: postcss.Declaration,
-    decls: Array<Declaration>,
+    decls: Array<DeclarationInfo>,
     optimization: keyof Optimizations,
     reason: string
   ) {
@@ -39,7 +28,11 @@ export class ExpandShorthand extends Action {
   }
 
   perform(): this {
+    let expanded = new Set<string>();
     for (let decl of this.decls) {
+      decl.expanded = true;
+      if (expanded.has(decl.prop)) continue;
+      expanded.add(decl.prop);
       let declNode = postcss.decl(decl);
       declNode.raws = { before:' ', after: ' '};
       this.rule.insertBefore(this.decl, declNode);
@@ -58,6 +51,6 @@ export class ExpandShorthand extends Action {
   }
 }
 
-function declString(decl: Declaration): string {
+function declString(decl: {prop: string, value: string, important: boolean}): string {
   return `${decl.prop}: ${decl.value}${decl.important ? " !important": ""};`;
 }

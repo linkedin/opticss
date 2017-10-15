@@ -21,10 +21,15 @@ import {
   CascadeTestResult,
   testOptimizationCascade,
 } from './util/assertCascade';
-import clean from './util/clean';
 import {
   TestTemplate,
 } from '@opticss/simple-template';
+import {
+  documentToString
+} from 'resolve-cascade';
+import {
+  clean
+} from '@opticss/util';
 
 function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -82,6 +87,43 @@ export class RewriteIdentsTest {
     }
   }
 
+  @test "leaves non-idents alone"() {
+    let css1 = clean`
+      a#id3 { border-width: 2px; }
+      a, #id1 { text-decoration: underline; }
+      p { font-weight: normal; }
+      article #myId .foo a { color: red; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <article id="id1">
+        <div id="myId">
+          <p class="foo">
+            <a id="id3">wtf</a>
+          </p>
+        </div>
+      </article>
+    `);
+    return testRewriteIdents({id: true, class: true}, css1, template).then(result => {
+      assert.deepEqual(
+        result.optimization.output.content.toString(),
+        clean`
+          a#a { border-width: 2px; }
+          a, #b { text-decoration: underline; }
+          p { font-weight: normal; }
+          article #c .a a { color: red; }
+        `);
+      assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
+      <body><article id="b">
+        <div id="c">
+          <p class="a">
+            <a id="a">wtf</a>
+          </p>
+        </div>
+      </article></body>
+      `);
+    });
+
+  }
   @test "rewrites idents"() {
     let css1 = `
       #id3 { border-width: 2px; }

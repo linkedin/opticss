@@ -14,7 +14,10 @@ import {
 
 import {
   CascadeTestResult,
+  debugCascadeError,
   debugError,
+  debugResult,
+  logOptimizations,
   testOptimizationCascade,
 } from './util/assertCascade';
 import {
@@ -207,7 +210,7 @@ export class MergeDeclarationsTest {
               .h { background-clip: content-box; }
               .i { background-attachment: fixed; }
               .j { background-color: red; }
-              .a { background-position: initial; background-size: initial; background-origin: content-box; }`);
+              .a { background-position: 0% 0%; background-size: auto auto; background-origin: content-box; }`);
       assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
         <body><div class="a e g h i j"></div>
         <div></div></body>`);
@@ -286,11 +289,7 @@ export class MergeDeclarationsTest {
     <div class="c"></div>
   `);
     return testMergeDeclarations(css1, template).then(result => {
-      // debugResult(css1, result);
-      assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
-        <body><div class="d e b"></div>
-        <div class="d e"></div></body>
-      `);
+      debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
         clean`
@@ -299,7 +298,11 @@ export class MergeDeclarationsTest {
             .e { color: blue; }
           }
         `);
-      return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
+      assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
+        <body><div class="d e b"></div>
+        <div class="d e"></div></body>
+      `);
+      // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
     });
   }
 
@@ -394,6 +397,632 @@ export class MergeDeclarationsTest {
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
     });
   }
+  @test "merges psuedoclasses safely"() {
+    let css1 = clean`
+    .bip { color: blue; }
+    .foo:hover { color: red; }
+    .bar:hover { color: red; }
+    .baz { color: blue; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="foo"></div>
+    <div class="bar"></div>
+    <div class="bip"></div>
+    <div class="baz"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a { color: blue; }
+          .b:hover { color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="b"></div>
+          <div class="b"></div>
+          <div class="a"></div>
+          <div class="a"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "merges chained psuedos with different orders"() {
+    let css1 = clean`
+    .foo:hover:first-of-type { color: red; }
+    .bar:first-of-type:hover { color: red; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="foo"></div>
+    <div class="bar"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a:first-of-type:hover { color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a"></div>
+          <div class="a"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles cascade conflicts with pseudos"() {
+    let css1 = clean`
+    .foo:hover { color: red; }
+    .bip.baz { color: green; }
+    .bar:hover { color: red; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="foo"></div>
+    <div class="bar bip baz"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .foo:hover { color: red; }
+          .bip.baz { color: green; }
+          .bar:hover { color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="foo"></div>
+          <div class="bar baz bip"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "merges psuedoclasses with cascade overrides"() {
+    let css1 = clean`
+    .foo { color: blue; }
+    .foo:hover { color: red; }
+    .bar { color: blue; }
+    .bar:hover { color: red; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="foo"></div>
+    <div class="bar"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      // TODO: This should really re-use the class `.a` in the hover selector.
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a { color: blue; }
+          .b:hover { color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a b"></div>
+          <div class="a b"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles duplicated declarations with rules with multiple selectors"() {
+    let css1 = clean`
+    .foo, .bar { color: red; }
+    .baz { color: red; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="foo"></div>
+    <div class="bar"></div>
+    <div class="baz"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a { color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a"></div>
+          <div class="a"></div>
+          <div class="a"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles shorthands in rulesets with multiple selectors that merge differently in different scopes."() {
+    let css1 = clean`
+    .scope .b5 { background-position: center; }
+    .scope .b0 { background-image: none; }
+    .scope .b1 { background-repeat: repeat-x; }
+    .scope .b2 { background-repeat: repeat-x; }
+    .scope .b3 { background-clip: content-box; }
+    .scope .b4 { background-attachment: fixed; }
+    .scope .shBg, .shortBg { background: none center repeat-x fixed content-box red; }
+    .a5 { background-color: red; }
+    .a0 { background-image: none; }
+    .a1 { background-repeat: repeat-x; }
+    .a2 { background-repeat: repeat-x; }
+    .a3 { background-clip: content-box; }
+    .a4 { background-attachment: fixed; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="scope">
+        <div class="b0 b1 b2 b3 b4 b5"></div>
+        <div class="shBg"></div>
+      </div>
+      <div class="a0 a1 a2 a3 a4 a5"></div>
+      <div class="shortBg"></div>
+    `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+        .scope .a { background-position: center; }
+        .scope .b { background-image: none; }
+        .scope .c { background-repeat: repeat-x; }
+        .scope .d { background-clip: content-box; }
+        .scope .e { background-attachment: fixed; }
+        .f { background-image: none; }
+        .g { background-repeat: repeat-x; }
+        .h { background-clip: content-box; }
+        .i { background-attachment: fixed; }
+        .j { background-color: red; }
+        .scope .shBg, .shortBg { background-size: auto auto; background-origin: content-box; background-color: red; background-position: center; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+        <body><div class="scope">
+        <div class="b c d e a"></div>
+        <div class="shBg a b c d e"></div>
+        </div>
+        <div class="f g h i j"></div>
+        <div class="shortBg f g h i j"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles shorthands in rulesets with multiple selectors in diff scopes with one fully merged."() {
+    let css1 = clean`
+    .scope .b5 { background-position: center; }
+    .scope .b0 { background-image: none; }
+    .scope .b1 { background-repeat: repeat-x; }
+    .scope .b2 { background-repeat: repeat-x; }
+    .scope .b3 { background-clip: content-box; }
+    .scope .b4 { background-attachment: fixed; }
+    .scope .shBg, .shortBg { background: none center repeat-x fixed content-box red; }
+    .a0 { background-image: none; }
+    .a1 { background-repeat: repeat-x; }
+    .a2 { background-repeat: repeat-x; }
+    .a3 { background-clip: content-box; }
+    .a4 { background-attachment: fixed; }
+    .a5 { background-color: red; }
+    .a6 { background-position: center; }
+    .a7 { background-size: auto auto; }
+    .a8 { background-origin: content-box; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="scope">
+        <div class="b0 b1 b2 b3 b4 b5"></div>
+        <div class="shBg"></div>
+      </div>
+      <div class="a0 a1 a2 a3 a4 a5 a6 a7"></div>
+      <div class="shortBg"></div>
+    `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+        .scope .a { background-position: center; }
+        .scope .b { background-image: none; }
+        .scope .c { background-repeat: repeat-x; }
+        .scope .d { background-clip: content-box; }
+        .scope .e { background-attachment: fixed; }
+        .f { background-image: none; }
+        .g { background-position: center; }
+        .h { background-size: auto auto; }
+        .i { background-repeat: repeat-x; }
+        .j { background-origin: content-box; }
+        .k { background-clip: content-box; }
+        .l { background-attachment: fixed; }
+        .m { background-color: red; }
+        .scope .shBg { background-size: auto auto; background-origin: content-box; background-color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+        <body><div class="scope">
+        <div class="b c d e a"></div>
+        <div class="shBg a b c d e"></div>
+        </div>
+        <div class="f i k l m g h"></div>
+        <div class="f g h i j k l m"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles declarations with rules with multiple selector scopes"() {
+    let css1 = clean`
+    .scope1 .foo, .scope2 .bar { color: red; }
+    .scope1 .red { color: red; }
+    .scope2 .red { color: red; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="scope1">
+        <div class="foo"></div>
+        <div class="red"></div>
+      </div>
+      <div class="scope2">
+        <div class="bar"></div>
+        <div class="red"></div>
+      </div>
+    `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .scope1 .a { color: red; }
+          .scope2 .b { color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="scope1">
+            <div class="a"></div>
+            <div class="a b"></div>
+          </div>
+          <div class="scope2">
+            <div class="b"></div>
+            <div class="a b"></div>
+          </div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles rules with multiple selectors"() {
+    let css1 = clean`
+    .foo, .bar { color: red; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="foo"></div>
+    <div class="bar"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a { color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a"></div>
+          <div class="a"></div></body>
+        `);
+    }).catch((e) => {
+      debugError(css1, e);
+      throw e;
+    });
+  }
+  @test "flex test"() {
+    let css1 = clean`
+    .a.b {
+        flex: 0 1 auto;
+    }
+    .d {
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+    .c.d {
+      flex: 0 1 auto;
+    }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="a b">
+    <div class="c d">
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .a.b {
+            flex: 0 1 auto;
+          }
+          .d {
+           display: inline-block;
+           flex: 0 0 auto;
+          }
+          .c.d {
+           flex: 0 1 auto;
+          }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a b">
+          <div class="c d"></div></div></body>
+        `);
+    }).catch((e) => {
+      debugError(css1, e);
+      throw e;
+    });
+  }
+  // TODO: should this merge `.bar` with `.red` and remove the `.bar` selector
+  // from the shared rule set?
+  @test "handles rules with multiple selectors where only one can be merged"() {
+    let css1 = clean`
+    .scope .foo, .bar { color: red; }
+    .red { color: red; }
+  `;
+    let template = new TestTemplate("test", clean`
+    <div class="bar"></div>
+    <div class="scope"><div class="foo"></div></div>
+    <div class="red"></div>
+  `);
+    return testMergeDeclarations(css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .scope .foo, .bar { color: red; }
+          .red { color: red; }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="bar"></div>
+          <div class="scope"><div class="foo"></div></div>
+          <div class="red"></div></body>
+        `);
+    }).catch((e) => {
+      debugError(css1, e);
+      throw e;
+    });
+  }
+  @test "handles shorthand with longhand override"() {
+    // must ensure that the order of progressive enhancement declarations
+    // is preserved.
+    let css = clean`
+      .duplicate-override {
+        border-top-color: #ccc;
+      }
+      .duplicate-shorthand {
+        border-top: 1px solid red;
+      }
+      .duplicate-longhand {
+        border-top-color: red;
+      }
+      .has-override {
+        /* progressive enhancement */
+        border-top: 1px solid red;
+        border-top-color: #ccc;
+      }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="duplicate-override"></div>
+      <div class="duplicate-shorthand"></div>
+      <div class="duplicate-longhand"></div>
+      <div class="has-override"></div>
+    `);
+    return testMergeDeclarations(css, template).then(result => {
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .duplicate-override {
+            border-top-color: #ccc;
+          }
+          .a { border-top-color: red; }
+          .b { border-top-width: 1px; }
+          .c { border-top-style: solid; }
+          .has-override {
+            /* progressive enhancement */
+            border-top-color: #ccc;
+          }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="duplicate-override"></div>
+          <div class="a b c"></div>
+          <div class="a"></div>
+          <div class="has-override a b c"></div></body>
+        `);
+    }).catch((e) => {
+      // logOptimizations(e.optimization);
+      // debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles shorthand with longhand override partial shorthand merge expansion"() {
+    // must ensure that the order of progressive enhancement declarations
+    // is preserved.
+    let css = clean`
+      .duplicate-override {
+        border-top-color: #ccc;
+        border-bottom-color: #ccc;
+        border-left-color: #ccc;
+        border-right-color: #ccc;
+      }
+      .duplicate-shorthand {
+        border-width: 1px;
+        border-style: solid;
+        border-top-color: red;
+        border-bottom-color: red;
+        border-left-color: red;
+      }
+      .has-override {
+        /* progressive enhancement */
+        border: 1px solid red;
+        border-color: #ccc;
+      }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="duplicate-override"></div>
+      <div class="duplicate-shorthand"></div>
+      <div class="has-override"></div>
+    `);
+    return testMergeDeclarations(css, template).then(result => {
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .duplicate-override {
+            border-top-color: #ccc;
+            border-bottom-color: #ccc;
+            border-left-color: #ccc;
+            border-right-color: #ccc;
+          }
+          .a { border-top-color: red; }
+          .b { border-bottom-color: red; }
+          .c { border-left-color: red; }
+          .d { border-width: 1px; }
+          .e { border-style: solid; }
+          .has-override {
+            /* progressive enhancement */ border-right-color: red;
+            border-color: #ccc;
+          }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="duplicate-override"></div>
+          <div class="a b c d e"></div>
+          <div class="has-override a b c d e"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles shorthand with longhand override partial shorthand merge expansion again"() {
+    // must ensure that the order of progressive enhancement declarations
+    // is preserved.
+    let css = clean`
+      .tc1 {
+        border-top-color: #ccc;
+      }
+      .tc2 {
+        border-bottom-color: #ccc;
+      }
+      .tc3 {
+        border-width: 1px;
+      }
+      .tc4 {
+        border-style: solid;
+      }
+      .gc1 {
+        border-color: #aaa;
+      }
+      .has-override {
+        /* progressive enhancement */
+        border: 1px solid #ccc;
+        border-color: #aaa;
+      }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="tc1 tc2"></div>
+      <div class="tc3 tc4"></div>
+      <div class="has-override"></div>
+    `);
+    return testMergeDeclarations(css, template).then(result => {
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+        .a { border-top-color: #ccc; }
+        .b { border-bottom-color: #ccc; }
+        .c { border-width: 1px; }
+        .d { border-style: solid; }
+        .gc1 {
+          border-color: #aaa;
+        }
+        .has-override {
+          /* progressive enhancement */ border-left-color: #ccc; border-right-color: #ccc;
+          border-color: #aaa;
+        }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="a b"></div>
+          <div class="c d"></div>
+          <div class="has-override a b c d"></div></body>
+        `);
+    }).catch((e) => {
+      debugCascadeError(e);
+      throw e;
+    });
+  }
+  @test "handles shorthand with longhand override only one merged"() {
+    // must ensure that the order of progressive enhancement declarations
+    // is preserved.
+    let css = clean`
+      .duplicate-override {
+        border-top-color: rgba(127, 0, 0, 0.3);
+      }
+      .has-override {
+        /* progressive enhancement */
+        border-top: 1px solid red;
+        border-top-color: rgba(127, 0, 0, 0.3);
+      }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="duplicate-override"></div>
+      <div class="has-override"></div>
+    `);
+    return testMergeDeclarations(css, template).then(result => {
+      assert.deepEqual(
+        clean`${result.optimization.output.content.toString()}`,
+        clean`
+          .duplicate-override {
+            border-top-color: rgba(127, 0, 0, 0.3);
+          }
+          .has-override {
+            /* progressive enhancement */
+            border-top: 1px solid red;
+            border-top-color: rgba(127, 0, 0, 0.3);
+          }
+        `);
+      assert.deepEqual(
+        documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
+        clean`
+          <body><div class="duplicate-override"></div>
+            <div class="has-override"></div></body>
+        `);
+    }).catch((e) => {
+      logOptimizations(e.optimization);
+      debugCascadeError(e);
+      throw e;
+    });
+  }
   @test "handles id selectors"() {
     let css1 = clean`
     #id1 { color: blue; float: right; }
@@ -427,7 +1056,7 @@ export class MergeDeclarationsTest {
         `);
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
     }).catch((e) => {
-      debugError(css1, e);
+      debugCascadeError(e);
       throw e;
     });
   }

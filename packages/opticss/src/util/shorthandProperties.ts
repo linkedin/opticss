@@ -12,10 +12,6 @@ export function expandPropertyName(prop: string, recursively = false): string[] 
 
 export function fullyExpandShorthandProperty(prop: string, value: string) {
   try {
-    if (/rgba?\(.*\)/.test(value)) {
-      // https://github.com/css-blocks/css-property-parser/issues/6
-      throw new Error(`invalid parsing shorthand property: ${prop}: ${value}`);
-    }
     let expanded = propParser.expandShorthandProperty(prop, value, true);
     for (let p of Object.keys(expanded)) {
       if (propParser.isShorthandProperty(p)) {
@@ -36,20 +32,26 @@ export function fullyExpandShorthandProperty(prop: string, value: string) {
 }
 
 export function expandIfNecessary(authoredProps: Set<string>, prop: string, value: string): StringDict {
-  try {
-    if (/rgba?\(.*\)/.test(value)) {
-      // https://github.com/css-blocks/css-property-parser/issues/6
-      throw new Error(`invalid parsing shorthand property: ${prop}: ${value}`);
-    }
   if (!propParser.isShorthandProperty(prop)) {
     return {[prop]: value};
   }
   let longhandDeclarations: StringDict = {};
-  let longHandProps = expandPropertyName(prop);
-  let longHandValues = propParser.expandShorthandProperty(prop, value, false);
+  let longHandProps;
+  let longHandValues;
+  try {
+    longHandValues = propParser.expandShorthandProperty(prop, value, false, true);
+    longHandProps = Object.keys(longHandValues);
+  } catch (e) {
+    if (/parsing shorthand property/.test(e.message)) {
+      console.error(e);
+      return { [prop]: value };
+    } else {
+      throw e;
+    }
+  }
   let directAuthored = longHandProps.some(p => authoredProps.has(p));
   for (let p of longHandProps) {
-    let v = longHandValues[p] || "initial"; // TODO: use the correct initial value for the property.
+    let v = longHandValues[p];
     let expanded = expandIfNecessary(authoredProps, p, v);
     if (Object.keys(expanded).some(key => authoredProps.has(key))) {
       Object.assign(longhandDeclarations, expanded);
@@ -61,14 +63,4 @@ export function expandIfNecessary(authoredProps: Set<string>, prop: string, valu
     longhandDeclarations[prop] = value;
   }
   return longhandDeclarations;
-  } catch (e) {
-    if (/parsing shorthand property/.test(e.message)) {
-      console.error(e);
-      return {
-        [prop]: value
-      };
-    } else {
-      throw e;
-    }
-  }
 }

@@ -1,4 +1,5 @@
-import { MarkAttributeValueObsolete } from '../../Actions';
+import * as propParser from 'css-property-parser';
+import * as specificity from 'specificity';
 import {
   allParsedSelectors,
   ParsedSelectorAndRule,
@@ -7,12 +8,10 @@ import {
 import {
   IdentityDictionary,
   StringDict,
+  MultiMap,
+  TwoKeyMultiMap
 } from '@opticss/util';
 import {
-  SimpleAttribute,
-  simpleAttributeToString,
-  TemplateAnalysis,
-  TemplateTypes,
   Attr,
   Attribute,
   AttributeNS,
@@ -21,10 +20,15 @@ import {
   isAbsent,
   isChoice,
   isConstant,
+  isSimpleTagname,
+  SimpleAttribute,
+  simpleAttributeToString,
   Tagname,
+  TemplateAnalysis,
+  TemplateIntegrationOptions,
+  TemplateTypes,
   ValueAbsent,
   ValueConstant,
-  TemplateIntegrationOptions,
 } from '@opticss/template-api';
 import {
   isClass,
@@ -35,11 +39,18 @@ import {
 import {
   expandIfNecessary,
 } from '../../util/shorthandProperties';
-import * as propParser from 'css-property-parser';
 import * as postcss from 'postcss';
 import {
   inspect,
 } from 'util';
+
+import Actions, {
+  AnnotateMergeConflict,
+  ChangeSelector,
+  ExpandShorthand,
+  MarkAttributeValueObsolete,
+  MergeDeclarations as MergeDeclarationsAction,
+} from '../../Actions';
 import {
   ParsedCssFile,
 } from '../../CssFile';
@@ -62,14 +73,10 @@ import {
   OptimizationContext,
 } from './OptimizationContext';
 import {
-  DeclarationInfo,
+  DeclarationInfo, SelectorInfo,
 } from './StyleInfo';
-import Actions, {
-  AnnotateMergeConflict,
-  ExpandShorthand,
-  MergeDeclarations as MergeDeclarationsAction
-} from '../../Actions';
 import { matchToBool, matches, AttributeMatcher } from '../../Match';
+import { isDeclaration } from "../../util/cssIntrospection";
 
 const attrMatcher = AttributeMatcher.instance;
 
@@ -82,7 +89,6 @@ interface MergeableDeclarationSet {
     important: boolean;
   };
 }
-
 export class MergeDeclarations implements MultiFileOptimization {
   name = "mergeDeclarations";
   initializers: Array<keyof Initializers> = ["initKnownIdents"];
@@ -99,12 +105,18 @@ export class MergeDeclarations implements MultiFileOptimization {
     files: Array<ParsedCssFile>
   ): void {
     let mapper = new DeclarationMapper(pass, analyses, files);
+    // TODO: First step needs to be a stable sort of the stylesheet by specificity in a way that never introduces a conflict.
+    // This is complicated because a ruleset can have multiple selectors with different specificities (usually the case, when there's)
     let removedSelectors = new Array<ParsedSelectorAndRule>();
+    let segmentedMergeablesForContext = new Map<OptimizationContext, MergeableDeclarationSet[][]>();
     for (let context of mapper.contexts) {
       let contextMergeables = this.mergeablesForContext(pass, context);
-      let shorthands = mergedShorthandsForContext(contextMergeables);
       let segmentedContextMergeables = this.segmentByCascadeConflicts(pass.actions, context, mapper, contextMergeables);
-      segmentedContextMergeables = this.checkAndExpandShorthands(pass, mapper, shorthands, segmentedContextMergeables);
+      segmentedMergeablesForContext.set(context, segmentedContextMergeables);
+    }
+    let rulesNeedingSelectorPruning = this.checkDupesAndExpandShorthands(pass, mapper, segmentedMergeablesForContext);
+    for (let context of mapper.contexts) {
+      let segmentedContextMergeables = segmentedMergeablesForContext.get(context)!;
       for (let mergeableSets of segmentedContextMergeables) {
         for (let mergeableSet of mergeableSets) {
           if (mergeableSet.decls.length < 2) continue;
@@ -113,6 +125,7 @@ export class MergeDeclarations implements MultiFileOptimization {
         }
       }
     }
+    removedSelectors.push(...this.removeFullyMergedSelectors(pass, mapper, rulesNeedingSelectorPruning));
     let unusedAttrs = this.findUnusedAttributes(files, removedSelectors);
     for (let unusedAttr of unusedAttrs) {
       let referencedSelectors = removedSelectors.filter(sel => matches(attrMatcher.matchSelector(unusedAttr, sel.parsedSelector, true)));
@@ -126,10 +139,15 @@ export class MergeDeclarations implements MultiFileOptimization {
   }
   private isMergeable(options: TemplateIntegrationOptions, pass: OptimizationPass, declInfo: DeclarationInfo): boolean {
     let rule: postcss.Rule = <postcss.Rule>declInfo.decl.parent;
+    if (!rule) return false; // TODO: we should probably keep the data structure in sync?
     let parsedSelectors = pass.cache.getParsedSelectors(rule);
     for (let sel of parsedSelectors) {
       let kSel = sel.key;
-      if (!MergeDeclarationsAction.inputsFromSelector(options, kSel)) {
+      let inputs = MergeDeclarationsAction.inputsFromSelector(options, kSel);
+      if (!inputs) {
+        return false;
+      }
+      if (inputs.every(i => isSimpleTagname(i))) {
         return false;
       }
     }
@@ -254,69 +272,93 @@ export class MergeDeclarations implements MultiFileOptimization {
     let context = mergeableDeclarations.context;
     let declInfos = mergeableDeclarations.decls;
     let decl = mergeableDeclarations.decl;
-    let scope = context.scopes[0];
-    let container = scope.length > 0 ? scope[scope.length - 1] : context.root;
     let action = new MergeDeclarationsAction(
       this.templateOptions,
       pass,
-      container,
       context.selectorContext,
       decl,
-      declInfos.map(declInfo => ({
-        selector: declInfo.selectorInfo.selector,
-        rule: declInfo.selectorInfo.rule,
-        container: declInfo.selectorInfo.container,
-        decl: declInfo.decl
-      })),
+      declInfos,
       "mergeDeclarations",
       "Duplication");
     pass.actions.perform(action);
-    // The declarations are inserted at the document location of the first declaration it
-    // is merged with. So we update its declarations to that ordinal value.
-    let newOrdinal = declInfos[0].ordinal;
-    for (let i = 1; i < declInfos.length; i++) {
-      declInfos[i].ordinal = newOrdinal;
-    }
     return action.removedSelectors;
   }
 
-  private checkAndExpandShorthands(
+  private checkDupesAndExpandShorthands(
     pass: OptimizationPass,
     mapper: DeclarationMapper,
-    shorthands: Set<postcss.Declaration>,
-    mergeableSets: MergeableDeclarationSet[][]
-  ): MergeableDeclarationSet[][] {
-    let mergeableShorthands = new Set<postcss.Declaration>();
-    let unmergeableShorthands = new Set<postcss.Declaration>();
-    for (let shorthand of shorthands) {
-      if (canMerge(mapper, shorthand)) {
-        mergeableShorthands.add(shorthand);
-      } else {
-        unmergeableShorthands.add(shorthand);
-      }
-    }
-    let mergedLonghands = new Set<DeclarationInfo>();
-    for (let segments of mergeableSets) {
-      for (let mergeableSet of segments) {
-        for (let declInfo of mergeableSet.decls) {
-          if (mergeableSet.decls.length > 1 && mergeableShorthands.has(declInfo.decl)) {
-            mergedLonghands.add(declInfo);
-          } else if (unmergeableShorthands.has(declInfo.decl)) {
-            mergeableSet.decls.splice(mergeableSet.decls.indexOf(declInfo), 1);
-            mergeableSet.decls.forEach(d => {d.dupeCount = d.dupeCount - 1;});
-            declInfo.dupeCount = 0;
+    mergeableSetsPerContext: Map<OptimizationContext, MergeableDeclarationSet[][]>
+  ): MultiMap<postcss.Rule, [OptimizationContext, postcss.Declaration]> {
+    let mergedDecls = new Set<DeclarationInfo>();
+    let unmergedDecls = new Set<DeclarationInfo>();
+    let mergedLongHands = new MultiMap<OptimizationContext, DeclarationInfo>(false);
+    let needsAnotherCheck = true;
+    // This algorithm fucking sucks.
+    while (needsAnotherCheck) {
+      needsAnotherCheck = false;
+      let mergeableMemo = new Map<postcss.Declaration, boolean>();
+      for (let [context, mergeableSets] of mergeableSetsPerContext) {
+      for (let segments of mergeableSets) {
+        for (let mergeableSet of segments) {
+          for (let declInfo of mergeableSet.decls) {
+            if (unmergedDecls.has(declInfo)) continue;
+            if (mergeableSet.decls.length <= 1) continue;
+            if (canMerge(mergeableMemo, mapper, declInfo.decl)) {
+              mergedDecls.add(declInfo);
+              if (declInfo.prop !== declInfo.decl.prop) {
+                mergedLongHands.set(context, declInfo);
+              }
+            } else {
+              needsAnotherCheck = true;
+              mergedDecls.delete(declInfo); // in case it was added on a prev iteration.
+              mergedLongHands.deleteValue(mergeableSet.context, declInfo); // in case it was added on a prev iteration.
+              unmergedDecls.add(declInfo);
+              declInfo.ordinal = declInfo.originalOrdinal;
+              declInfo.sourceOrdinal = declInfo.originalSourceOrdinal;
+              mergeableSet.decls.splice(mergeableSet.decls.indexOf(declInfo), 1);
+              mergeableSet.decls.forEach(d => { d.dupeCount = d.dupeCount - 1; });
+              declInfo.dupeCount = 0;
+            }
           }
         }
       }
-    }
-    for (let mergeableShorthand of mergeableShorthands) {
-      let infos = mapper.shortHands.get(mergeableShorthand);
-      if (infos) {
-        let toExpand = infos.filter(i => !mergedLonghands.has(i));
-        pass.actions.perform(new ExpandShorthand(mergeableShorthand, toExpand, "mergeDeclarations", "one or more of the long hand values was not duplicated anywhere."));
       }
     }
-    return mergeableSets;
+    let mergedPropsPerContext = new Map<postcss.Declaration, MultiMap<OptimizationContext, string>>();
+    for (let [context, lhDecls] of mergedLongHands) {
+      for (let lhDecl of lhDecls) {
+        let contextProps = mergedPropsPerContext.get(lhDecl.decl);
+        if (!contextProps) {
+          contextProps = new MultiMap<OptimizationContext, string>(false);
+          mergedPropsPerContext.set(lhDecl.decl, contextProps);
+        }
+        contextProps.set(context, lhDecl.prop);
+      }
+    }
+
+    let rulesMaybeFullyMerged = new MultiMap<postcss.Rule, [OptimizationContext, postcss.Declaration]>();
+    for (let [shortHand, contextProps] of mergedPropsPerContext) {
+      let infoSets = mapper.declarationInfos.get(shortHand);
+      let declsToExpand = new Array<DeclarationInfo>();
+      for (let [context, props] of contextProps) {
+        for (let infos of infoSets) {
+          if (!context.declarationInfos.has(infos[0])) continue;
+          let hasExpansion = false;
+          for (let declInfo of infos) {
+            if (props.includes(declInfo.prop)) continue;
+            hasExpansion = true;
+            declsToExpand.push(declInfo);
+          }
+          if (!hasExpansion) {
+            rulesMaybeFullyMerged.set(<postcss.Rule>infos[0].decl.parent, [context, infos[0].decl]);
+          }
+        }
+      }
+      if (declsToExpand.length > 0) {
+        pass.actions.perform(new ExpandShorthand(shortHand, declsToExpand, "mergeDeclarations", "one or more of the long hand values was not duplicated in at least one merge context."));
+      }
+    }
+    return rulesMaybeFullyMerged;
   }
 
   /**
@@ -350,6 +392,9 @@ export class MergeDeclarations implements MultiFileOptimization {
     /** All mergeables for the current context */
     let contextMergeables = new Array<Array<MergeableDeclarationSet>>();
     for (let mergeable of mergeables) {
+      if (mergeable.decls[0].prop === "flex") {
+        console.log(mergeable);
+      }
       /** All mergeables for the current context and mergeable property but separated by cascade divisions */
       let segmentedMergeables = new Array<MergeableDeclarationSet>();
       let declInfos = mergeable.decls;
@@ -357,17 +402,31 @@ export class MergeDeclarations implements MultiFileOptimization {
         continue;
       }
       let expanded = expandIfNecessary(context.authoredProps, declInfos[0].prop, declInfos[0].value);
-
       nextMerge:
       for (let unmergedDecl of declInfos) {
         nextGroup:
         for (let segment of segmentedMergeables) {
           for (let mergedDecl of segment.decls) {
-            let conflict = isMergeConflicted(mapper, Object.keys(expanded), expanded, unmergedDecl, mergedDecl);
+            // TODO: This assumes that merge always moves to the position of the
+            // first decl in the segment. but sometimes we can move the merge
+            // location to create a merge that succeeds. we can move the merge
+            // point to the new merge location or sometimes to just before the
+            // selector that would conflict on an element but after another
+            // selector that would cause a conflict if before it.
+            //
+            // TODO: In other cases we can perform a merge by extracting a
+            // conflicting declaration to it's own selector and linking it as if
+            // it were merged, and then record that class as exclusive with the
+            // merged decl so the cascade is preserved.
+            let conflict = isMergeConflicted(mapper, Object.keys(expanded), expanded, unmergedDecl, mergedDecl, context.specificity);
             if (conflict) {
               actions.perform(conflict);
               continue nextGroup;
             }
+          }
+          if (segment.decls.length > 0) {
+            unmergedDecl.ordinal = segment.decls[0].ordinal;
+            unmergedDecl.sourceOrdinal = segment.decls[0].sourceOrdinal;
           }
           segment.decls.push(unmergedDecl);
           continue nextMerge;
@@ -388,6 +447,66 @@ export class MergeDeclarations implements MultiFileOptimization {
 
     return contextMergeables;
   }
+
+  removeFullyMergedSelectors(pass: OptimizationPass, mapper: DeclarationMapper, rulesNeedingSelectorPruning: MultiMap<postcss.Rule, [OptimizationContext, postcss.Declaration]>): Array<ParsedSelectorAndRule> {
+    let removedSelectors = new Array<ParsedSelectorAndRule>();
+    let shortHandsForRule = new MultiMap<postcss.Rule, postcss.Declaration>();
+    // let contextsForRule = new MultiMap<postcss.Rule, OptimizationContext>();
+    let longHands = new TwoKeyMultiMap<string, string, string>(false);
+    for (let [rule, values] of rulesNeedingSelectorPruning) {
+      for (let value of values) {
+        let decl = value[1];
+        shortHandsForRule.set(rule, decl);
+        let expanded = propParser.expandShorthandProperty(decl.prop, decl.value, true, true);
+        for (let exProp of Object.keys(expanded)) {
+          longHands.set(decl.prop, exProp, expanded[exProp]);
+        }
+      }
+    }
+    nextRule:
+    for (let rule of rulesNeedingSelectorPruning.keys()) {
+      if (!rule.parent) continue;
+      // can't remove a selector if there's properties in this rule that aren't from a shorthand expansion.
+      for (let node of rule.nodes!) {
+        if (isDeclaration(node)) {
+          for (let shortHand of shortHandsForRule.get(rule)!) {
+            if (!longHands.hasValue(shortHand.prop, node.prop, node.value)) {
+              continue nextRule;
+            }
+          }
+        }
+      }
+      // let contexts = contextsForRule.get(rule);
+      let shorthands = shortHandsForRule.get(rule);
+      let unusedSelectors = new Set<SelectorInfo>();
+      let selectorsInUse = new Set<SelectorInfo>();
+      for (let shorthand of shorthands) {
+        let infoSets = mapper.declarationInfos.get(shorthand);
+        for (let infos of infoSets) {
+          if (infos.length < 2) continue;
+          let selectorInfo = infos[0].selectorInfo;
+          if (infos.every(decl => !decl.expanded)
+              && !selectorsInUse.has(selectorInfo)) {
+            unusedSelectors.add(selectorInfo);
+          } else {
+            unusedSelectors.delete(selectorInfo); // In case it was previously added for a different shorthand.
+            selectorsInUse.add(selectorInfo);
+          }
+        }
+      }
+      if (unusedSelectors.size > 0) {
+        let unusedSelector = unusedSelectors.keys().next().value;
+        pass.actions.perform(new ChangeSelector(unusedSelector.rule, [...selectorsInUse].map(si => si.selector).join(", "), "mergeDeclarations", "was merged into other rules", pass.cache));
+        for (let unusedSelector of unusedSelectors) {
+          removedSelectors.push({
+            rule,
+            parsedSelector: unusedSelector.selector
+          });
+        }
+      }
+    }
+    return removedSelectors;
+  }
 }
 
 function isMergeConflicted(
@@ -395,16 +514,27 @@ function isMergeConflicted(
   props: string[],
   expanded: StringDict,
   unmergedDecl: DeclarationInfo,
-  mergedDecl: DeclarationInfo
+  mergedDecl: DeclarationInfo,
+  targetSpecificity: specificity.Specificity | undefined
 ): AnnotateMergeConflict | undefined {
   for (let element of unmergedDecl.selectorInfo.elements) {
     let elInfo = mapper.elementDeclarations.get(element);
     if (!elInfo) continue;
+    if (/gbsfw/.test(element.toString()) && /border/.test(props.join(","))) {
+      console.log(element.toString());
+    }
+    let allProps = new Set<string>(props);
     for (let prop of props) {
+      for (let shorthand of propParser.getShorthandsForProperty(prop)) {
+        allProps.add(shorthand);
+      }
+    }
+
+    for (let prop of allProps) {
       let conflictDecls = elInfo.getValue(prop); // TODO: check if the decls are applied in conjunction or if they are exclusive from each other.
       for (let conflictDecl of conflictDecls) {
         if (expanded[prop] !== conflictDecl.value // TODO: What if the conflict decl is a shorthand?
-            && declBetween(mergedDecl, conflictDecl, unmergedDecl)) {
+            && checkForConflict(mergedDecl, conflictDecl, unmergedDecl, targetSpecificity)) {
           return mergeConflict(mergedDecl, unmergedDecl, conflictDecl, element);
         }
       }
@@ -413,27 +543,44 @@ function isMergeConflicted(
   return;
 }
 
-function declBetween(
-  outside1: DeclarationInfo,
-  between: DeclarationInfo,
-  outside2: DeclarationInfo
+function sameSpecificity(
+  s1: specificity.Specificity,
+  s2: specificity.Specificity
 ) {
-  let lowerOrdinal = Math.min(outside1.ordinal, outside2.ordinal);
-  let upperOrdinal = Math.max(outside1.ordinal, outside2.ordinal);
-  return lowerOrdinal < between.ordinal && upperOrdinal > between.ordinal;
+  return specificity.compare(s1.specificityArray, s2.specificityArray) === 0;
 }
 
-function canMerge(mapper: DeclarationMapper, decl: postcss.Declaration): boolean {
-  if (!propParser.isShorthandProperty(decl.prop)) {
-    return true;
+function checkForConflict(
+  targetDecl: DeclarationInfo,
+  isConflictDecl: DeclarationInfo,
+  fromDecl: DeclarationInfo,
+  targetSpecificity: specificity.Specificity | undefined
+): boolean {
+  if (targetSpecificity
+      && !sameSpecificity(targetSpecificity,
+                          isConflictDecl.selectorInfo.specificity)) {
+    return false; // document order only matters if they have the same specificity.
   }
-  let infos = mapper.shortHands.get(decl);
-  if (infos) {
-    let duplicateCount = infos.reduce((total, info) => total + Math.min(info.dupeCount, 1), 0);
-    return duplicateCount >= Math.ceil(infos.length / 2) + 1;
-  } else {
-    throw new Error("Missing decl info for declaration! " + inspect(decl));
+  // if the possible conflict declaration isn't crossed then it can't conflict.
+  if ((fromDecl.sourceOrdinal < isConflictDecl.sourceOrdinal
+        && targetDecl.sourceOrdinal < fromDecl.sourceOrdinal)
+      || (targetDecl.sourceOrdinal > isConflictDecl.sourceOrdinal
+        && fromDecl.sourceOrdinal > targetDecl.sourceOrdinal)) {
+    return false;
   }
+  return true;
+}
+
+function canMerge(memo: Map<postcss.Declaration, boolean>, mapper: DeclarationMapper, decl: postcss.Declaration): boolean {
+  if (memo.has(decl)) return memo.get(decl)!;
+  let infoSets = mapper.declarationInfos.get(decl);
+  let result = infoSets.every(infos => {
+    if (infos.length === 1) return infos[0].dupeCount > 0;
+    let duplicateCount = infos.reduce((total, info) => total + (info.dupeCount > 0 ? 1 : 0), 0);
+    return duplicateCount > Math.ceil(infos.length / 2);
+  });
+  memo.set(decl, result);
+  return result;
 }
 
 function mergeConflict(
@@ -489,16 +636,4 @@ function groupAttrsByName(attrs: IdentityDictionary<SimpleAttribute>): IdentityD
     group.values.push(attr.value);
   }
   return groupDictionary;
-}
-
-function mergedShorthandsForContext(contextMergeables: MergeableDeclarationSet[]) {
-  let shorthands = new Set<postcss.Declaration>();
-  for (let mergeable of contextMergeables) {
-    for (let declInfo of mergeable.decls) {
-      if (declInfo.decl.prop !== declInfo.prop) {
-        shorthands.add(declInfo.decl);
-      }
-    }
-  }
-  return shorthands;
 }

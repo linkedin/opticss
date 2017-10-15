@@ -1,5 +1,7 @@
 import * as postcss from 'postcss';
 import { Dictionary, MultiDictionary } from 'typescript-collections';
+import * as specificity from 'specificity';
+import * as selectorParser from 'postcss-selector-parser';
 
 import { ParsedSelector } from '../../parseSelector';
 import { RuleScope } from '../../util/cssIntrospection';
@@ -17,13 +19,19 @@ export class OptimizationContext {
   /** runtime selector scoping for this context. */
   selectorContext: ParsedSelector | undefined;
   root: postcss.Root;
+  specificity: specificity.Specificity | undefined;
 
   /**
    * map of property keys to a dictionary of values multi-mapped to
-   * the selector information that references them. The multi-mapped values
+   * the declaration info for this context. The multi-mapped values
    * are in the order of stylesheet precedence.
    */
   declarationMap: Dictionary<string, MultiDictionary<string, DeclarationInfo>>;
+
+  /**
+   * Declaration infos that belong to this optimization context;
+   */
+  declarationInfos: Set<DeclarationInfo>;
 
   /**
    * A set of properties that are declared within this optimization context.
@@ -37,6 +45,11 @@ export class OptimizationContext {
     this.selectorContext = selectorContext;
     this.declarationMap = new Dictionary<string, MultiDictionary<string, DeclarationInfo>>();
     this.authoredProps = new Set();
+    this.declarationInfos = new Set();
+    let specificitySelector = selectorContext &&
+      selectorContext.toContext(selectorParser.className({ value: "foo" }));
+    this.specificity = specificitySelector &&
+      specificity.calculate(specificitySelector.toString())[0];
   }
 
   getDeclarationValues(prop: string): MultiDictionary<string, DeclarationInfo> {

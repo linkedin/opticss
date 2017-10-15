@@ -3,6 +3,9 @@ import {
   assertSameCascade,
   bodyElement,
   serializeElement,
+  ElementStyleMismatch,
+  ElementStyle,
+  ComputedStyle,
 } from 'resolve-cascade';
 
 import {
@@ -136,6 +139,36 @@ export function debugResult(inputCSS: string, result: CascadeTestResult) {
       console.log("Rewritten to:", "\n" + indentString(serializeElement(bodyElement(results.actualDoc)!)));
     });
   });
+}
+
+function debugCascadeInfo(element: string, cascade: ElementStyle | undefined, style: ComputedStyle | undefined) {
+  let info = [`Element: ${element}`];
+  if (cascade) {
+    info.push("Cascade:");
+    info.push(indentString(cascade.debug()));
+  } else {
+    info.push("Cascade information unavailable.");
+  }
+  if (style) {
+    info.push("Style:");
+    info.push("{");
+    let properties = Object.keys(style).sort();
+    for (let property of properties) {
+      info.push(`  ${property}: ${style[property]};`);
+    }
+    info.push("}");
+  } else {
+    info.push("Style information unavailable.");
+  }
+  return info.join("\n");
+}
+
+export function debugCascadeError(error: ElementStyleMismatch & CascadeTestErrorDetails) {
+  console.log("Error: Cascade Resolution Mismatch");
+  console.log("Before Optimization:");
+  console.log(indentString(debugCascadeInfo(error.expectedElement, error.expectedCascade, error.expectedStyles)));
+  console.log("After Optimization:");
+  console.log(indentString(debugCascadeInfo(error.actualElement, error.actualCascade, error.actualStyles)));
 }
 
 export function debugError(inputCSS: string, error: CascadeTestError) {

@@ -7,6 +7,7 @@ import {
   SimpleAttribute as ElementAttribute,
   SimpleTagname as ElementTagname,
   StyleMapping,
+  isSimpleTagname,
 } from '@opticss/template-api';
 
 import { Optimizations } from '../../OpticssOptions';
@@ -29,6 +30,9 @@ import {
   ParsedSelectorAndRule,
   SelectorCache,
 } from '../../query';
+import {
+  DeclarationInfo
+} from '../../optimizations/MergeDeclarations/StyleInfo';
 
 const REWRITEABLE_ATTR_OPS = ["=", "~=", undefined];
 
@@ -36,13 +40,6 @@ export interface Declaration {
   prop: string;
   value: string;
   important: boolean;
-}
-
-export interface DeclarationInfo {
-  selector: ParsedSelector;
-  rule: postcss.Rule;
-  decl: postcss.Declaration;
-  container: postcss.Node;
 }
 
 /**
@@ -66,7 +63,6 @@ export class MergeDeclarations extends MultiAction {
   constructor(
     templateOptions: TemplateIntegrationOptions,
     pass: OptimizationPass,
-    container: postcss.Container,
     selectorContext: ParsedSelector | undefined,
     decl: Declaration,
     declInfos: Array<DeclarationInfo>,
@@ -77,7 +73,7 @@ export class MergeDeclarations extends MultiAction {
     this.templateOptions = templateOptions;
     this.styleMapping = pass.styleMapping;
     this.reason = reason;
-    this.container = container;
+    this.container = declInfos[0].selectorInfo.container;
     this.selectorContext = selectorContext;
     this.cache = pass.cache;
     this.identGenerators = pass.identGenerators;
@@ -106,11 +102,12 @@ export class MergeDeclarations extends MultiAction {
     decl.raws = { before:' ', after: ' '};
     this.newRule.append(decl);
 
-    let ruleLocation = this.declInfos.find(d => d.container === this.container)!.rule;
+    let insertionDecl = this.declInfos[0];
+    let ruleLocation = insertionDecl.selectorInfo.rule;
     this.container.insertBefore(ruleLocation, this.newRule);
     let sourceAttributes = new Array<ElementAttributes>();
     for (let declInfo of this.declInfos) {
-      let sel: CompoundSelector = declInfo.selector.key;
+      let sel: CompoundSelector = declInfo.selectorInfo.selector.key;
       let inputs = MergeDeclarations.inputsFromSelector(this.templateOptions, sel);
       if (!inputs) {
         throw new Error("internal error");
@@ -120,7 +117,7 @@ export class MergeDeclarations extends MultiAction {
         unless: new Array<ElementTagname | ElementAttribute>() // TODO: cascade resolution of exclusion classes.
       });
       if (declInfo.decl.parent === undefined) {
-        continue;
+        continue; // TODO: take this out -- it shouldn't happen.
       }
       if (declInfo.decl.parent.nodes!.filter(node => node.type === "decl").length === 1) {
         let rule = <postcss.Rule>declInfo.decl.parent;
@@ -150,7 +147,7 @@ export class MergeDeclarations extends MultiAction {
   logStrings(): Array<string> {
     let logs = new Array<string>();
     this.declInfos.forEach((orig, i) => {
-      let msg = `Declaration moved from "${orig.selector}" into generated rule (${this.declString()}). ${this.reason} ${i + 1} of ${this.declInfos.length}.`;
+      let msg = `Declaration moved from "${orig.selectorInfo.selector}" into generated rule (${this.declString()}). ${this.reason} ${i + 1} of ${this.declInfos.length}.`;
       logs.push(this.annotateLogMessage(msg, this.nodeSourcePosition(orig.decl)));
     });
     this.removedRules.forEach(rule => {
@@ -206,9 +203,10 @@ export class MergeDeclarations extends MultiAction {
         return undefined;
       }
     }
+
+    if (inputs.every(input => isSimpleTagname(input))) return undefined;
     return inputs;
   }
-
 }
 
 function isAttributeAnalyzed(templateOptions: TemplateIntegrationOptions, node: selectorParser.Attribute): boolean {
