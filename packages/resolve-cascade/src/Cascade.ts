@@ -126,20 +126,16 @@ export class ElementStyle {
 
 function stylesForDeclaration(decl: postcss.Declaration): ComputedStyle {
   if (propParser.isShorthandProperty(decl.prop)) {
-    let expandedProps = propParser.getShorthandComputedProperties(decl.prop, true)
-                                  .filter(p => !propParser.isShorthandProperty(p));
-    let expandedValues = propParser.expandShorthandProperty(decl.prop, decl.value, true);
-    let style: ComputedStyle = {};
+    let expandedValues = <ComputedStyle>propParser.expandShorthandProperty(decl.prop, decl.value, true, true);
+    let expandedProps = Object.keys(expandedValues);
     // this filters out the shorthand props returned by expandShorthandProperty
-    // when recursively applied and sets values not set explicitly.
+    // when recursively applied.
     for (let prop of expandedProps) {
-      if (!expandedValues[prop]) {
-        style[prop] = "initial"; // TODO: use the real default value.
-      } else {
-        style[prop] = expandedValues[prop]; // TODO: use the real default value.
+      if (propParser.isShorthandProperty(prop)) {
+        delete expandedValues[prop];
       }
     }
-    return style;
+    return expandedValues;
   } else {
     return {
       [decl.prop]: decl.value

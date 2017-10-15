@@ -39,4 +39,25 @@ export class CascadeTest {
       });
     });
   }
+  @test "initial values are equivalent"() {
+    let expectedCss = clean`
+      .a { position: static; }
+      .b { background: none; }
+    `;
+    let expectedHtml = clean`
+      <div class="a"></div>
+      <div class="b"></div>
+    `;
+    let actualCss = clean`
+      .a { position: initial; }
+      .b { background: none transparent; }
+    `;
+    let actualHtml = clean`
+      <div class="a"></div>
+      <div class="b"></div>
+    `;
+
+    return assertSameCascade(expectedCss, actualCss,
+                             expectedHtml, actualHtml).then(() => {});
+  }
 }

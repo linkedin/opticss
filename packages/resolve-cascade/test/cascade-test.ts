@@ -56,14 +56,14 @@ export class CascadeTest {
         if (elStyle) {
           let styles = elStyle.compute();
           assert.deepEqual(styles, {
-            "background-attachment": "initial",
-            "background-clip": "initial",
+            "background-attachment": "scroll",
+            "background-clip": "border-box",
             "background-color": "#F00",
             "background-image": "none",
-            "background-origin": "initial",
-            "background-position": "initial",
-            "background-repeat": "initial",
-            "background-size": "initial",
+            "background-origin": "padding-box",
+            "background-position": "0% 0%",
+            "background-repeat": "repeat",
+            "background-size": "auto auto",
             "color": "red",
           });
         }
