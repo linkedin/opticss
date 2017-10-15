@@ -5,7 +5,6 @@ import {
   skip,
   suite,
   test,
-  // only,
 } from 'mocha-typescript';
 import * as path from 'path';
 import * as postcss from 'postcss';
@@ -18,6 +17,7 @@ import {
   debugCascadeError,
   debugError,
   debugResult,
+  logOptimizations,
   testOptimizationCascade,
 } from './util/assertCascade';
 import {
@@ -210,7 +210,7 @@ export class MergeDeclarationsTest {
               .h { background-clip: content-box; }
               .i { background-attachment: fixed; }
               .j { background-color: red; }
-              .a { background-position: initial; background-size: initial; background-origin: content-box; }`);
+              .a { background-position: 0% 0%; background-size: auto auto; background-origin: content-box; }`);
       assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
         <body><div class="a e g h i j"></div>
         <div></div></body>`);
@@ -400,7 +400,6 @@ export class MergeDeclarationsTest {
       return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
     });
   }
-  // @only
   @test "merges psuedoclasses safely"() {
     let css1 = clean`
     .bip { color: blue; }
@@ -435,7 +434,6 @@ export class MergeDeclarationsTest {
       throw e;
     });
   }
-  // @only
   @test "merges chained psuedos with different orders"() {
     let css1 = clean`
     .foo:hover:first-of-type { color: red; }
@@ -463,7 +461,6 @@ export class MergeDeclarationsTest {
       throw e;
     });
   }
-  // @only
   @test "handles cascade conflicts with pseudos"() {
     let css1 = clean`
     .foo:hover { color: red; }
@@ -494,7 +491,6 @@ export class MergeDeclarationsTest {
       throw e;
     });
   }
-  // @only
   @test "merges psuedoclasses with cascade overrides"() {
     let css1 = clean`
     .foo { color: blue; }
@@ -526,7 +522,6 @@ export class MergeDeclarationsTest {
       throw e;
     });
   }
-  // @only
   @test "handles duplicated declarations with rules with multiple selectors"() {
     let css1 = clean`
     .foo, .bar { color: red; }
@@ -595,7 +590,7 @@ export class MergeDeclarationsTest {
         .h { background-clip: content-box; }
         .i { background-attachment: fixed; }
         .j { background-color: red; }
-        .scope .shBg, .shortBg { background-size: initial; background-origin: content-box; background-color: red; background-position: center; }
+        .scope .shBg, .shortBg { background-size: auto auto; background-origin: content-box; background-color: red; background-position: center; }
         `);
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
@@ -612,7 +607,6 @@ export class MergeDeclarationsTest {
       throw e;
     });
   }
-  // @only
   @test "handles shorthands in rulesets with multiple selectors in diff scopes with one fully merged."() {
     let css1 = clean`
     .scope .b5 { background-position: center; }
@@ -629,7 +623,7 @@ export class MergeDeclarationsTest {
     .a4 { background-attachment: fixed; }
     .a5 { background-color: red; }
     .a6 { background-position: center; }
-    .a7 { background-size: initial; }
+    .a7 { background-size: auto auto; }
     .a8 { background-origin: content-box; }
     `;
     let template = new TestTemplate("test", clean`
@@ -652,13 +646,13 @@ export class MergeDeclarationsTest {
         .scope .e { background-attachment: fixed; }
         .f { background-image: none; }
         .g { background-position: center; }
-        .h { background-size: initial; }
+        .h { background-size: auto auto; }
         .i { background-repeat: repeat-x; }
         .j { background-origin: content-box; }
         .k { background-clip: content-box; }
         .l { background-attachment: fixed; }
         .m { background-color: red; }
-        .scope .shBg { background-size: initial; background-origin: content-box; background-color: red; }
+        .scope .shBg { background-size: auto auto; background-origin: content-box; background-color: red; }
         `);
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
@@ -675,7 +669,6 @@ export class MergeDeclarationsTest {
       throw e;
     });
   }
-  // @only
   @test "handles declarations with rules with multiple selector scopes"() {
     let css1 = clean`
     .scope1 .foo, .scope2 .bar { color: red; }
@@ -717,7 +710,6 @@ export class MergeDeclarationsTest {
       throw e;
     });
   }
-  // @only
   @test "handles rules with multiple selectors"() {
     let css1 = clean`
     .foo, .bar { color: red; }
