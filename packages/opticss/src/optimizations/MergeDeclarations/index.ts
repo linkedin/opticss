@@ -392,9 +392,6 @@ export class MergeDeclarations implements MultiFileOptimization {
     /** All mergeables for the current context */
     let contextMergeables = new Array<Array<MergeableDeclarationSet>>();
     for (let mergeable of mergeables) {
-      if (mergeable.decls[0].prop === "flex") {
-        console.log(mergeable);
-      }
       /** All mergeables for the current context and mergeable property but separated by cascade divisions */
       let segmentedMergeables = new Array<MergeableDeclarationSet>();
       let declInfos = mergeable.decls;
@@ -520,9 +517,6 @@ function isMergeConflicted(
   for (let element of unmergedDecl.selectorInfo.elements) {
     let elInfo = mapper.elementDeclarations.get(element);
     if (!elInfo) continue;
-    if (/gbsfw/.test(element.toString()) && /border/.test(props.join(","))) {
-      console.log(element.toString());
-    }
     let allProps = new Set<string>(props);
     for (let prop of props) {
       for (let shorthand of propParser.getShorthandsForProperty(prop)) {

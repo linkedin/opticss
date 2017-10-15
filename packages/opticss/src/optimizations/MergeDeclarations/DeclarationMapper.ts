@@ -107,9 +107,6 @@ export class DeclarationMapper {
       // map properties to selector info
       let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContext());
       for (let prop of selectorInfo.declarations.keys()) {
-        if (/\.gb_fa/.test(selectorInfo.rule.selector) && /border/.test(prop)) {
-          console.log(selectorInfo.selector.toString());
-        }
         let values = selectorInfo.declarations.getValue(prop);
         for (let value of values) {
           declarationOrdinal++;

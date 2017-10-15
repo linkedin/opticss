@@ -16,7 +16,7 @@ import {
   CascadeTestResult,
   debugCascadeError,
   debugError,
-  debugResult,
+  // debugResult,
   logOptimizations,
   testOptimizationCascade,
 } from './util/assertCascade';
@@ -289,7 +289,7 @@ export class MergeDeclarationsTest {
     <div class="c"></div>
   `);
     return testMergeDeclarations(css1, template).then(result => {
-      debugResult(css1, result);
+      // debugResult(css1, result);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
         clean`
