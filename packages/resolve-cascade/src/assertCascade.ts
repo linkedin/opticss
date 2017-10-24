@@ -81,11 +81,21 @@ export function assertSameStyle(
   actualValue: string,
   expectedValue: string,
 ) {
-  if (propParser.isInitialValue(property, expectedValue)) {
-    if (!propParser.isInitialValue(property, actualValue)) {
-      assert.fail(`Expected ${actualValue} to be an initial value for ${property}.`);
+  try {
+    if (propParser.isInitialValue(property, expectedValue)) {
+      if (!propParser.isInitialValue(property, actualValue)) {
+        assert.fail(`Expected ${actualValue} to be an initial value for ${property}.`);
+      } else {
+        return;
+      }
+    }
+  } catch (e) {
+    if (e instanceof propParser.UnknownPropertyError) {
+      if (!e.property.startsWith("-")) {
+        console.log(e.message);
+      }
     } else {
-      return;
+      throw e;
     }
   }
   expectedValue = expectedValue.toLowerCase().trim().replace(/\s+/g, " ");
