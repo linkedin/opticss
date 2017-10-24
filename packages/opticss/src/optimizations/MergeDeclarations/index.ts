@@ -604,7 +604,7 @@ function attrsForSelectors(selectors: ParsedSelectorAndRule[]): IdentityDictiona
       } else if (isAttribute(node)) {
         if (operatorsDescribingIdents.includes(node.operator)) {
           let attr: SimpleAttribute = {
-            ns: node.ns,
+            ns: node.namespace && node.namespaceString,
             name: node.attribute,
             value: node.value || ""
           };

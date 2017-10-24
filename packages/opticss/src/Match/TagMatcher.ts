@@ -1,5 +1,4 @@
 import {
-  HasSelectorNodes,
   Tag,
   isConstant,
   isTagChoice,
@@ -9,7 +8,7 @@ import * as SelectorParser from 'postcss-selector-parser';
 import { assertNever } from "@opticss/util";
 
 import { Match, boolToMatch } from "./Match";
-import { Matcher } from "./Matcher";
+import { Matcher, HasSelectorNodes } from "./Matcher";
 
 export function isTag(tag: { type: string } | undefined): tag is SelectorParser.Tag {
   if (tag) {

@@ -23,7 +23,7 @@ export class ParseSelectorTests {
   }
 
   @test "handles selectorParser.Root"() {
-    let selector = selectorParser().process(".foo .bar, .biz .baz").res;
+    let selector = selectorParser().astSync(".foo .bar, .biz .baz");
     let res = parseSelector(selector);
 
     assert.equal(res.length, 2);
@@ -32,7 +32,7 @@ export class ParseSelectorTests {
 
   // Theres something weird going on here
   @test @skip "handles selectorParser.Node[]"() {
-    let selector = selectorParser().process(".foo .bar, .biz .baz").res.nodes;
+    let selector = selectorParser().astSync(".foo .bar, .biz .baz").nodes;
     console.log(selector);
     let res = parseSelector(selector);
     console.log(res);
@@ -42,7 +42,7 @@ export class ParseSelectorTests {
 
   // Theres something weird going on here
   @test @skip "handles selectorParser.Node[][]"() {
-    let selector = [ selectorParser().process(".foo .bar").res.nodes, selectorParser().process(".biz .baz").res.nodes ];
+    let selector = [ selectorParser().astSync(".foo .bar").nodes, selectorParser().astSync(".biz .baz").nodes ];
     console.log(selector);
     let res = parseSelector(selector);
     console.log(res[0].selector.nodes);

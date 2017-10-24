@@ -1,4 +1,3 @@
-import * as SelectorParser from 'postcss-selector-parser';
 import { SourceLocation, POSITION_UNKNOWN } from "./SourceLocation";
 import { assertNever } from "@opticss/util";
 
@@ -150,10 +149,6 @@ export interface SerializedAttribute {
   namespaceURL?: string | null;
   name: string;
   value: AttributeValue;
-}
-
-export interface HasSelectorNodes {
-  nodes: Array<SelectorParser.Node>;
 }
 
 /**

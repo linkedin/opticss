@@ -1,11 +1,14 @@
 import {
-  HasSelectorNodes,
   Selectable,
 } from '@opticss/template-api';
 import * as SelectorParser from 'postcss-selector-parser';
 
 import { ParsedSelector } from "../parseSelector";
 import { Match, matches } from "./Match";
+
+export interface HasSelectorNodes {
+  nodes: Array<SelectorParser.Node>;
+}
 
 export abstract class Matcher<Type extends Selectable> {
 

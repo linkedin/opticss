@@ -1,6 +1,5 @@
 import {
   Attr,
-  HasSelectorNodes,
   AttributeValue,
   isAbsent,
   isUnknown,
@@ -18,7 +17,7 @@ import * as SelectorParser from 'postcss-selector-parser';
 import { assertNever } from "@opticss/util";
 
 import { Match, boolToMatch, matches } from "./Match";
-import { Matcher } from "./Matcher";
+import { Matcher, HasSelectorNodes } from "./Matcher";
 
 export function isAttrNode(node: SelectorParser.Node): node is SelectorParser.Attribute {
   if (node.type === SelectorParser.ATTRIBUTE) {
@@ -92,7 +91,7 @@ export class AttributeMatcher extends Matcher<Attr> {
         // TODO: unclear whether this is the namespace url or prefix from
         // postcss-selector-parser (it's probably the prefix so this is probably
         // broken).
-        if (a.attribute === attr.name && attr.sameNamespace(a.ns)) {
+        if (a.attribute === attr.name && attr.sameNamespace(a.namespaceString)) {
           return this.matchAttributeNode(attr, node);
         } else {
           return Match.no;

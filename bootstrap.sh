@@ -19,6 +19,7 @@ yarn run bootstrap
 yarn link css-select
 yarn link postcss
 yarn link css-size
+yarn link postcss-selector-parser
 
 for PACKAGE in resolve-cascade util template-api simple-template opticss demo-app
 do

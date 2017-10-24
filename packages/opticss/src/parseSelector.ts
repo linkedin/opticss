@@ -449,7 +449,7 @@ function toNodes(selector: Selectorish): selectorParser.Node[][] {
 
   // If input is a string, parse and coerce new `selectorParser.Root` to proper output and return.
   if (typeof selector === "string") {
-    let res: selectorParser.Root =  selectorParser().process(selector).res;
+    let res: selectorParser.Root =  selectorParser().astSync(selector);
     return coerceRootToNodeList(res);
   }
 

@@ -1,6 +1,5 @@
 import {
   Element,
-  HasSelectorNodes,
   Attribute,
   AttributeNS,
   ElementInfo
@@ -12,7 +11,7 @@ import { assertNever } from "@opticss/util";
 import { Match, negate } from "./Match";
 import { TagMatcher } from "./TagMatcher";
 import { AttributeMatcher } from "./AttributeMatcher";
-import { Matcher } from "./Matcher";
+import { Matcher, HasSelectorNodes } from "./Matcher";
 
 export function isSelector(node: { type: string } | undefined): node is SelectorParser.Selector {
   if (node) {
