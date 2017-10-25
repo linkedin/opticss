@@ -31,10 +31,7 @@ import {
   ValueConstant,
 } from '@opticss/template-api';
 import {
-  isClass,
-  isIdentifier,
   ParsedSelector,
-  isAttribute,
 } from '../../parseSelector';
 import {
   expandIfNecessary,
@@ -43,6 +40,13 @@ import * as postcss from 'postcss';
 import {
   inspect,
 } from 'util';
+import * as SelectorParser from "postcss-selector-parser";
+
+const {
+  isClassName,
+  isIdentifier,
+  isAttribute,
+} = SelectorParser;
 
 import Actions, {
   AnnotateMergeConflict,
@@ -597,7 +601,7 @@ function attrsForSelectors(selectors: ParsedSelectorAndRule[]): IdentityDictiona
   let attributes = new IdentityDictionary<SimpleAttribute>(simpleAttributeToString);
   for (let selector of selectors) {
     selector.parsedSelector.eachSelectorNode(node => {
-      if (isClass(node)) {
+      if (isClassName(node)) {
         attributes.add({name: "class", value: node.value});
       } else if (isIdentifier(node)) {
         attributes.add({name: "id", value: node.value});

@@ -2,10 +2,12 @@ import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { Action, stripNL } from "../Action";
 import { SourcePosition } from "@opticss/template-api";
-import { ParsedSelector, isClass, isIdentifier } from "../../parseSelector";
+import { ParsedSelector } from "../../parseSelector";
 import { OptimizationPass } from "../../OptimizationPass";
 import { IdentNode } from "../../util/cssIntrospection";
 import { OpticssError } from "../../errors";
+
+const { isClassName, isIdentifier } = selectorParser;
 
 export interface RuleIdents {
   rule: postcss.Rule;
@@ -53,7 +55,7 @@ export class RewriteRuleIdents extends Action {
     this.pass.cache.reset(this.ident.rule);
     this.oldSelector = this.ident.rule.selector;
     this.ident.idents.forEach(node => {
-      if (isClass(node)) {
+      if (isClassName(node)) {
         this.rewriteNode("class", node);
       } else if (isIdentifier(node)) {
         this.rewriteNode("id", node);

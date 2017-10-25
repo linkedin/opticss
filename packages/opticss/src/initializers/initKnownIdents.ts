@@ -1,11 +1,12 @@
 import { ParsedCssFile } from "../CssFile";
 import { OptimizationPass } from "../OptimizationPass";
 import { TemplateIntegrationOptions, TemplateTypes, TemplateAnalysis, rewriteOptions } from "@opticss/template-api";
-import { isClass, isIdentifier } from "../parseSelector";
+import * as SelectorParser from "postcss-selector-parser";
 import { eachFileIdent } from "../util/cssIntrospection";
 import { OptiCSSOptions } from "../OpticssOptions";
 import { assertNever } from "@opticss/util";
 
+const { isClassName, isIdentifier } = SelectorParser;
 /**
  * Initializes this OptimizationPass' ident generator with blacklisted identifiers.
  * @param {OptimizationPass} pass The OptimizationPass.
@@ -30,7 +31,7 @@ export default function initKnownIdents(
 
   // Reserve every existing identifier used in any of the files
   eachFileIdent(files, pass.cache, opts, (node) => {
-    if (isClass(node)) {
+    if (isClassName(node)) {
       pass.identGenerators.reserve("class", node.value);
     } else if (isIdentifier(node)) {
       pass.identGenerators.reserve("id", node.value);

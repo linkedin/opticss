@@ -3,7 +3,8 @@ import * as selectorParser from "postcss-selector-parser";
 import { inspect } from "util";
 import { ParsedCssFile } from "../CssFile";
 import { SelectorCache } from "../query";
-import { ParsedSelector, isIdentifier, isClass } from "../parseSelector";
+import { ParsedSelector } from "../parseSelector";
+import { isIdentifier, isClassName } from "postcss-selector-parser";
 
 export type RuleScope = Array<postcss.AtRule>;
 export type RuleIteratorWithScope = (rule: postcss.Rule, scope: RuleScope) => false | undefined | void;
@@ -45,7 +46,7 @@ export type IdentNode = selectorParser.Identifier | selectorParser.ClassName;
 export function eachSelectorIdent(sel: ParsedSelector, idents: IdentTypes, cb: (node: IdentNode) => void) {
   sel.eachSelectorNode((node) => {
     if (idents.id && isIdentifier(node)) { cb(node); }
-    else if (idents.class && isClass(node)) { cb(node); }
+    else if (idents.class && isClassName(node)) { cb(node); }
   });
 }
 

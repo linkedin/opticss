@@ -1,70 +1,10 @@
 import selectorParser = require("postcss-selector-parser");
 
-/**
- * If node is pseudo element, return true.
- * @param node Node to check if is a pseudo element
- * @return True or false if a pseudo element
- */
-export function isPseudoelement(node: selectorParser.Node | undefined): node is selectorParser.Pseudo {
-  return !!node && node.type === selectorParser.PSEUDO &&
-    (
-      node.value &&
-      node.value.startsWith("::") ||
-      node.value === ":before" ||
-      node.value === ":after"
-    );
-}
-
-const NODE_TYPES = new Set([
-  selectorParser.TAG,
-  selectorParser.STRING,
-  selectorParser.SELECTOR,
-  selectorParser.ROOT,
-  selectorParser.PSEUDO,
-  selectorParser.NESTING,
-  selectorParser.ID,
-  selectorParser.COMMENT,
-  selectorParser.COMBINATOR,
-  selectorParser.CLASS,
-  selectorParser.ATTRIBUTE,
-  selectorParser.UNIVERSAL]
-);
-
-export function isNode(node: any): node is selectorParser.Node {
-  return (typeof node === "object" && NODE_TYPES.has(node.type));
-}
-
-export function isPseudo(node: selectorParser.Node | undefined): node is selectorParser.Pseudo {
-  return !!node && node.type === selectorParser.PSEUDO;
-}
-
-export function isSelector(node: selectorParser.Node | undefined): node is selectorParser.Selector {
-  return !!node && node.type === selectorParser.SELECTOR;
-}
-
-export function isIdentifier(node: selectorParser.Node | undefined): node is selectorParser.Identifier {
-  return !!node && node.type === selectorParser.ID;
-}
-
-export function isClass(node: selectorParser.Node | undefined): node is selectorParser.ClassName {
-  return !!node && node.type === selectorParser.CLASS;
-}
-
-export function isAttribute(node: selectorParser.Node | undefined): node is selectorParser.Attribute {
-  return !!node && node.type === selectorParser.ATTRIBUTE;
-}
-
-export function isUniversal(node: selectorParser.Node | undefined): node is selectorParser.Universal {
-  return !!node && node.type === selectorParser.UNIVERSAL;
-}
-
-export function isTag(node: selectorParser.Node | undefined): node is selectorParser.Universal {
-  return !!node && node.type === selectorParser.TAG;
-}
-
-export function isRoot(node: selectorParser.Node | undefined): node is selectorParser.Root {
-  return !!node && node.type === selectorParser.ROOT;
-}
+const {
+  isPseudo,
+  isPseudoElement,
+  isRoot,
+} = selectorParser;
 
 export interface CombinatorAndSelector<SelectorType> {
   combinator: selectorParser.Combinator;
@@ -485,7 +425,7 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
       }
 
       // Normalize :before and :after to always use double colons and save.
-      else if (isPseudoelement(n)) {
+      else if (isPseudoElement(n)) {
         compoundSel.pseudoelement = <selectorParser.Pseudo>n;
         if (!compoundSel.pseudoelement.value.startsWith("::")) {
           compoundSel.pseudoelement.value = ":" + compoundSel.pseudoelement.value;
@@ -524,7 +464,7 @@ export function parseSelector(selector: Selectorish): ParsedSelector[] {
       parsedSelectors.push(new ParsedSelector(compoundSelector, source));
     }
     return parsedSelectors;
-  } else if (isNode(selector) && isRoot(selector)) {
+  } else if (isRoot(selector)) {
     source = selector.toString();
   }
   let compoundSelectors = parseCompoundSelectors(selector);

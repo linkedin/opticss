@@ -17,15 +17,9 @@ import { IdentGenerators } from '../../util/IdentGenerator';
 import { MultiAction } from '../Action';
 import {
   CompoundSelector,
-  isClass,
-  isUniversal,
-  isAttribute,
-  isIdentifier,
   ParsedSelector,
-  isTag,
-  isPseudo,
-  isPseudoelement,
 } from '../../parseSelector';
+
 import {
   ParsedSelectorAndRule,
   SelectorCache,
@@ -33,6 +27,16 @@ import {
 import {
   DeclarationInfo
 } from '../../optimizations/MergeDeclarations/StyleInfo';
+
+const {
+  isAttribute,
+  isClassName,
+  isIdentifier,
+  isPseudo,
+  isPseudoElement,
+  isTag,
+  isUniversal,
+} = selectorParser;
 
 const REWRITEABLE_ATTR_OPS = ["=", "~=", undefined];
 
@@ -178,7 +182,7 @@ export class MergeDeclarations extends MultiAction {
         } else {
           return undefined;
         }
-      } else if (isClass(node)) {
+      } else if (isClassName(node)) {
         if (templateOptions.analyzedAttributes.includes("class")) {
           inputs.push({ name: "class", value: node.value });
         } else {
@@ -197,7 +201,7 @@ export class MergeDeclarations extends MultiAction {
         } else {
           return undefined;
         }
-      } else if (isPseudo(node) || isPseudoelement(node)) {
+      } else if (isPseudo(node) || isPseudoElement(node)) {
         // pass
       } else {
         return undefined;
