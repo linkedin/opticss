@@ -1,9 +1,13 @@
-import selectorParser = require("postcss-selector-parser");
+import * as postcss from "postcss";
+import * as selectorParser from "postcss-selector-parser";
+import { isRule } from "./util/cssIntrospection";
 
 const {
+  isContainer,
   isPseudo,
   isPseudoElement,
   isRoot,
+  isSelector,
 } = selectorParser;
 
 export interface CombinatorAndSelector<SelectorType> {
@@ -190,17 +194,6 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
   }
 }
 
-function isContainer(
-  node: selectorParser.Node | selectorParser.Container
-): node is selectorParser.Container
-{
-  if ((<selectorParser.Container>node).walk) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 /**
  * `ParsedSelector` serves as a container object for a `CompoundSelector` linked
  * list and provides a number of convenience methods for interacting with it.
@@ -358,7 +351,7 @@ export class ParsedSelector {
 /**
  * All valid selector-like inputs to the `parseSelector` helper methods.
  */
- export type Selectorish = string | selectorParser.Root | selectorParser.Node[] | selectorParser.Node[][];
+ export type Selectorish = string | selectorParser.Root | selectorParser.Node[] | selectorParser.Node[][] | postcss.Rule;
 
 /**
  * Coerce a `selectorParser.Root` object to `selectorParser.Node[][]`.
@@ -387,19 +380,18 @@ function toNodes(selector: Selectorish): selectorParser.Node[][] {
     }
   }
 
-  // If input is a string, parse and coerce new `selectorParser.Root` to proper output and return.
-  if (typeof selector === "string") {
-    let res: selectorParser.Root =  selectorParser().astSync(selector);
-    return coerceRootToNodeList(res);
-  }
-
   // If input is `selectorParser.Root`, coerce to proper output and return.
-  if ((<selectorParser.Node>selector).type === selectorParser.ROOT) {
+  if (isRoot(selector)) {
     return coerceRootToNodeList(selector);
   }
 
-  // Otherwise, is a `selectorParser.Selector`. Unwrap nodes and return .
-  return [selector.nodes];
+  if (isSelector(selector)) {
+    // Otherwise, is a `selectorParser.Selector`. Unwrap nodes and return .
+    return [selector.nodes];
+  }
+
+  let res: selectorParser.Root =  selectorParser().astSync(selector, {updateSelector: false});
+  return coerceRootToNodeList(res);
 }
 
 /**
@@ -460,6 +452,13 @@ export function parseSelector(selector: Selectorish): ParsedSelector[] {
   if (typeof selector === "string") {
     let parsedSelectors = new Array<ParsedSelector>();
     for (let source of selector.split(",")) {
+      let compoundSelector = parseCompoundSelectors(source)[0];
+      parsedSelectors.push(new ParsedSelector(compoundSelector, source));
+    }
+    return parsedSelectors;
+  } else if (isRule(selector)) {
+    let parsedSelectors = new Array<ParsedSelector>();
+    for (let source of selector.selectors!) {
       let compoundSelector = parseCompoundSelectors(source)[0];
       parsedSelectors.push(new ParsedSelector(compoundSelector, source));
     }

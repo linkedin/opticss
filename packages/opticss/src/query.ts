@@ -46,7 +46,7 @@ export class SelectorCache implements SelectorFactory {
     if (this._cache.has(rule)) {
       return this._cache.get(rule)!;
     } else {
-      let selectors = parseSelector(rule.selector);
+      let selectors = parseSelector(rule);
       this._cache.set(rule, selectors);
       return selectors;
     }
@@ -79,7 +79,7 @@ export class QuerySelectorReferences implements SelectorQuery {
       other: {}
     };
     walkRules(container, (node) => {
-      let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node.selector);
+      let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node);
       let found = parsedSelectors.filter((value: ParsedSelector) => {
          return this.targets.find((element) => {
           let match = ElementMatcher.instance.matchSelector(element, value, false);
@@ -113,7 +113,7 @@ export class QueryKeySelector implements SelectorQuery {
       other: {}
     };
     walkRules(container, (node) => {
-      let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node.selector);
+      let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node);
       let found = parsedSelectors.filter((value: ParsedSelector) => matches(ElementMatcher.instance.matchSelector(this.target, value, true)));
       found.forEach((sel) => {
         let key = sel.key;

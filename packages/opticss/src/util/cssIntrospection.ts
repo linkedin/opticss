@@ -5,6 +5,7 @@ import { ParsedCssFile } from "../CssFile";
 import { SelectorCache } from "../query";
 import { ParsedSelector } from "../parseSelector";
 import { isIdentifier, isClassName } from "postcss-selector-parser";
+import { ObjectDictionary } from "@opticss/util";
 
 export type RuleScope = Array<postcss.AtRule>;
 export type RuleIteratorWithScope = (rule: postcss.Rule, scope: RuleScope) => false | undefined | void;
@@ -106,14 +107,14 @@ export function isAtRule(node: postcss.Node): node is postcss.AtRule {
  * @param node postcss node to test.
  * @returns True or false if node is a rule.
  */
-export function isRule(node: postcss.Node): node is postcss.Rule {
+export function isRule(node: ObjectDictionary<any>): node is postcss.Rule {
   return (node.type === "rule");
 }
 
 /**
  * Test if a postcss node is a declaration.
  */
-export function isDeclaration(node: postcss.Node): node is postcss.Declaration {
+export function isDeclaration(node: ObjectDictionary<any>): node is postcss.Declaration {
   return (node.type === "decl");
 }
 
