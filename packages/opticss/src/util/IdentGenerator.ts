@@ -47,6 +47,12 @@ export class IdentGenerator {
     if (carry) this.counters.push(0);
     return nextIdent;
   }
+
+  /** An iterator that produces an infinite sequence of identifiers. */
+  *idents() {
+    yield this.nextIdent();
+  }
+
   /**
    * When a generated ident is no longer in use, it should be returned
    * so it can be re-used.
