@@ -193,7 +193,7 @@ export class StyleMapping {
     }
     return inputs;
   }
-  rewriteMapping(element: ElementInfo): RewriteMapping | null {
+  rewriteMapping(element: ElementInfo): RewriteMapping {
     let inputs = this.getInputs(element);
     let dynamicAttributes = {
       id: <DynamicExpressions>{},

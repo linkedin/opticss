@@ -24,6 +24,15 @@ export function or<V>(...values: Array<V | BooleanExpression<V>>): OrExpression<
   return {or: values};
 }
 
+export function isBooleanExpression(expr: any): expr is BooleanExpression<any> {
+  if (typeof expr === "object") {
+    let be = <BooleanExpression<any>>expr;
+    return isAndExpression(be) || isOrExpression(be) || isNotExpression(be);
+  } else {
+    return false;
+  }
+}
+
 export function isAndExpression<V>(expr: BooleanExpression<V>): expr is AndExpression<V> {
   return Array.isArray((<AndExpression<V>>expr).and);
 }
@@ -32,6 +41,6 @@ export function isOrExpression<V>(expr: BooleanExpression<V>): expr is OrExpress
   return Array.isArray((<OrExpression<V>>expr).or);
 }
 
-export function isNotExpression<V>(expr: BooleanExpression<V>): expr is OrExpression<V> {
+export function isNotExpression<V>(expr: BooleanExpression<V>): expr is NotExpression<V> {
   return Object.keys(expr).includes("not");
 }
