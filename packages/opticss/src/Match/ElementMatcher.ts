@@ -85,7 +85,8 @@ export class ElementMatcher extends Matcher<Element>  {
       case "tag":
         return TagMatcher.instance.matchSelectorNode(element.tagname, node);
       case "attribute":
-        let anAttr = findAttr(element, (<SelectorParser.Attribute>node).attribute);
+        let ns = node.namespaceString || null;
+        let anAttr = findAttr(element, node.attribute, ns);
         if (anAttr) {
           return AttributeMatcher.instance.matchSelectorNode(anAttr, node);
         } else {
