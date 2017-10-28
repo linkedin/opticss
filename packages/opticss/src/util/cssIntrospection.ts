@@ -5,7 +5,7 @@ import { ParsedCssFile } from "../CssFile";
 import { SelectorCache } from "../query";
 import { ParsedSelector } from "../parseSelector";
 import { isIdentifier, isClassName } from "postcss-selector-parser";
-import { ObjectDictionary } from "@opticss/util";
+import { ObjectDictionary, something } from "@opticss/util";
 
 export type RuleScope = Array<postcss.AtRule>;
 export type RuleIteratorWithScope = (rule: postcss.Rule, scope: RuleScope) => false | undefined | void;
@@ -91,6 +91,22 @@ export function eachFileSelector(files: ParsedCssFile[], cache: SelectorCache, c
  */
 export function eachSelector(root: postcss.Root, cache: SelectorCache, cb: (rule: postcss.Rule, sel: ParsedSelector) => void ) {
   walkRules(root, (rule) => cache.getParsedSelectors(rule).forEach((sel: ParsedSelector) => cb(rule, sel)));
+}
+
+const NODE_TYPES = {
+  "root": true,
+  "atrule": true,
+  "rule": true,
+  "decl": true,
+  "comment": true,
+};
+
+export function isNode(node: something): node is postcss.Node {
+  if (typeof node === "object" && NODE_TYPES[(<postcss.Node>node).type]) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 /**

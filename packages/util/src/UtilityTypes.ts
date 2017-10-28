@@ -3,3 +3,5 @@ export interface ObjectDictionary<T> {
 }
 
 export type StringDict = ObjectDictionary<string>;
+
+export type something = string | number | boolean | symbol | object;
