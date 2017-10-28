@@ -27,15 +27,33 @@ export function isNotNull<X>(value: X | null): {and: (cb: (defValue: X) => any) 
 }
 
 export function isExisting<X>(value: X | null | undefined): {and: (cb: (defValue: X) => any) => void } {
-  let exists: X | undefined = undefined;
-  isDefined(value).and((value) => {
-    isNotNull(value).and((value) => {
-      exists = value;
-    });
-  });
-  if (exists) {
-    return exists;
+  if (value) {
+    return {
+      and: function(cb: (v: X) => void) {
+        cb(value);
+      }
+    };
   } else {
+    assert(value, `expected to exist`);
+    throw new Error("this is unreachable");
+  }
+}
+
+export function isType<
+  ArgumentType,
+  AssertedType extends ArgumentType
+>(
+  typeGuard: (x: ArgumentType) => x is AssertedType,
+  x: ArgumentType
+): { and: (cb: (x: AssertedType) => any) => void } {
+  if (typeGuard(x)) {
+    return {
+      and: function(cb: (x: AssertedType) => void) {
+        cb(x);
+      }
+    };
+  } else {
+    assert.fail(`is not the expected type`);
     throw new Error("this is unreachable");
   }
 }

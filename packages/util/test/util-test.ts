@@ -2,6 +2,7 @@ import { IdentityDictionary } from '../src/IdentityDictionary';
 import { MultiMap } from '../src/MultiMap';
 import { TwoKeyMultiMap } from '../src/TwoKeyMultiMap';
 import { ObjectDictionary } from '../src/UtilityTypes';
+import * as typeAssertions from '../src/typedAssert';
 import {
   assert,
 } from 'chai';
@@ -25,6 +26,71 @@ interface IdentityTest {
 
 @suite("Utils")
 export class SimpleTemplateTest {
+  @test "type assertions"() {
+    let undef: string | undefined = (true) ? undefined : "apple";
+    let defined: string | undefined = (true) ? "apple" : undefined;
+
+    let nil: string | null = (true) ? null : "apple";
+    let notNull: string | null = (true) ? "pear" : null;
+
+    let nothing: string | null | undefined = (true) ? null : (false) ? "apple" : undefined;
+    let something: string | null | undefined = (true) ? "apple" : (false) ? null : undefined;
+
+    let apple = "apple";
+    let pear = "pear";
+    function isApple(x: string): x is "apple" {
+      return x === "apple";
+    }
+
+    assert.throws(() => {
+      typeAssertions.isDefined(undef).and((d: string) => d);
+    }, "expected to be defined");
+
+    let callbackInvoked = false;
+    typeAssertions.isDefined(defined).and((d: string) => callbackInvoked = !!d);
+    assert(callbackInvoked, "callback was not invoked.");
+
+    assert.throws(() => {
+      typeAssertions.isNotNull(nil).and((d: string) => d);
+    }, "expected to not be null");
+
+    callbackInvoked = false;
+    typeAssertions.isNotNull(notNull).and((d: string) => callbackInvoked = !!d);
+    assert(callbackInvoked, "callback was not invoked.");
+
+    assert.throws(() => {
+      typeAssertions.isExisting(nil).and((d: string) => d);
+    }, "expected to exist");
+
+    callbackInvoked = false;
+    typeAssertions.isExisting(notNull).and((d: string) => callbackInvoked = !!d);
+    assert(callbackInvoked, "callback was not invoked.");
+
+    assert.throws(() => {
+      typeAssertions.isExisting(undef).and((d: string) => d);
+    }, "expected to exist");
+
+    callbackInvoked = false;
+    typeAssertions.isExisting(defined).and((d: string) => callbackInvoked = !!d);
+    assert(callbackInvoked, "callback was not invoked.");
+
+    assert.throws(() => {
+      typeAssertions.isExisting(nothing).and((d: string) => d);
+    }, "expected to exist");
+
+    callbackInvoked = false;
+    typeAssertions.isExisting(something).and((d: string) => callbackInvoked = !!d);
+    assert(callbackInvoked, "callback was not invoked.");
+
+    assert.throws(() => {
+      typeAssertions.isType(isApple, pear).and((d: "apple") => d);
+    }, "expected");
+
+    callbackInvoked = false;
+    typeAssertions.isType(isApple, apple).and((d: "apple") => callbackInvoked = !!d);
+    assert(callbackInvoked, "callback was not invoked.");
+  }
+
   @test "clean"() {
     // tslint:disable:no-trailing-whitespace
     assert.equal(clean`
