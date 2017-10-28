@@ -94,7 +94,7 @@ export class Optimizer {
   }
 
   /**
-   * Add another souce file to include in this optimization.
+   * Add another source file to include in this optimization.
    * @param {CssFile} CSS File to add
    */
   addSource(file: CssFile) {
@@ -103,7 +103,7 @@ export class Optimizer {
 
   /**
    * Add another TemplateAnalysis to use in this optimization.
-   * @param {TempalteAnalysis} TemplateAnalysis to use.
+   * @param {TemplateAnalysis} TemplateAnalysis to use.
    */
   addAnalysis(analysis: TemplateAnalysis<keyof TemplateTypes>) {
     this.analyses.push(analysis);
@@ -140,7 +140,7 @@ export class Optimizer {
   }
 
   /**
-   * Run all opmitimizations' initializers.
+   * Run all optimizations' initializers.
    * @param {pass} This optimization pass instance.
    * @param {files} All files we're working on, parsed as postcss trees.
    */
@@ -180,7 +180,7 @@ export class Optimizer {
    * Concatenate all of this Optimizer's files into a single output.
    * @param {files} All postcss ASTs we're working on.
    * @param {outputFilename} The expected output's filename.
-   * @returns {Concat} The concatted file.
+   * @returns {Concat} The concatenated file.
    */
   private concatenateFiles(files: Array<ParsedCssFile>, outputFilename: string): Concat {
     let start = new Date();
@@ -196,7 +196,7 @@ export class Optimizer {
         }
       };
       let result = file.content.root!.toResult(resultOpts);
-      output.add(file.filename || "optimized.css", result.css, result.map.toJSON());
+      output.add(file.filename || "optimized-input.css", result.css, result.map.toJSON());
     }
     this.logTiming('concatenate', start, new Date);
     return output;
