@@ -99,6 +99,19 @@ export class TemplateInfoFactory {
   }
 }
 
+export function isTemplateType<K extends keyof TemplateTypes>(
+  type: K, template: TemplateInfo<keyof TemplateTypes>
+): template is TemplateInfo<K>;
+export function isTemplateType<K extends keyof TemplateTypes>(
+  type: K, template: TemplateTypes[keyof TemplateTypes]
+): template is TemplateTypes[K];
+export function isTemplateType<K extends keyof TemplateTypes>(
+  type: K,
+  template: TemplateTypes[keyof TemplateTypes] | TemplateInfo<keyof TemplateTypes>
+): template is TemplateTypes[K] | TemplateInfo<K> {
+  return (template.type === type);
+}
+
 /**
  * Base class for template information for an analyzed template.
  */
