@@ -3,7 +3,7 @@ import { Action } from "./Action";
 /**
  * Tracks the actions that were performed and the order in which they were done.
  */
-export default class Actions {
+export class Actions {
   performed: Array<Action>;
   constructor() {
     this.performed = [];

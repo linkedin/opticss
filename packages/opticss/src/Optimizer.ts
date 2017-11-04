@@ -5,7 +5,7 @@ import { OptiCSSOptions, DEFAULT_OPTIONS } from './OpticssOptions';
 import initializers, { Initializers } from './initializers';
 import { OptimizationPass } from './OptimizationPass';
 import { CssFile, ParsedCssFile } from './CssFile';
-import Actions from './Actions';
+import { Actions } from './Actions';
 
 import {
   isMultiFileOptimization,

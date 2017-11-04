@@ -48,7 +48,8 @@ const {
   isAttribute,
 } = SelectorParser;
 
-import Actions, {
+import {
+  Actions,
   AnnotateMergeConflict,
   ChangeSelector,
   ExpandShorthand,

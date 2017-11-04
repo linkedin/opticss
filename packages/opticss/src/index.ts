@@ -4,6 +4,7 @@ export * from "./query";
 export * from "./OpticssOptions";
 export * from "./parseSelector";
 export * from "./util/IdentGenerator";
+export * from "./Actions";
 export {
   OptimizationResult,
   TimingData,
