@@ -22,6 +22,14 @@ export class ParseSelectorTests {
     assert.equal(res[0].length, 2);
   }
 
+  @test "handles pseudo elements"() {
+    let selector = "::selection";
+    let res = parseSelector(selector);
+    assert.equal(res.length, 1);
+    assert.equal(res[0].length, 1);
+    assert.isDefined(res[0].selector);
+  }
+
   @test "handles selectorParser.Root"() {
     let selector = selectorParser().astSync(".foo .bar, .biz .baz");
     let res = parseSelector(selector);

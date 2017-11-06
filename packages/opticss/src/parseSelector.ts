@@ -418,6 +418,11 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
 
       // Normalize :before and :after to always use double colons and save.
       else if (isPseudoElement(n)) {
+        if (compoundSel.nodes.length === 0) {
+          let universal = selectorParser.universal();
+          n.parent!.insertBefore(n, universal);
+          compoundSel.addNode(universal);
+        }
         compoundSel.pseudoelement = <selectorParser.Pseudo>n;
         if (!compoundSel.pseudoelement.value.startsWith("::")) {
           compoundSel.pseudoelement.value = ":" + compoundSel.pseudoelement.value;
