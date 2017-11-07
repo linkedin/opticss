@@ -2,6 +2,13 @@
  *  Please don't hate me for my crappy CSS Chris!  *
  ***************************************************/
 
+ :root {
+   --pink: rgb(238, 39, 84);
+   --purple: rgb(46, 26, 72);
+    --light-purple: rgba(46, 26, 72, .85);
+
+ }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -22,7 +29,7 @@ nav button {
   border: 0;
   width: 100%;
   padding: 14px;
-  color: rgb(238, 39, 84);
+  color: var(--pink);
   margin-bottom: 4px;
   opacity: .55;
   transition: opacity .3;
@@ -36,7 +43,7 @@ nav button.active {
   position: absolute;
   top: 50%;left: 50%;
   transform: translateY(-50%) translateX(-50%);
-  color: rgb(46, 26, 72);
+  color: var(--purple);
   font-family: monospace;
   text-align:center;
 }
@@ -166,4 +173,140 @@ nav button.active {
   content: "$";
   position: absolute;
   left: 0;
+}
+
+.options-menu {
+  position: absolute;
+  top: 134px;
+  width: auto;
+  z-index: 999;
+  background: white;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.1), 0 6px 9px rgba(0,0,0,.2);
+  padding: 16px;
+  list-style: none;
+  border-radius: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: monospace;
+  font-size: 14px;
+  visibility: hidden;
+  opacity: 0;
+  transition: visiblity .3s, opacity .3s;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+      -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none;
+}
+.options-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transition: visiblity 0s, opacity .3s;
+}
+
+.options-menu:before {
+  content: "";
+  border: 10px solid transparent;
+  border-bottom-color: rgba(0,0,0,.15);
+  position: absolute;
+  top: -21px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.options-menu:after {
+  content: "";
+  border: 10px solid transparent;
+  border-bottom-color: white;
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.options-menu__item {
+  display: flex;
+  margin-bottom: 16px;
+  white-space: pre;
+}
+
+.options-menu__item:last-of-type {
+  margin-bottom: 0;
+}
+
+input[type=checkbox], input[type=radio] {
+    pointer-events: none;
+    opacity: 0;
+    margin: 16px 2px 0 0;
+    position: absolute;
+}
+
+input[type=checkbox]+label:before {
+    border-radius: 4px;
+}
+
+input[type=checkbox]+label, input[type=radio]+label {
+    display: block;
+    line-height: 20px;
+    margin-bottom: 0;
+    padding: 0 0 0 28px;
+    position: relative;
+}
+
+input[type=checkbox]:checked+label:before, input[type=checkbox]:disabled:checked+label:before,
+input[type=radio]:checked+label:before, input[type=radio]:disabled:checked+label:before {
+    box-shadow: 0 0 0 11px var(--light-purple)inset;
+}
+
+input[type=checkbox]+label:before, input[type=radio]+label:before {
+    box-shadow: 0 0 0 1px rgba(0,0,0,.25) inset;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    padding: 2px;
+}
+
+input[type=checkbox]+label:before, input[type=radio]+label:before {
+    transition-property: box-shadow;
+    transition-duration: 167ms;
+    transition-timing-function: cubic-bezier(0,0,.2,1);
+    transition-delay: 0s;
+}
+
+input[type=checkbox]+label:after, input[type=checkbox]+label:before, input[type=radio]+label:after, input[type=radio]+label:before {
+    content: " ";
+    height: 22px;
+    width: 22px;
+    top: -1px;
+    left: -1px;
+    position: absolute;
+    display: block;
+    box-sizing: border-box;
+}
+
+input[type=checkbox]+label:after, input[type=checkbox]+label:before,
+input[type=radio]+label:after, input[type=radio]+label:before {
+    content: " ";
+    height: 22px;
+    width: 22px;
+    top: -1px;
+    left: -1px;
+    position: absolute;
+    display: block;
+    box-sizing: border-box;
+}
+input[type=checkbox]:checked+label:after, input[type=radio]:checked+label:after {
+    display: block;
+}
+input[type=checkbox]+label:after {
+    content: "✓";
+    color: white;
+    font-size: 18px;
+    line-height: 16px;
+    text-align: center;
+    display: none;
+    height: 16px;
+    width: 16px;
+    overflow: hidden;
+    margin: 3px;
 }

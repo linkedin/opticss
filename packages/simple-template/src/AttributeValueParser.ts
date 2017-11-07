@@ -18,6 +18,11 @@ export class AttributeValueParser {
     // Attributes are whitespace delimited if they are `class` attributes with now namespace.
     let whitespaceDelimited = attrName === "class" && !attrNamespace;
 
+    // If whitespace delimited, be sure to trim unused whitespace.
+    if (whitespaceDelimited) {
+      value = value.trim();
+    }
+
     // If begins with `javascript:`, or is an `onEvent` attr, it's script -- ignore
     if ( attrName.match(/^on/) || value.startsWith("javascript:") ) {
       return { absent: true };

@@ -36,24 +36,16 @@ Split(['#css-code-output', '#tmpl-code-output'], {
 
 let cssInContainer = document.getElementById('css-code-editor') as HTMLElement;
 let cssInEditor = codemirror(cssInContainer, {
-    value: `.bar {
+  value: window.localStorage.getItem('css-input') || `.bar {
   color: blue;
-  background-color: purple;
-  border-radius: 2px;
-}
-.baz {
-  color: yellow;
-  background-color: orange;
-  border-radius: 2px;
 }
 .foo {
-  padding: 16px;
-  color: blue;
+  color: green;
 }
-.biz {
-  color: yellow;
-  background-color: purple;
-}`,
+.foo.bar {
+  color: red;
+}
+`,
     mode: 'css',
     theme: 'mdn-like',
     lineNumbers: true
@@ -62,9 +54,7 @@ let cssInEditor = codemirror(cssInContainer, {
 
   let tmplInContainer = document.getElementById('tmpl-code-editor') as HTMLElement;
   let tmplInEditor = codemirror(tmplInContainer, {
-    value: `<div class="foo (bar | baz | biz)">
-  <div class="foo (bar | baz | biz)">Adam wuz here</div>
-</div>`,
+    value: window.localStorage.getItem('tmpl-input') || `<div class="foo bar"></div>`,
     mode: 'htmlmixed',
     theme: 'mdn-like',
     lineNumbers: true
@@ -90,10 +80,19 @@ let cssInEditor = codemirror(cssInContainer, {
 
 export class DemoOptimizer {
   run(html: string, css: string): Promise<void> {
+
+    window.localStorage.setItem('css-input', css);
+    window.localStorage.setItem('tmpl-input', html);
+
     let template = new TestTemplate('/input.tmpl', html);
     let analyzer = new SimpleAnalyzer(template);
     return analyzer.analyze().then(analysis => {
-      let optimizer = new Optimizer({except: ["removeUnusedStyles"]}, {rewriteIdents: { class: true, id: false}});
+      let optimizer = new Optimizer({
+        removeUnusedStyles: FEATURE_TOGGLES['removeUnusedStyles'].checked,
+        conflictResolution: FEATURE_TOGGLES['conflictResolution'].checked,
+        mergeDeclarations: FEATURE_TOGGLES['mergeDeclarations'].checked,
+        rewriteIdents: FEATURE_TOGGLES['rewriteIdents'].checked,
+      }, {rewriteIdents: { class: true, id: false}});
       optimizer.addSource({
         content: css,
         filename: 'input.css'
@@ -177,5 +176,29 @@ tmplInEditor.on('keyup', process);
   (e.target as HTMLElement).classList.toggle('active');
   (document.getElementById('tmpl-live-demo') as HTMLElement).classList.toggle('show');
 });
+
+(document.getElementById('settings-toggle') as HTMLElement).addEventListener('click', function (e: Event) {
+  (e.target as HTMLElement).classList.toggle('active');
+  (document.getElementById('options-menu') as HTMLElement).classList.toggle('open');
+});
+
+const FEATURE_TOGGLES = {
+  removeUnusedStyles: (document.getElementById('removeUnusedStyles') as HTMLInputElement),
+  conflictResolution: (document.getElementById('conflictResolution') as HTMLInputElement),
+  mergeDeclarations: (document.getElementById('mergeDeclarations') as HTMLInputElement),
+  rewriteIdents: (document.getElementById('rewriteIdents') as HTMLInputElement),
+};
+
+for (let key in FEATURE_TOGGLES) {
+  const el = FEATURE_TOGGLES[key];
+  let prev = (window.localStorage.getItem(key) === null) ? true : !!window.localStorage.getItem(key);
+  window.localStorage.setItem(key, prev ? 'on' : '');
+  el.checked = prev;
+  el.addEventListener('click', function(e: Event) {
+    let target = (e.target as HTMLInputElement);
+    window.localStorage.setItem(target.id, target.checked ? 'on' : '');
+    process();
+  });
+}
 
 window.requestAnimationFrame(process);

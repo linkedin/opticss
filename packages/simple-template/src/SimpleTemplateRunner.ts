@@ -181,7 +181,7 @@ export function bodyElement(document: parse5.AST.Default.Document): BodyElement 
 export function bodyContents(document: parse5.AST.Default.Document): string {
   let body = bodyElement(document);
   if (body) {
-    return parse5.serialize({childNodes: [body]});
+    return parse5.serialize(body);
   } else {
     return "";
   }

@@ -5,15 +5,15 @@ import { suite, test } from 'mocha-typescript';
 import { TemplateAnalysis } from '@opticss/template-api';
 import { SimpleAnalyzer, TestTemplate } from '@opticss/simple-template';
 
-import { ChangeSelector, RemoveRule } from '../src/Actions';
-import { OptimizationResult, Optimizer } from '../src/Optimizer';
-import clean from './util/clean';
+import { ChangeSelector, RemoveRule } from '../../src/Actions';
+import { OptimizationResult, Optimizer } from '../../src/Optimizer';
+import clean from '../util/clean';
 
 function testRemoveUnusedStyles(stylesAndTemplates: Array<string | TestTemplate>, expectedOutput: string): Promise<OptimizationResult> {
   let optimizer = new Optimizer({
     only: ["removeUnusedStyles"]
   },
-  { rewriteIdents: { id: false, class: true }});
+    { rewriteIdents: { id: false, class: true } });
   let nCss = 1;
   let analysisPromises = new Array<Promise<TemplateAnalysis<"TestTemplate">>>();
   stylesAndTemplates.forEach(styleOrTemplate => {

@@ -14,17 +14,24 @@ else
 fi
 cd ..
 
+# These two packages no longer need to be linked. Remove after everyone has run this update.
+yarn unlink postcss-selector-parser
+for PACKAGE in resolve-cascade util template-api simple-template opticss demo-app
+do
+  cd packages/$PACKAGE
+  yarn unlink postcss
+  cd -
+done
+
 yarn install
 yarn run bootstrap
 yarn link css-select
-yarn link postcss
 yarn link css-size
-yarn link postcss-selector-parser
 
 for PACKAGE in resolve-cascade util template-api simple-template opticss demo-app
 do
   cd packages/$PACKAGE
-  yarn link postcss
+  echo -e "${GREEN}✔ Running $PACKAGE tests${NC}"
   yarn test || (echo "ERROR in $PACKAGE" && exit 1) || exit 1
   cd -
 done
