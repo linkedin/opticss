@@ -12,6 +12,25 @@
       <button id="preview-toggle" class="fa fa-camera" aria-hidden="true"></button>
       <button id="terminal-toggle" class="fa fa-terminal" aria-hidden="true"></button>
       <button id="settings-toggle" class="fa fa-gear" aria-hidden="true"></button>
+      <ul class="options-menu" id="options-menu">
+        <li><h3>Optimizations</h3></li>
+        <li class="options-menu__item">
+          <input type="checkbox" id="removeUnusedStyles" checked>
+          <label for="removeUnusedStyles">Remove Unused Styles</label>
+        </li>
+        <li class="options-menu__item">
+          <input type="checkbox" id="conflictResolution" checked>
+          <label for="conflictResolution">Conflict Reduction</label>
+        </li>
+        <li class="options-menu__item">
+          <input type="checkbox" id="mergeDeclarations" checked>
+          <label for="mergeDeclarations">Merge Declarations</label>
+        </li>
+        <li class="options-menu__item">
+          <input type="checkbox" id="rewriteIdents" checked>
+          <label for="rewriteIdents">Rewrite Idents</label>
+        </li>
+      </ul>
       <div class="nav__arrow">
         <i class="fa fa-arrow-right" aria-hidden="true"></i>
         <span id="build-time-output">--</span>

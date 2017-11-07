@@ -16,20 +16,14 @@ import {
 import {
   IdentGenerator,
   IdentGenerators,
-} from '../src/util/IdentGenerator';
+} from '../../src/util/IdentGenerator';
 import {
   CascadeTestResult,
   testOptimizationCascade,
-} from './util/assertCascade';
-import {
-  TestTemplate,
-} from '@opticss/simple-template';
-import {
-  documentToString
-} from 'resolve-cascade';
-import {
-  clean
-} from '@opticss/util';
+} from '../util/assertCascade';
+import { TestTemplate } from '@opticss/simple-template';
+import { documentToString } from 'resolve-cascade';
+import { clean } from '@opticss/util';
 
 function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -48,15 +42,15 @@ export class RewriteIdentsTest {
     const idGen = new IdentGenerator();
     assert.equal(idGen.nextIdent(), "a");
     assert.equal(idGen.nextIdent(), "b");
-    for (let i = 2; i < 52; i ++) {
+    for (let i = 2; i < 52; i++) {
       idGen.nextIdent();
     }
     assert.equal(idGen.nextIdent(), "a0");
-    for (let i = 1; i < 64; i ++) {
+    for (let i = 1; i < 64; i++) {
       idGen.nextIdent();
     }
     assert.equal(idGen.nextIdent(), "b0");
-    for (let i = 1; i < 64 * 51; i ++) {
+    for (let i = 1; i < 64 * 51; i++) {
       idGen.nextIdent();
     }
     assert.equal(idGen.nextIdent(), "a00");
@@ -103,7 +97,7 @@ export class RewriteIdentsTest {
         </div>
       </article>
     `);
-    return testRewriteIdents({id: true, class: true}, css1, template).then(result => {
+    return testRewriteIdents({ id: true, class: true }, css1, template).then(result => {
       assert.deepEqual(
         result.optimization.output.content.toString(),
         clean`
@@ -113,13 +107,13 @@ export class RewriteIdentsTest {
           article #c .a a { color: red; }
         `);
       assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
-      <body><article id="b">
+      <article id="b">
         <div id="c">
           <p class="a">
             <a id="a">wtf</a>
           </p>
         </div>
-      </article></body>
+      </article>
       `);
     });
 
@@ -139,7 +133,7 @@ export class RewriteIdentsTest {
       <div class="(thing3 | thing1)" id="(id1 | id2)"></div>
       <div class="(--- | thing2 | thing4)" id="id3"></div>
     `);
-    return testRewriteIdents({id: true, class: true}, css1, template).then(result => {
+    return testRewriteIdents({ id: true, class: true }, css1, template).then(result => {
       let logString = result.optimization.actions.performed[0].logString();
       assert.equal(logString, `${path.resolve("test1.css")}:2:7 [rewriteIdents] Rewrote selector's idents from "#id3" to "#a".`);
       assert.equal(result.optimization.styleMapping.replacedAttributeCount(), 7);
@@ -161,10 +155,10 @@ export class RewriteIdentsTest {
       <div class="(thing3 | thing1)" id="(id1 | id2)"></div>
       <div class="(--- | thing2 | thing4)" id="id3"></div>
     `);
-    return testRewriteIdents({id: false, class: true}, css1, template).then(result => {
-      let id1rw = result.optimization.styleMapping.getRewriteOf({name: "id", value: "id1"});
+    return testRewriteIdents({ id: false, class: true }, css1, template).then(result => {
+      let id1rw = result.optimization.styleMapping.getRewriteOf({ name: "id", value: "id1" });
       assert.isUndefined(id1rw);
-      let thing1rw = result.optimization.styleMapping.getRewriteOf({name: "class", value: "thing1"});
+      let thing1rw = result.optimization.styleMapping.getRewriteOf({ name: "class", value: "thing1" });
       assert.isDefined(thing1rw);
     });
   }
@@ -183,10 +177,10 @@ export class RewriteIdentsTest {
       <div class="(thing3 | thing1)" id="(id1 | id2)"></div>
       <div class="(--- | thing2 | thing4)" id="id3"></div>
     `);
-    return testRewriteIdents({id: true, class: false}, css1, template).then(result => {
-      let id1rw = result.optimization.styleMapping.getRewriteOf({name: "id", value: "id1"});
+    return testRewriteIdents({ id: true, class: false }, css1, template).then(result => {
+      let id1rw = result.optimization.styleMapping.getRewriteOf({ name: "id", value: "id1" });
       assert.isDefined(id1rw);
-      let thing1rw = result.optimization.styleMapping.getRewriteOf({name: "class", value: "thing1"});
+      let thing1rw = result.optimization.styleMapping.getRewriteOf({ name: "class", value: "thing1" });
       assert.isUndefined(thing1rw);
     });
   }
@@ -205,18 +199,18 @@ export class RewriteIdentsTest {
       <div class="(thing3 | a)" id="(a | id2)"></div>
       <div class="(--- | thing2 | thing4)" id="id3"></div>
     `);
-    return testRewriteIdents({id: true, class: true}, css1, template).then(result => {
+    return testRewriteIdents({ id: true, class: true }, css1, template).then(result => {
       // debugResult(css1, result);
       assert.equal(result.optimization.styleMapping.replacedAttributeCount(), 7);
       let tag = new Tagname({ constant: "div" });
-      let classAttr = new Attribute("class", {constant: "a"});
+      let classAttr = new Attribute("class", { constant: "a" });
       let mapping = result.optimization.styleMapping.rewriteMapping(new Element(tag, [classAttr]));
       if (mapping) {
         assert.deepEqual(mapping.inputs, [
-            { "tagname": "div" },
-            { "name": "class", "value": "a" }
-          ]);
-        assert.deepEqual(mapping.dynamicAttributes["class"], {b: {and: [1]}});
+          { "tagname": "div" },
+          { "name": "class", "value": "a" }
+        ]);
+        assert.deepEqual(mapping.dynamicAttributes["class"], { b: { and: [1] } });
       }
     });
   }

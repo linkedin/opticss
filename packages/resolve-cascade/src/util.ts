@@ -134,5 +134,5 @@ export function debugElement(element: parse5.AST.HtmlParser2.Element): string {
 }
 
 export function documentToString(document: parse5.AST.HtmlParser2.Document): string {
-  return serializeElement(bodyElement(document)!);
+  return parse5.serialize(bodyElement(document)!, { treeAdapter: parse5.treeAdapters.htmlparser2 });
 }

@@ -8,9 +8,7 @@ import {
 } from 'mocha-typescript';
 import * as path from 'path';
 import * as postcss from 'postcss';
-import {
-  documentToString,
-} from 'resolve-cascade';
+import { documentToString } from 'resolve-cascade';
 
 import {
   CascadeTestResult,
@@ -19,15 +17,13 @@ import {
   // debugResult,
   logOptimizations,
   testOptimizationCascade,
-} from './util/assertCascade';
+} from '../util/assertCascade';
 import {
   assertSmaller,
   assertSmallerStylesAndMarkupWithResults,
-} from './util/assertSmaller';
-import clean from './util/clean';
-import {
-  TestTemplate,
-} from '@opticss/simple-template';
+} from '../util/assertSmaller';
+import clean from '../util/clean';
+import { TestTemplate } from '@opticss/simple-template';
 import {
   TemplateIntegrationOptions,
   normalizeTemplateOptions
@@ -85,7 +81,7 @@ export class MergeDeclarationsTest {
         });
       }).then(() => {
         // debugResult(css1, result);
-        return assertSmaller(css1, result, {gzip: { notBiggerThan: 1}});
+        return assertSmaller(css1, result, { gzip: { notBiggerThan: 1 } });
       }).catch(e => {
         debugError(css1, e);
         throw e;
@@ -212,8 +208,8 @@ export class MergeDeclarationsTest {
               .j { background-color: red; }
               .a { background-position: 0% 0%; background-size: auto auto; background-origin: content-box; }`);
       assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
-        <body><div class="a e g h i j"></div>
-        <div></div></body>`);
+        <div class="a e g h i j"></div>
+        <div></div>`);
     });
   }
 
@@ -234,7 +230,7 @@ export class MergeDeclarationsTest {
         clean`.a { color: red; }
               .b { color: blue; }
               .c { color: red; }`);
-      return assertSmaller(css1, result, {uncompressed: {notBiggerThan: 1}, gzip: { notBiggerThan: 5}, brotli: { notBiggerThan: 1}});
+      return assertSmaller(css1, result, { uncompressed: { notBiggerThan: 1 }, gzip: { notBiggerThan: 5 }, brotli: { notBiggerThan: 1 } });
     });
   }
 
@@ -266,7 +262,7 @@ export class MergeDeclarationsTest {
           .ff { background-clip: content-box; }
           .gg { background-attachment: fixed; }
         `);
-      return assertSmaller(css1, result, {uncompressed: {notBiggerThan: 1}, gzip: { notBiggerThan: 5}, brotli: { notBiggerThan: 2}});
+      return assertSmaller(css1, result, { uncompressed: { notBiggerThan: 1 }, gzip: { notBiggerThan: 5 }, brotli: { notBiggerThan: 2 } });
     }).catch(e => {
       debugError(css1, e);
       throw e;
@@ -299,8 +295,8 @@ export class MergeDeclarationsTest {
           }
         `);
       assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
-        <body><div class="d e b"></div>
-        <div class="d e"></div></body>
+        <div class="d e b"></div>
+        <div class="d e"></div>
       `);
       // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
     });
@@ -324,8 +320,8 @@ export class MergeDeclarationsTest {
     return testMergeDeclarations(css1, template).then(result => {
       // debugResult(css1, result);
       assert.deepEqual(documentToString(result.testedTemplates[0].assertionResults[0].actualDoc), clean`
-        <body><div class="b"></div>
-        <div class="a c"></div></body>
+        <div class="b"></div>
+        <div class="a c"></div>
       `);
       assert.deepEqual(
         clean`${result.optimization.output.content.toString()}`,
@@ -364,7 +360,7 @@ export class MergeDeclarationsTest {
           .bb { color: white; }
           .cc { color: red; }
         `);
-      return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 8}});
+      return assertSmaller(css1, result, { gzip: { notBiggerThan: 1 }, brotli: { notBiggerThan: 8 } });
     }).catch(e => {
       debugError(css1, e);
       throw e;
@@ -394,7 +390,7 @@ export class MergeDeclarationsTest {
           .a .c { float: right; }
           .a .d { float: left; }
         `);
-      return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
+      return assertSmaller(css1, result, { gzip: { notBiggerThan: 1 }, brotli: { notBiggerThan: 1 } });
     });
   }
   @test "merges psuedoclasses safely"() {
@@ -421,10 +417,10 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="b"></div>
+          <div class="b"></div>
           <div class="b"></div>
           <div class="a"></div>
-          <div class="a"></div></body>
+          <div class="a"></div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -450,8 +446,8 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a"></div>
-          <div class="a"></div></body>
+          <div class="a"></div>
+          <div class="a"></div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -480,8 +476,8 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="foo"></div>
-          <div class="bar baz bip"></div></body>
+          <div class="foo"></div>
+          <div class="bar baz bip"></div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -511,8 +507,8 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a b"></div>
-          <div class="a b"></div></body>
+          <div class="a b"></div>
+          <div class="a b"></div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -539,9 +535,9 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a"></div>
           <div class="a"></div>
-          <div class="a"></div></body>
+          <div class="a"></div>
+          <div class="a"></div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -592,12 +588,12 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-        <body><div class="scope">
+        <div class="scope">
         <div class="b c d e a"></div>
         <div class="shBg a b c d e"></div>
         </div>
         <div class="f g h i j"></div>
-        <div class="shortBg f g h i j"></div></body>
+        <div class="shortBg f g h i j"></div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -654,12 +650,12 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-        <body><div class="scope">
+        <div class="scope">
         <div class="b c d e a"></div>
         <div class="shBg a b c d e"></div>
         </div>
         <div class="f i k l m g h"></div>
-        <div class="f g h i j k l m"></div></body>
+        <div class="f g h i j k l m"></div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -693,14 +689,14 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="scope1">
+          <div class="scope1">
             <div class="a"></div>
             <div class="a b"></div>
           </div>
           <div class="scope2">
             <div class="b"></div>
             <div class="a b"></div>
-          </div></body>
+          </div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -725,8 +721,8 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a"></div>
-          <div class="a"></div></body>
+          <div class="a"></div>
+          <div class="a"></div>
         `);
     }).catch((e) => {
       debugError(css1, e);
@@ -769,8 +765,8 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a b">
-          <div class="c d"></div></div></body>
+          <div class="a b">
+          <div class="c d"></div></div>
         `);
     }).catch((e) => {
       debugError(css1, e);
@@ -800,9 +796,9 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="bar"></div>
+          <div class="bar"></div>
           <div class="scope"><div class="foo"></div></div>
-          <div class="red"></div></body>
+          <div class="red"></div>
         `);
     }).catch((e) => {
       debugError(css1, e);
@@ -852,10 +848,10 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="duplicate-override"></div>
+          <div class="duplicate-override"></div>
           <div class="a b c"></div>
           <div class="a"></div>
-          <div class="has-override a b c"></div></body>
+          <div class="has-override a b c"></div>
         `);
     }).catch((e) => {
       // logOptimizations(e.optimization);
@@ -914,9 +910,9 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="duplicate-override"></div>
+          <div class="duplicate-override"></div>
           <div class="a b c d e"></div>
-          <div class="has-override a b c d e"></div></body>
+          <div class="has-override a b c d e"></div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -972,9 +968,9 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a b"></div>
+          <div class="a b"></div>
           <div class="c d"></div>
-          <div class="has-override a b c d"></div></body>
+          <div class="has-override a b c d"></div>
         `);
     }).catch((e) => {
       debugCascadeError(e);
@@ -1014,8 +1010,8 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="duplicate-override"></div>
-            <div class="has-override"></div></body>
+          <div class="duplicate-override"></div>
+            <div class="has-override"></div>
         `);
     }).catch((e) => {
       logOptimizations(e.optimization);
@@ -1048,13 +1044,13 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a">
+          <div class="a">
           <span id="id1" class="b">id 1</span>
           <span id="id2" class="b">id 2</span>
           <span class="b">id 3</span>
-          </div></body>
+          </div>
         `);
-      return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
+      return assertSmaller(css1, result, { gzip: { notBiggerThan: 1 }, brotli: { notBiggerThan: 1 } });
     }).catch((e) => {
       debugCascadeError(e);
       throw e;
@@ -1074,7 +1070,7 @@ export class MergeDeclarationsTest {
       </div>
     `);
     let templateConfig: Partial<TemplateIntegrationOptions> = {
-      rewriteIdents: {id: false, class: true},
+      rewriteIdents: { id: false, class: true },
       analyzedAttributes: ["id"]
     };
     return testMergeDeclarationsWithConfig(templateConfig, css1, template).then(result => {
@@ -1089,11 +1085,11 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a">
+          <div class="a">
           <span id="id1" class="b">id 1</span>
           <span id="id2" class="b">id 2</span>
           <span id="id3" class="b">id 3</span>
-          </div></body>
+          </div>
         `, "The id attribute should not be removed.");
       // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
     }).catch((e) => {
@@ -1115,7 +1111,7 @@ export class MergeDeclarationsTest {
       </div>
     `);
     let templateConfig: Partial<TemplateIntegrationOptions> = {
-      rewriteIdents: {id: false, class: true},
+      rewriteIdents: { id: false, class: true },
       analyzedAttributes: []
     };
     return testMergeDeclarationsWithConfig(templateConfig, css1, template).then(result => {
@@ -1130,11 +1126,11 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a">
+          <div class="a">
           <span id="id1">id 1</span>
           <span id="id2">id 2</span>
           <span id="id3">id 3</span>
-          </div></body>
+          </div>
         `, "No optimization should have occurred.");
       // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
     }).catch((e) => {
@@ -1156,7 +1152,7 @@ export class MergeDeclarationsTest {
       </div>
     `);
     let templateConfig: Partial<TemplateIntegrationOptions> = {
-      rewriteIdents: {id: false, class: true},
+      rewriteIdents: { id: false, class: true },
       analyzedAttributes: ["disabled", "type"]
     };
     return testMergeDeclarationsWithConfig(templateConfig, css1, template).then(result => {
@@ -1170,10 +1166,10 @@ export class MergeDeclarationsTest {
       assert.deepEqual(
         documentToString(result.testedTemplates[0].assertionResults[0].actualDoc),
         clean`
-          <body><div class="a">
+          <div class="a">
           <label for="name-field" class="b">First Name:</label>
           <input id="name-field" type="text" disabled="" class="a b">
-          </div></body>
+          </div>
         `);
       // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
     }).catch((e) => {
@@ -1225,7 +1221,7 @@ export class MergeDeclarationsTest {
           .b > .g { float: none; }
           .e .b > .g { float: left; }
         `);
-      return assertSmaller(css1, result, {gzip: {atLeastSmallerThan: 0}, brotli: {atLeastSmallerThan: 0}});
+      return assertSmaller(css1, result, { gzip: { atLeastSmallerThan: 0 }, brotli: { atLeastSmallerThan: 0 } });
     });
   }
 
@@ -1261,7 +1257,7 @@ export class MergeDeclarationsTest {
           .a .c { float: right; }
           .a .d { float: left; }
         `);
-      return assertSmaller(css1, result, {gzip: {atLeastSmallerThan: 0}, brotli: {atLeastSmallerThan: 0}});
+      return assertSmaller(css1, result, { gzip: { atLeastSmallerThan: 0 }, brotli: { atLeastSmallerThan: 0 } });
     });
   }
 
@@ -1310,6 +1306,6 @@ export class MergeDeclarationsTest {
 
 function parseStylesheet(content: string): Promise<postcss.Result> {
   return new Promise<postcss.Result>((resolve, reject) => {
-    postcss().process(content, {from: "stylesheet.css"}).then(resolve, reject);
+    postcss().process(content, { from: "stylesheet.css" }).then(resolve, reject);
   });
 }
