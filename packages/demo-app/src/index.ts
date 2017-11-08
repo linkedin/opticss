@@ -16,9 +16,20 @@ import * as cssmode from 'codemirror/mode/css/css';
 import * as htmlmode from 'codemirror/mode/htmlmixed/htmlmixed';
 import * as showhint from 'codemirror/addon/hint/show-hint';
 import * as csshint from 'codemirror/addon/hint/css-hint';
-import { Demo, FeatureToggles, hush, loadDemos } from './demos';
+import { Demo, FeatureToggles, hush, loadDemos, FeatureFlags } from './demos';
 
-let defaultDemo: Demo = initDemos(loadDemos());
+const FEATURE_TOGGLES: FeatureToggles = {
+  removeUnusedStyles: (document.getElementById('removeUnusedStyles') as HTMLInputElement),
+  conflictResolution: (document.getElementById('conflictResolution') as HTMLInputElement),
+  mergeDeclarations: (document.getElementById('mergeDeclarations') as HTMLInputElement),
+  rewriteIdents: (document.getElementById('rewriteIdents') as HTMLInputElement),
+  rewriteIds: (document.getElementById('rewriteIds') as HTMLInputElement),
+};
+
+const demoSelect = document.getElementById('demos') as HTMLSelectElement;
+
+let defaultOptions = autoSaveOptions();
+let [demos, defaultDemo] = initDemos(loadDemos(), defaultOptions);
 
 // For the sake of typescript!
 hush(cssmode, htmlmode, showhint, csshint);
@@ -39,7 +50,7 @@ Split(['#css-code-output', '#tmpl-code-output'], {
 
 let cssInContainer = document.getElementById('css-code-editor') as HTMLElement;
 let cssInEditor = codemirror(cssInContainer, {
-  value: window.localStorage.getItem('css-input') || defaultDemo.css,
+  value: defaultDemo.css,
   mode: 'css',
   theme: 'mdn-like',
   lineNumbers: true
@@ -48,7 +59,7 @@ let cssInEditor = codemirror(cssInContainer, {
 
 let tmplInContainer = document.getElementById('tmpl-code-editor') as HTMLElement;
 let tmplInEditor = codemirror(tmplInContainer, {
-  value: window.localStorage.getItem('tmpl-input') || defaultDemo.template,
+  value: defaultDemo.template,
   mode: 'htmlmixed',
   theme: 'mdn-like',
   lineNumbers: true
@@ -76,11 +87,50 @@ function query(): URLSearchParams {
   return new URL(document.location.toString()).searchParams;
 }
 
-function initDemos(demos: Array<Demo>): Demo {
+function autoSaveOptions() {
+  return Object.keys(FEATURE_TOGGLES).reduce((flags, opt) => {
+    flags[opt] = !!window.localStorage.getItem(opt);
+    return flags;
+  }, {} as Partial<FeatureFlags>);
+}
+
+function autoSaveData(options = autoSaveOptions()): Demo | undefined {
+  let css = window.localStorage.getItem('css-input');
+  let template = window.localStorage.getItem('tmpl-input');
+  if (!css || !template) return;
+  return {
+    name: "<AutoSave>",
+    unlinkable: true,
+    default: true,
+    css,
+    template,
+    options
+  };
+}
+
+function setDefault(demos: Array<Demo>, demo: Demo | undefined) {
+  if (!demo) return;
+  for (let d of demos) {
+    d.default = (d === demo);
+  }
+}
+
+function initDemos(demos: Array<Demo>, defaultOptions: Partial<FeatureFlags>): [Array<Demo>, Demo] {
   let  q = query();
-  let demoSelect = document.getElementById('demos') as HTMLSelectElement;
   let demoName = q.get("demo");
   let queriedDemo = demoName && demos.find(d => d.name === demoName) || undefined;
+  let lastSave = autoSaveData(defaultOptions);
+  if (lastSave) {
+    demos.unshift(lastSave);
+  }
+  setDefault(demos, queriedDemo || lastSave);
+
+  demos.forEach((demo, i) => {
+    demoSelect.options.add(new Option(demo.name, i.toString(), !!demo.default));
+    if (demo.default) {
+      demoSelect.selectedIndex = i;
+    }
+  });
 
   const changeHandler = (addHistory = true) => {
     let selIndex = parseInt(demoSelect.value);
@@ -94,17 +144,16 @@ function initDemos(demos: Array<Demo>): Demo {
     tmplInEditor.setValue(demo.template);
     if (addHistory) {
       let url = new URL(document.location.toString());
-      url.searchParams.set("demo", demo.name);
+      if (demo.unlinkable) {
+        url.searchParams.delete("demo");
+      } else {
+        url.searchParams.set("demo", demo.name);
+      }
       window.history.pushState(demo, demo.name, url.toString());
     }
     process();
   };
   demoSelect.onchange = changeHandler.bind(null, true);
-
-  demos.forEach((demo, i) => {
-    let isDefault = (queriedDemo) ? (demo === queriedDemo) : !!demo.default;
-    demoSelect.options.add(new Option(demo.name, i.toString(), isDefault));
-  });
 
   window.onpopstate = (ev) => {
     let demo: Demo = ev.state;
@@ -115,7 +164,7 @@ function initDemos(demos: Array<Demo>): Demo {
     }
   };
 
-  return demos.find(d => !!d.default) || demos[0];
+  return [demos, demos.find(d => !!d.default) || demos[0]];
 }
 
 export class DemoOptimizer {
@@ -204,8 +253,25 @@ let optimizer = new DemoOptimizer();
 function process(){
   optimizer.run(tmplInEditor.getValue(), cssInEditor.getValue());
 }
-cssInEditor.on('keyup', process);
-tmplInEditor.on('keyup', process);
+function processAndUpdateState(){
+  process();
+  if (demos[0].unlinkable) {
+    demos[0] = autoSaveData()!;
+  } else {
+    let autosave = autoSaveData();
+    if (autosave) demos.unshift(autosave);
+  }
+  let url = new URL(document.location.toString());
+  if (url.searchParams.has("demo")) {
+    url.searchParams.delete("demo");
+    demoSelect.selectedIndex = 0;
+    window.history.pushState(demos[0], "Autosave", url.toString());
+  } else {
+    window.history.replaceState(demos[0], "Autosave", url.toString());
+  }
+}
+cssInEditor.on('keyup', processAndUpdateState);
+tmplInEditor.on('keyup', processAndUpdateState);
 
 (document.getElementById('terminal-toggle') as HTMLElement).addEventListener('click', function(e: Event) {
   (e.target as HTMLElement).classList.toggle('active');
@@ -222,14 +288,6 @@ tmplInEditor.on('keyup', process);
   (document.getElementById('options-menu') as HTMLElement).classList.toggle('open');
 });
 
-const FEATURE_TOGGLES: FeatureToggles = {
-  removeUnusedStyles: (document.getElementById('removeUnusedStyles') as HTMLInputElement),
-  conflictResolution: (document.getElementById('conflictResolution') as HTMLInputElement),
-  mergeDeclarations: (document.getElementById('mergeDeclarations') as HTMLInputElement),
-  rewriteIdents: (document.getElementById('rewriteIdents') as HTMLInputElement),
-  rewriteIds: (document.getElementById('rewriteIds') as HTMLInputElement),
-};
-
 function objectEntries<T extends object>(v: T): Array<[keyof T, T[keyof T]]> {
   return Object.keys(v).map((k: keyof T)  => {
     let e: [keyof T, T[keyof T]] = [k, v[k]];
@@ -237,10 +295,11 @@ function objectEntries<T extends object>(v: T): Array<[keyof T, T[keyof T]]> {
   });
 }
 
-for (let [key, el] of objectEntries(FEATURE_TOGGLES)) {
-  let prev = (window.localStorage.getItem(key) === null) ? true : !!window.localStorage.getItem(key);
-  window.localStorage.setItem(key, prev ? 'on' : '');
-  el.checked = prev;
+let initialOptions = defaultDemo.options || defaultOptions;
+for (let [key, flag] of objectEntries(initialOptions)) {
+  window.localStorage.setItem(key, flag ? 'on' : '');
+  let el = FEATURE_TOGGLES[key];
+  el.checked = !!flag;
   el.addEventListener('click', function(e: Event) {
     let target = (e.target as HTMLInputElement);
     window.localStorage.setItem(target.id, target.checked ? 'on' : '');
