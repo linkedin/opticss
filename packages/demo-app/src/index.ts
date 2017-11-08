@@ -4,9 +4,8 @@ import {
   SimpleTemplateRewriter,
   SimpleAnalyzer,
 } from '@opticss/simple-template';
-import { Optimizer } from "opticss";
+import { Optimizer, isMultiAction, Action } from "opticss";
 
-import * as path from 'path';
 import * as prettier from 'prettier';
 import { SizeResults, process as cssSize } from "./css-size-fake";
 const Split = require('split.js');
@@ -173,7 +172,7 @@ export class DemoOptimizer {
     window.localStorage.setItem('css-input', css);
     window.localStorage.setItem('tmpl-input', html);
 
-    let template = new TestTemplate('/input.tmpl', html);
+    let template = new TestTemplate('input.tmpl', html);
     let analyzer = new SimpleAnalyzer(template);
     return analyzer.analyze().then(analysis => {
       let optimizer = new Optimizer({
@@ -184,10 +183,10 @@ export class DemoOptimizer {
       }, {rewriteIdents: { class: true, id: FEATURE_TOGGLES['rewriteIds'].checked}});
       optimizer.addSource({
         content: css,
-        filename: 'input.css'
+        filename: '/FOO/input.css'
       });
       optimizer.addAnalysis(analysis);
-      return optimizer.optimize('/optimized.css').then(result => {
+      return optimizer.optimize('optimized.css').then(result => {
         let out = prettier.format(String(result.output.content), { filepath: 'input.css' });
         cssOutEditor.setValue(out);
         let runner = new SimpleTemplateRunner(template);
@@ -219,15 +218,22 @@ export class DemoOptimizer {
             demoContainer.contentWindow.document.close();
           }
 
-          let log = document.createDocumentFragment();
           const terminal = document.getElementById('terminal') as HTMLElement;
+          terminal.innerHTML = "";
+          let table = document.createElement('table');
+          terminal.appendChild(table);
+          let tbody = table.createTBody();
           for (let a of result.actions.performed) {
-            let p = document.createElement('p');
-            p.appendChild(document.createTextNode(a.logString().replace(new RegExp(path.resolve(__dirname, "../../") + "/", "g"), "")));
-            log.appendChild(p);
+            let row = tbody.insertRow();
+            let optimizationCell = row.insertCell();
+            optimizationCell.innerText = a.optimization;
+            let positionCell = row.insertCell();
+            positionCell.innerText = cleanPaths(a.positionString(a.sourcePosition));
+            let messageCell = row.insertCell();
+            let messageText = document.createElement('pre');
+            messageCell.appendChild(messageText);
+            messageText.appendChild(document.createTextNode(logMessage(a)));
           }
-          terminal.innerHTML = '';
-          terminal.appendChild(log);
 
           let timingTotal = optimizer.timings.total.end - optimizer.timings.total.start;
 
@@ -246,6 +252,21 @@ export class DemoOptimizer {
         });
       });
     });
+  }
+}
+
+function stripPreamble(message: string): string {
+  let i = message.indexOf("]");
+  return message.substring(i + 1);
+}
+function cleanPaths(message: string): string {
+  return message.replace(/\/FOO\//g, '');
+}
+function logMessage(action: Action): string {
+  if (isMultiAction(action)) {
+    return action.logStrings().map(s => cleanPaths(stripPreamble(s))).join("\n");
+  } else {
+    return cleanPaths(stripPreamble(action.logString()));
   }
 }
 

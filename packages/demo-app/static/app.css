@@ -159,6 +159,9 @@ nav button.active {
   transition: transform .45s cubic-bezier(0.715, -0.370, 0.205, 1.335);
   box-sizing: border-box;
 }
+#terminal td {
+  color: white;
+}
 
 #terminal.show {
   transform: translateY(calc(0% + 16px));

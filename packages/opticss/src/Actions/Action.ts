@@ -68,6 +68,10 @@ export abstract class MultiAction extends Action{
   abstract logStrings(): Array<string>;
 }
 
+export function isMultiAction(action: Action): action is MultiAction {
+  return action instanceof MultiAction;
+}
+
 export function stripNL(str: string): string {
   return str.replace(/[\r\n\s]+/gm, " ");
 }
