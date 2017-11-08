@@ -23,7 +23,7 @@ do
   cd -
 done
 
-yarn install
+yarn install --check-files
 yarn run bootstrap
 yarn link css-select
 yarn link css-size
