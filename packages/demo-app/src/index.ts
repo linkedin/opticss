@@ -16,9 +16,12 @@ import * as cssmode from 'codemirror/mode/css/css';
 import * as htmlmode from 'codemirror/mode/htmlmixed/htmlmixed';
 import * as showhint from 'codemirror/addon/hint/show-hint';
 import * as csshint from 'codemirror/addon/hint/css-hint';
+import { Demo, FeatureToggles, hush, loadDemos } from './demos';
+
+let defaultDemo: Demo = initDemos(loadDemos());
 
 // For the sake of typescript!
-console.log(cssmode, htmlmode, showhint, csshint);
+hush(cssmode, htmlmode, showhint, csshint);
 
 Split(['#css-code-editor', '#tmpl-code-editor'], {
     sizes: [50, 50],
@@ -36,47 +39,84 @@ Split(['#css-code-output', '#tmpl-code-output'], {
 
 let cssInContainer = document.getElementById('css-code-editor') as HTMLElement;
 let cssInEditor = codemirror(cssInContainer, {
-  value: window.localStorage.getItem('css-input') || `.bar {
-  color: blue;
+  value: window.localStorage.getItem('css-input') || defaultDemo.css,
+  mode: 'css',
+  theme: 'mdn-like',
+  lineNumbers: true
+
+});
+
+let tmplInContainer = document.getElementById('tmpl-code-editor') as HTMLElement;
+let tmplInEditor = codemirror(tmplInContainer, {
+  value: window.localStorage.getItem('tmpl-input') || defaultDemo.template,
+  mode: 'htmlmixed',
+  theme: 'mdn-like',
+  lineNumbers: true
+});
+
+let cssOutContainer = document.getElementById('css-code-output') as HTMLElement;
+let cssOutEditor = codemirror(cssOutContainer, {
+  value: ``,
+  mode: 'css',
+  theme: 'mdn-like',
+  lineNumbers: true,
+  readOnly: true
+});
+
+let tmplOutContainer = document.getElementById('tmpl-code-output') as HTMLElement;
+let tmplOutEditor = codemirror(tmplOutContainer, {
+  value: ``,
+  mode: 'htmlmixed',
+  theme: 'mdn-like',
+  lineNumbers: true,
+  readOnly: true
+});
+
+function query(): URLSearchParams {
+  return new URL(document.location.toString()).searchParams;
 }
-.foo {
-  color: green;
+
+function initDemos(demos: Array<Demo>): Demo {
+  let  q = query();
+  let demoSelect = document.getElementById('demos') as HTMLSelectElement;
+  let demoName = q.get("demo");
+  let queriedDemo = demoName && demos.find(d => d.name === demoName) || undefined;
+
+  const changeHandler = (addHistory = true) => {
+    let selIndex = parseInt(demoSelect.value);
+    let demo = demos[selIndex];
+    if (demo.options) {
+      for (let [opt, val] of objectEntries(demo.options)) {
+        FEATURE_TOGGLES[opt].checked = val!;
+      }
+    }
+    cssInEditor.setValue(demo.css);
+    tmplInEditor.setValue(demo.template);
+    if (addHistory) {
+      let url = new URL(document.location.toString());
+      url.searchParams.set("demo", demo.name);
+      window.history.pushState(demo, demo.name, url.toString());
+    }
+    process();
+  };
+  demoSelect.onchange = changeHandler.bind(null, true);
+
+  demos.forEach((demo, i) => {
+    let isDefault = (queriedDemo) ? (demo === queriedDemo) : !!demo.default;
+    demoSelect.options.add(new Option(demo.name, i.toString(), isDefault));
+  });
+
+  window.onpopstate = (ev) => {
+    let demo: Demo = ev.state;
+    let i = demos.findIndex(d => d.name === demo.name);
+    if (i >= 0) {
+      demoSelect.selectedIndex = i;
+      changeHandler(false);
+    }
+  };
+
+  return demos.find(d => !!d.default) || demos[0];
 }
-.foo.bar {
-  color: red;
-}
-`,
-    mode: 'css',
-    theme: 'mdn-like',
-    lineNumbers: true
-
-  });
-
-  let tmplInContainer = document.getElementById('tmpl-code-editor') as HTMLElement;
-  let tmplInEditor = codemirror(tmplInContainer, {
-    value: window.localStorage.getItem('tmpl-input') || `<div class="foo bar"></div>`,
-    mode: 'htmlmixed',
-    theme: 'mdn-like',
-    lineNumbers: true
-  });
-
-  let cssOutContainer = document.getElementById('css-code-output') as HTMLElement;
-  let cssOutEditor = codemirror(cssOutContainer, {
-    value: ``,
-    mode: 'css',
-    theme: 'mdn-like',
-    lineNumbers: true,
-    readOnly: true
-  });
-
-  let tmplOutContainer = document.getElementById('tmpl-code-output') as HTMLElement;
-  let tmplOutEditor = codemirror(tmplOutContainer, {
-    value: ``,
-    mode: 'htmlmixed',
-    theme: 'mdn-like',
-    lineNumbers: true,
-    readOnly: true
-  });
 
 export class DemoOptimizer {
   run(html: string, css: string): Promise<void> {
@@ -89,10 +129,10 @@ export class DemoOptimizer {
     return analyzer.analyze().then(analysis => {
       let optimizer = new Optimizer({
         removeUnusedStyles: FEATURE_TOGGLES['removeUnusedStyles'].checked,
-        conflictResolution: FEATURE_TOGGLES['conflictResolution'].checked,
+        // conflictResolution: FEATURE_TOGGLES['conflictResolution'].checked,
         mergeDeclarations: FEATURE_TOGGLES['mergeDeclarations'].checked,
         rewriteIdents: FEATURE_TOGGLES['rewriteIdents'].checked,
-      }, {rewriteIdents: { class: true, id: false}});
+      }, {rewriteIdents: { class: true, id: FEATURE_TOGGLES['rewriteIds'].checked}});
       optimizer.addSource({
         content: css,
         filename: 'input.css'
@@ -182,15 +222,22 @@ tmplInEditor.on('keyup', process);
   (document.getElementById('options-menu') as HTMLElement).classList.toggle('open');
 });
 
-const FEATURE_TOGGLES = {
+const FEATURE_TOGGLES: FeatureToggles = {
   removeUnusedStyles: (document.getElementById('removeUnusedStyles') as HTMLInputElement),
   conflictResolution: (document.getElementById('conflictResolution') as HTMLInputElement),
   mergeDeclarations: (document.getElementById('mergeDeclarations') as HTMLInputElement),
   rewriteIdents: (document.getElementById('rewriteIdents') as HTMLInputElement),
+  rewriteIds: (document.getElementById('rewriteIds') as HTMLInputElement),
 };
 
-for (let key in FEATURE_TOGGLES) {
-  const el = FEATURE_TOGGLES[key];
+function objectEntries<T extends object>(v: T): Array<[keyof T, T[keyof T]]> {
+  return Object.keys(v).map((k: keyof T)  => {
+    let e: [keyof T, T[keyof T]] = [k, v[k]];
+    return e;
+  });
+}
+
+for (let [key, el] of objectEntries(FEATURE_TOGGLES)) {
   let prev = (window.localStorage.getItem(key) === null) ? true : !!window.localStorage.getItem(key);
   window.localStorage.setItem(key, prev ? 'on' : '');
   el.checked = prev;
