@@ -125,6 +125,7 @@ export type AttributeValue =
   AttributeValueSet;
 
 export type FlattenedAttributeValueSetItem =
+  ValueAbsent |
   ValueUnknownIdentifier |
   ValueConstant |
   ValueStartsWith |
@@ -355,6 +356,11 @@ export abstract class AttributeBase implements HasNamespace {
                     allOf: newSets[j].allOf.concat(vi.allOf)
                   });
                 } else if (isAbsent(vi)) {
+                  let newSet = newSets[j].allOf.slice();
+                  newSet.push(vi);
+                  newSets.push({
+                    allOf: newSet
+                  });
                   // TODO
                 } else if (isUnknown(vi)) {
                   // TODO

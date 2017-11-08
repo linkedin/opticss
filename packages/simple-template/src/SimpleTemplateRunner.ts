@@ -134,7 +134,8 @@ export class SimpleTemplateRunner {
         `${value.startsWith}${this.word(4)}${this.possibleSpace()}${this.word(3)}${value.endsWith}` :
         `${value.startsWith}${this.word(4)}${value.endsWith}`;
     } else if (isFlattenedSet(value)) {
-      return value.allOf.map(v => this.concreteValue(v)).join(" ");
+      let concretes = value.allOf.map(v => this.concreteValue(v));
+      return concretes.filter(v => !!v).join(" ");
     } else {
       return assertNever(<never>value);
     }
