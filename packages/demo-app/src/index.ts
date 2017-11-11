@@ -19,7 +19,7 @@ import { Demo, FeatureToggles, hush, loadDemos, FeatureFlags } from './demos';
 
 const FEATURE_TOGGLES: FeatureToggles = {
   removeUnusedStyles: (document.getElementById('removeUnusedStyles') as HTMLInputElement),
-  conflictResolution: (document.getElementById('conflictResolution') as HTMLInputElement),
+  // conflictResolution: (document.getElementById('conflictResolution') as HTMLInputElement),
   mergeDeclarations: (document.getElementById('mergeDeclarations') as HTMLInputElement),
   rewriteIdents: (document.getElementById('rewriteIdents') as HTMLInputElement),
   rewriteIds: (document.getElementById('rewriteIds') as HTMLInputElement),
