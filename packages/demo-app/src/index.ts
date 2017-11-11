@@ -23,6 +23,8 @@ const FEATURE_TOGGLES: FeatureToggles = {
   mergeDeclarations: (document.getElementById('mergeDeclarations') as HTMLInputElement),
   rewriteIdents: (document.getElementById('rewriteIdents') as HTMLInputElement),
   rewriteIds: (document.getElementById('rewriteIds') as HTMLInputElement),
+  analyzeForms: (document.getElementById('analyzeForms') as HTMLInputElement),
+  analyzeIds: (document.getElementById('analyzeIds') as HTMLInputElement),
 };
 
 const demoSelect = document.getElementById('demos') as HTMLSelectElement;
@@ -175,12 +177,24 @@ export class DemoOptimizer {
     let template = new TestTemplate('input.tmpl', html);
     let analyzer = new SimpleAnalyzer(template);
     return analyzer.analyze().then(analysis => {
+      let analyzedAttributes = [];
+      if (FEATURE_TOGGLES['analyzeForms'].checked) {
+        analyzedAttributes.push('type', 'disabled', 'checked');
+      }
+      if (FEATURE_TOGGLES['analyzeIds'].checked) {
+        analyzedAttributes.push('id');
+      }
+      let rewriteConfig = {
+        analyzedAttributes,
+        rewriteIdents: { class: true, id: FEATURE_TOGGLES['rewriteIds'].checked },
+      };
       let optimizer = new Optimizer({
         removeUnusedStyles: FEATURE_TOGGLES['removeUnusedStyles'].checked,
         // conflictResolution: FEATURE_TOGGLES['conflictResolution'].checked,
         mergeDeclarations: FEATURE_TOGGLES['mergeDeclarations'].checked,
         rewriteIdents: FEATURE_TOGGLES['rewriteIdents'].checked,
-      }, {rewriteIdents: { class: true, id: FEATURE_TOGGLES['rewriteIds'].checked}});
+      }, rewriteConfig);
+
       optimizer.addSource({
         content: css,
         filename: '/FOO/input.css'
@@ -190,14 +204,7 @@ export class DemoOptimizer {
         let out = prettier.format(String(result.output.content), { filepath: 'input.css' });
         cssOutEditor.setValue(out);
         let runner = new SimpleTemplateRunner(template);
-        let rewriter = new SimpleTemplateRewriter(result.styleMapping, {
-          rewriteIdents: {
-            id: true,
-            class: true
-          },
-          analyzedAttributes: [],
-          analyzedTagnames: false
-        });
+        let rewriter = new SimpleTemplateRewriter(result.styleMapping, optimizer.templateOptions);
         let rewritten = '';
         let demo = '';
 
