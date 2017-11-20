@@ -5,11 +5,11 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "compile": "rm -rf dist && tsc",
-    "pretest": "yarn run compile && tslint --project tsconfig.json --type-check",
+    "compile": "rm -rf dist test/build && tsc && tsc -p tsconfig-test.json",
+    "pretest": "yarn run compile && yarn run tslint",
     "prepublish": "rm -rf dist && tsc",
-    "tslint": "tslint --project tsconfig.json",
-    "test": "mocha dist/test --opts test/mocha.opts",
+    "tslint": "tslint --project tsconfig.json && tslint --project tsconfig-test.json",
+    "test": "mocha test/build/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs ."
@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@types/node": "^8.0.26",
+    "@opticss/attr-analysis-dsl": "^0.1.0",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",
     "tslint": "^5.1.0",

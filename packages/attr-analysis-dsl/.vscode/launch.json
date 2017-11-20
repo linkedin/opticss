@@ -11,7 +11,7 @@
       "preLaunchTask": "compile",
       "program": "${workspaceRoot}/node_modules/.bin/_mocha",
       "args": [
-        "test/build/test",
+        "dist/test",
         "--opts",
         "test/mocha.opts"
       ],

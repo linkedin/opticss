@@ -13,6 +13,9 @@ import {
   isDefined as assertDefined
 } from "@opticss/util";
 import {
+  AttributeValueParser
+} from "@opticss/attr-analysis-dsl";
+import {
   normalizeTemplateOptions,
 } from '../src/TemplateIntegrationOptions';
 
@@ -29,30 +32,9 @@ function sClass(...values: Array<string>): SimpleAttribute {
 }
 
 function attr(name: string, valueStr: string): Attribute {
-  let value: AttributeValue;
-  if (/^([^?]+)?(\?|\?\?\?)([^?]+)?$/.test(valueStr)) {
-    let startsWith = RegExp.$1;
-    let unknown = RegExp.$2;
-    let endsWith = RegExp.$3;
-    let whitespace = false;
-    if (unknown === "???") {
-      whitespace = true;
-    }
-    if (startsWith && endsWith) {
-      value = v.startsAndEndsWith(startsWith, endsWith, whitespace);
-    } else if (startsWith) {
-      value = v.startsWith(endsWith, whitespace);
-    } else if (endsWith) {
-      value = v.endsWith(endsWith, whitespace);
-    } else if (unknown === "???") {
-      value = v.unknown();
-    } else {
-      value = v.unknownIdentifier();
-    }
-  } else {
-    value = v.constant(valueStr);
-  }
-  return new Attribute(name, value);
+  let parser = new AttributeValueParser(false);
+  let result = parser.parse(null, name, valueStr);
+  return new Attribute(name, result);
 }
 
 function element(tag: string, ...attrs: Array<Attribute>): Element {

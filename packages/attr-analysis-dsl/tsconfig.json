@@ -1,18 +1,20 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist/src",
-    "baseUrl": "dist/src",
+    "outDir": "dist",
+    "baseUrl": "dist",
     "types": [
-      "@types/node"
+      "@types/chai",
+      "@types/node",
+      "@types/mocha"
     ]
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ],
   "exclude": [
     "dist",
-    "test/build",
     "node_modules"
   ]
 }
