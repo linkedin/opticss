@@ -3,7 +3,9 @@ import {
 } from "typescript-collections";
 import {
   IdentityDictionary,
-  assertNever
+  assertNever,
+  ItemType,
+  unionInto,
 } from "@opticss/util";
 import {
   Attribute as SelectableAttribute,
@@ -19,10 +21,18 @@ import {
   isUnknown,
   isUnknownIdentifier,
 } from './Selectable';
-import { BooleanExpression, AndExpression, isOrExpression } from "./BooleanExpression";
+import { BooleanExpression, AndExpression, OrExpression, isOrExpression, isAndExpression, isNotExpression } from "./BooleanExpression";
 import { TemplateIntegrationOptions } from "./TemplateIntegrationOptions";
 
-export type RewriteableAttrName = "id" | "class";
+export interface RewriteInformation<InfoType> {
+  id: InfoType;
+  class: InfoType;
+}
+
+export type RewriteableAttrName = keyof RewriteInformation<any>;
+
+export const REWRITE_ATTRS = new Array<RewriteableAttrName>("id", "class");
+Object.freeze(REWRITE_ATTRS);
 
 export interface DynamicExpressions {
   [outputValue: string]: BooleanExpression<number> | undefined;
@@ -37,26 +47,14 @@ export interface RewriteMapping {
   /**
    * output attributes that are always on the element independent of any dynamic changes.
    */
-  staticAttributes: {
-    /**
-     * The id attribute will have at most one value unless the element
-     * analysis is invalid.
-     */
-    id?: string[];
-    class?: string[];
-  };
+  staticAttributes: RewriteInformation<string[]>;
 
   /**
    * The numbers in the boolean expressions represents indexes into the inputAttributes array.
+   * For attributes that are not whitespace delimited (E.g. id) only one value
+   * will evaluate to true unless the element analysis itself is invalid.
    */
-  dynamicAttributes: {
-    /**
-     * At most, one id value will evaluate to true unless the element analysis
-     * is invalid.
-     */
-    id?: DynamicExpressions;
-    class?: DynamicExpressions;
-  };
+  dynamicAttributes: RewriteInformation<DynamicExpressions>;
 }
 
 export interface SimpleTagname {
@@ -164,7 +162,7 @@ export class StyleMapping {
       }
     }
   }
-  getRewriteOf(from: SimpleAttribute): SimpleAttribute | undefined {
+  private getRewriteOf(from: SimpleAttribute): SimpleAttribute | undefined {
     return this.replacedAttributes.getValue(from);
   }
   private getInputs(element: ElementInfo): Array<SimpleTagname | SimpleAttribute> {
@@ -193,12 +191,11 @@ export class StyleMapping {
     }
     return inputs;
   }
+
   rewriteMapping(element: ElementInfo): RewriteMapping {
     let inputs = this.getInputs(element);
-    let dynamicAttributes = {
-      id: <DynamicExpressions>{},
-      class: <DynamicExpressions>{}
-    };
+    let staticAttributes: RewriteInformation<Set<string>> = {id: new Set<string>(), class: new Set<string>()};
+    let dynamicAttributes: RewriteMapping['dynamicAttributes'] = {id: {}, class: {}};
     for (let i = 0; i < inputs.length; i++) {
       let input = inputs[i];
       if (isSimpleTagname(input)) continue;
@@ -239,10 +236,14 @@ export class StyleMapping {
           dynamicAttributes[this.toRewritableAttrName(linked.to.name)][linked.to.value] = dynExpr;
         }
       }
+      for (let key of REWRITE_ATTRS) {
+        let extracted = extractStatic(element, inputs, dynamicAttributes[key]);
+        unionInto(staticAttributes[key], extracted);
+      }
     }
     return {
       inputs,
-      staticAttributes: {id: [], class: []},
+      staticAttributes: {id: [...staticAttributes.id], class: [...staticAttributes.class]},
       dynamicAttributes
     };
   }
@@ -335,4 +336,51 @@ function attributeMultiDictionary<V>(
 
 function attrToKey(attr: SimpleAttribute): string {
   return `${attr.ns || ''}|${attr.name}=${attr.value}`;
+}
+
+function extractStatic(element: ElementInfo, inputs: RewriteMapping["inputs"], dyn: DynamicExpressions): Array<string> {
+  let result = new Array<string>();
+  for (let v of Object.keys(dyn)) {
+    let expr = dyn[v]!;
+    let staticValue = isStatic(expr, inputs, element);
+    if (staticValue === true) {
+      result.push(v);
+      delete dyn[v];
+    }
+  }
+  return result;
+}
+
+function isStatic(
+  value: BooleanExpression<number> | number,
+  inputs: RewriteMapping["inputs"],
+  element: ElementInfo
+): boolean | undefined {
+  if (typeof value === 'number') {
+    return isStaticOnElement(inputs[value], element);
+  } else if (isAndExpression(value) || isOrExpression(value)) {
+    let values = ((<AndExpression<number>>value).and || (<OrExpression<number>>value).or);
+    return values.reduce<undefined|boolean>(((prev, a) => {
+      let result = isStatic(a, inputs, element);
+      if (prev === undefined) return result;
+      if (result === undefined) return prev;
+      return prev && result;
+    }), undefined);
+  } else if (isNotExpression(value)) {
+    return isStatic(value.not, inputs, element);
+  } else {
+    return assertNever(value);
+  }
+}
+
+function isStaticOnElement(input: ItemType<RewriteMapping["inputs"]>, element: ElementInfo): boolean | undefined {
+  if (isSimpleTagname(input)) {
+    return element.tagname.isStatic();
+  } else if (isSimpleAttribute(input)) {
+    let attribute = element.attributes.find(a => a.isNamed(input.name, input.ns));
+    if (!attribute) throw new Error("internal error");
+    return attribute.isStatic(input.value) !== false;
+  } else {
+    return assertNever(input);
+  }
 }

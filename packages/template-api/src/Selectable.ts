@@ -223,6 +223,11 @@ export abstract class AttributeBase implements HasNamespace {
     return this._value;
   }
 
+  isNamed(name: string, ns: string | null = null): boolean {
+    return this.namespaceURL === ns &&
+           this.name === name;
+  }
+
   constants(condition?: AttributeValue): Set<string> {
     if (condition === undefined && this._constants !== undefined) {
       return this._constants;
@@ -306,7 +311,35 @@ export abstract class AttributeBase implements HasNamespace {
     }
   }
 
-  isAmbiguous(condition = this.value): boolean {
+  isStatic(value: string | null, condition = this.value): boolean | undefined {
+    if (isAbsent(condition)) {
+      return value === null ? true : undefined;
+    } else if (isConstant(condition)) {
+      return condition.constant === value ? true : undefined;
+    } else if (isChoice(condition)) {
+      let constants = this.constants(condition);
+      if (value && constants.has(value)) {
+        return false;
+      } else if (!value) {
+        return condition.oneOf.find((c => isAbsent(c))) ? false : undefined;
+      } else {
+        return undefined;
+      }
+    } else if (isUnknown(condition) || isUnknownIdentifier(condition)) {
+      return false;
+    } else if (isSet(condition)) {
+      return condition.allOf.reduce<undefined | boolean>((prev, a) => {
+        let r = this.isStatic(value, a);
+        if (r === undefined) return prev;
+        if (prev === undefined) return r;
+        return prev && r;
+      }, undefined);
+    } else {
+      return false;
+    }
+  }
+
+  isAmbiguous(condition = this.value): condition is ValueUnknown | ValueStartsWith | ValueEndsWith | ValueStartsAndEndsWith | AttributeValueChoice | AttributeValueSet {
     if (isUnknown(condition)) {
       return true;
     } else if (isUnknownIdentifier(condition)) {
@@ -526,6 +559,18 @@ export abstract class TagnameBase implements HasNamespace {
 
   get value(): TagnameValue {
     return this._value;
+  }
+
+  isStatic(): boolean {
+    if (isConstant(this.value)) {
+      return true;
+    } else if (isTagnameValueChoice(this.value)) {
+      return false;
+    } else if (isUnknown(this.value)) {
+      return false;
+    } else {
+      return assertNever(this.value);
+    }
   }
 
   valueToString(): string {
