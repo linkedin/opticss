@@ -7,3 +7,4 @@ export * from "./OptiCSSError";
 export * from "./typedAssert";
 export * from "./MultiMap";
 export * from "./TwoKeyMultiMap";
+export * from "./unionInto";
