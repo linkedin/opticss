@@ -9,4 +9,4 @@ export function objectValues<T>(dict: ObjectDictionary<T>): Array<T> {
 
 export type StringDict = ObjectDictionary<string>;
 
-export type something = string | number | boolean | symbol | object;
+export type ItemType<T extends Array<any>> = T[0];
