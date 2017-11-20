@@ -210,7 +210,7 @@ export class RewriteIdentsTest {
           { "tagname": "div" },
           { "name": "class", "value": "a" }
         ]);
-        assert.deepEqual(mapping.dynamicAttributes["class"], { b: { and: [1] } });
+        assert.deepEqual(mapping.staticAttributes.class, ['b']);
       }
     });
   }
