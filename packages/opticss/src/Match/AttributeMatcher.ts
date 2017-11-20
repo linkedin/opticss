@@ -10,8 +10,8 @@ import {
   isStartsAndEndsWith,
   isSet,
   isChoice,
+  isFlattenedSet,
 } from '@opticss/template-api';
-import { inspect } from "util";
 import { Memoize } from 'typescript-memoize';
 import * as SelectorParser from 'postcss-selector-parser';
 import { assertNever } from "@opticss/util";
@@ -152,7 +152,12 @@ export class AttributeMatcher extends Matcher<Attr> {
    * @param [value=this.value] the attribute value to match against.
    * @returns boolean if it matches
    */
-  matchWhitespaceDelimited(attr: Attr, identifier: string, value: AttributeValue = attr.value): boolean {
+  matchWhitespaceDelimited(attr: Attr, identifier: string, value?: AttributeValue): boolean {
+    let isTopLevel = false;
+    if (!value) {
+      value = attr.value;
+      isTopLevel = true;
+    }
     if (isAbsent(value)) {
       return false;
     } else if (isUnknown(value)) {
@@ -174,12 +179,30 @@ export class AttributeMatcher extends Matcher<Attr> {
         return false;
       }
       return true;
-    } else if (isChoice(value)) {
-      return value.oneOf.some(v => matches(this.matchIdent(attr, identifier, v)));
+    } else if (isTopLevel && (isChoice(value) || isSet(value))) {
+      let flattenedValues = attr.flattenedValue(value);
+      for (let flattenedValue of flattenedValues) {
+        if (isFlattenedSet(flattenedValue)) {
+          for (let v of flattenedValue.allOf) {
+            let m = this.matchIdent(attr, identifier, v);
+            if (m === Match.yes) {
+              return true;
+            }
+          }
+        } else {
+          let m = this.matchIdent(attr, identifier, flattenedValue);
+          if (m === Match.yes) {
+            return true;
+          }
+        }
+      }
+      return false;
     } else if (isSet(value)) {
       return value.allOf.some(v => matches(this.matchIdent(attr, identifier, v)));
+    } else if (isChoice(value)) {
+      return value.oneOf.some(v => matches(this.matchIdent(attr, identifier, v)));
     } else {
-      throw new Error(`Unexpected value: ${inspect(value)}`);
+      return assertNever(value);
     }
   }
 

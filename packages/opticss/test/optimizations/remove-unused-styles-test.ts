@@ -1,7 +1,7 @@
 import * as path from 'path';
 
 import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
+import { suite, test, skip } from 'mocha-typescript';
 import { TemplateAnalysis } from '@opticss/template-api';
 import { SimpleAnalyzer, TestTemplate } from '@opticss/simple-template';
 
@@ -135,6 +135,23 @@ export class RemoveUnusedStylesTest {
     let expectedCss = css;
     return testRemoveUnusedStyles([css, template], expectedCss);
   }
+  @test "Doesn't remove selectors from complex dynamic combinations"() {
+    let css = clean`
+      .a { color: red; }
+      .b { color: blue; }
+      .c { color: yellow; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="(a b (c | ---) | ---)"></div>
+    `);
+    let expectedCss = clean`
+      .a { color: red; }
+      .b { color: blue; }
+      .c { color: yellow; }
+    `;
+    return testRemoveUnusedStyles([css, template], expectedCss);
+  }
+  @skip
   @test "Removes selectors that are not used in any dynamic combination"() {
     let css = `.a.b { width: 100%; }`;
     let template = new TestTemplate("test", clean`
