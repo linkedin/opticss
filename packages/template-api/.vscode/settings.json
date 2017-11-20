@@ -18,5 +18,7 @@
       "node_modules",
       "test",
       "index.ts"
-    ]
-}
+    ],
+    "tslint.packageManager": "yarn",
+    "npm.packageManager": "yarn"
+  }

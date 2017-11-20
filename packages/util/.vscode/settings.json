@@ -12,5 +12,7 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     "tslint.enable": true,
     "tslint.configFile": "tslint.json",
-    "typescript.useCodeSnippetsOnMethodSuggest": true
-}
+    "typescript.useCodeSnippetsOnMethodSuggest": true,
+    "tslint.packageManager": "yarn",
+    "npm.packageManager": "yarn"
+  }
