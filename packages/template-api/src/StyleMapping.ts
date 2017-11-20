@@ -162,7 +162,7 @@ export class StyleMapping {
       }
     }
   }
-  private getRewriteOf(from: SimpleAttribute): SimpleAttribute | undefined {
+  getRewriteOf(from: SimpleAttribute): SimpleAttribute | undefined {
     return this.replacedAttributes.getValue(from);
   }
   private getInputs(element: ElementInfo): Array<SimpleTagname | SimpleAttribute> {
