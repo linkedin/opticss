@@ -269,10 +269,8 @@ export class StyleMapping {
     // match the value descriptors -- not to be derived from the analysis for
     // our immediate needs this works tho and it's much faster than
     // deriving it from the styles.
-    let names = new Set<string>();
-    attr.flattenedValue().forEach(v => {
-      stringsForValue(v).forEach(sv => names.add(sv));
-    });
+    // let names = new Set<string>();
+    let names = attr.constants();
     let nameArray = new Array(...names);
     nameArray.sort();
     return nameArray.map(value => {

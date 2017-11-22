@@ -10,7 +10,6 @@ import {
   isStartsAndEndsWith,
   isSet,
   isChoice,
-  isFlattenedSet,
 } from '@opticss/template-api';
 import { Memoize } from 'typescript-memoize';
 import * as SelectorParser from 'postcss-selector-parser';
@@ -110,7 +109,7 @@ export class AttributeMatcher extends Matcher<Attr> {
    * @param [value=this.value] the attribute value to match against.
    * @returns boolean if it matches or not
    */
-  matchIdent(attr: Attr, identifier: string, value: AttributeValue = attr.value): Match {
+  matchIdent(attr: Attr, identifier: string, value: AttributeValue = attr.value, whitespaceDelimited = false): Match {
     if (isAbsent(value)) {
       return Match.no;
     } else if (isUnknown(value)) {
@@ -131,13 +130,18 @@ export class AttributeMatcher extends Matcher<Attr> {
       return boolToMatch(identifier.startsWith(value.startsWith) &&
         identifier.endsWith(value.endsWith));
     } else if (isSet(value)) {
-      // This is a tricky case. There really shouldn't be an `allOf` used
-      // for an identifier match. In theory a regex could be constructed?
-      // I'm hesitant to throw an error here but maybe I should?
-      return Match.no;
+      if (whitespaceDelimited) {
+        return boolToMatch(value.allOf.some(v =>
+          matches(this.matchIdent(attr, identifier, v, whitespaceDelimited))));
+      } else {
+        // This is a tricky case. There really shouldn't be an `allOf` used
+        // for an identifier match. In theory a regex could be constructed?
+        // I'm hesitant to throw an error here but maybe I should?
+        return Match.no;
+      }
     } else if (isChoice(value)) {
       return boolToMatch(value.oneOf.some(v =>
-        matches(this.matchIdent(attr, identifier, v))));
+        matches(this.matchIdent(attr, identifier, v, whitespaceDelimited))));
     } else {
       return assertNever(value);
     }
@@ -153,10 +157,8 @@ export class AttributeMatcher extends Matcher<Attr> {
    * @returns boolean if it matches
    */
   matchWhitespaceDelimited(attr: Attr, identifier: string, value?: AttributeValue): boolean {
-    let isTopLevel = false;
     if (!value) {
       value = attr.value;
-      isTopLevel = true;
     }
     if (isAbsent(value)) {
       return false;
@@ -179,28 +181,10 @@ export class AttributeMatcher extends Matcher<Attr> {
         return false;
       }
       return true;
-    } else if (isTopLevel && (isChoice(value) || isSet(value))) {
-      let flattenedValues = attr.flattenedValue(value);
-      for (let flattenedValue of flattenedValues) {
-        if (isFlattenedSet(flattenedValue)) {
-          for (let v of flattenedValue.allOf) {
-            let m = this.matchIdent(attr, identifier, v);
-            if (m === Match.yes) {
-              return true;
-            }
-          }
-        } else {
-          let m = this.matchIdent(attr, identifier, flattenedValue);
-          if (m === Match.yes) {
-            return true;
-          }
-        }
-      }
-      return false;
     } else if (isSet(value)) {
-      return value.allOf.some(v => matches(this.matchIdent(attr, identifier, v)));
+      return value.allOf.some(v => matches(this.matchIdent(attr, identifier, v, true)));
     } else if (isChoice(value)) {
-      return value.oneOf.some(v => matches(this.matchIdent(attr, identifier, v)));
+      return value.oneOf.some(v => matches(this.matchIdent(attr, identifier, v, true)));
     } else {
       return assertNever(value);
     }

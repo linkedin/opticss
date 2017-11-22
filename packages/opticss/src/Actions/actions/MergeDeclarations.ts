@@ -27,6 +27,7 @@ import {
 import {
   DeclarationInfo
 } from '../../optimizations/MergeDeclarations/StyleInfo';
+import { isRoot } from 'postcss-selector-parser';
 
 const {
   isAttribute,
@@ -135,6 +136,8 @@ export class MergeDeclarations extends MultiAction {
             if (isAtRule(ruleParent)) {
               this.removedAtRules.push(ruleParent);
               ruleParent.remove();
+            } else if (isRoot(ruleParent)) {
+              // Empty stylesheet
             } else {
               console.warn("this is a weird parent for a rule: ", ruleParent);
             }
