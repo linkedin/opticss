@@ -22,4 +22,5 @@ export { MarkAttributeValueObsolete } from "./actions/MarkAttributeValueObsolete
 export { RemoveRule } from "./actions/RemoveRule";
 export { RewriteRuleIdents } from "./actions/RewriteRuleIdents";
 export { MergeDeclarations } from "./actions/MergeDeclarations";
+export { Note } from "./actions/Note";
 export * from "./Action";

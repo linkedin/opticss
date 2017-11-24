@@ -115,7 +115,7 @@ export class DeclarationMapper {
             // We only expand shorthand declarations as much as is necessary within the current optimization context
             // but we need to track declarations globally and against elements according to the fully expanded
             // values because selectors can conflict across different optimization contexts.
-            let longhandDeclarations = expandIfNecessary(context.authoredProps, decl.prop, decl.value);
+            let longhandDeclarations = expandIfNecessary(context.authoredProps, decl.prop, decl.value, pass.actions);
             let longHandProps = Object.keys(longhandDeclarations);
             let longHandDeclInfos = new Array<DeclarationInfo>();
             for (let longHandProp of longHandProps) {

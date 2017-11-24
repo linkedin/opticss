@@ -1,5 +1,9 @@
 import * as propParser from "css-property-parser";
 import { StringDict } from "@opticss/util";
+import {
+  Actions,
+  Note,
+} from '../Actions';
 
 export function expandPropertyName(prop: string, recursively = false): string[] {
   let props = propParser.getShorthandComputedProperties(prop, recursively);
@@ -21,7 +25,7 @@ export function fullyExpandShorthandProperty(prop: string, value: string) {
     return expanded;
   } catch (e) {
     if (/parsing shorthand property/.test(e.message)) {
-      console.error(e);
+      console.log(e.message + `(long hands for this declaration will not be optimized)`);
       return {
         [prop]: value
       };
@@ -31,7 +35,7 @@ export function fullyExpandShorthandProperty(prop: string, value: string) {
   }
 }
 
-export function expandIfNecessary(authoredProps: Set<string>, prop: string, value: string): StringDict {
+export function expandIfNecessary(authoredProps: Set<string>, prop: string, value: string, actions: Actions): StringDict {
   if (!propParser.isShorthandProperty(prop)) {
     return {[prop]: value};
   }
@@ -43,7 +47,7 @@ export function expandIfNecessary(authoredProps: Set<string>, prop: string, valu
     longHandProps = Object.keys(longHandValues);
   } catch (e) {
     if (/parsing shorthand property/.test(e.message)) {
-      console.error(e);
+      actions.perform(new Note('mergeDeclarations', e.message + `(long hands for this declaration will not be optimized)`));
       return { [prop]: value };
     } else {
       throw e;
@@ -52,7 +56,7 @@ export function expandIfNecessary(authoredProps: Set<string>, prop: string, valu
   let directAuthored = longHandProps.some(p => authoredProps.has(p));
   for (let p of longHandProps) {
     let v = longHandValues[p];
-    let expanded = expandIfNecessary(authoredProps, p, v);
+    let expanded = expandIfNecessary(authoredProps, p, v, actions);
     if (Object.keys(expanded).some(key => authoredProps.has(key))) {
       Object.assign(longhandDeclarations, expanded);
     } else if (directAuthored) {
