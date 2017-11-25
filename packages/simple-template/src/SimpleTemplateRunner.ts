@@ -2,9 +2,10 @@ import * as parse5 from "parse5";
 import * as Random from "random-js";
 import { SimpleAnalyzer } from "./SimpleAnalyzer";
 import { TestTemplate } from "./TestTemplate";
-import { TemplateAnalysis, FlattenedAttributeValue, isAbsent, isUnknown, isConstant, isUnknownIdentifier, isStartsWith, isEndsWith, isStartsAndEndsWith, isFlattenedSet, Attribute, AttributeNS } from "@opticss/template-api";
+import { TemplateAnalysis } from "@opticss/template-api";
+import { FlattenedAttributeValue, isAbsent, isUnknown, isConstant, isUnknownIdentifier, isStartsWith, isEndsWith, isStartsAndEndsWith, isFlattenedSet, Attribute, AttributeNS } from "@opticss/element-analysis";
 import { assertNever } from "@opticss/util";
-import { AttributeValueParser } from "./AttributeValueParser";
+import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
 
 type Document = parse5.AST.Default.Document;
 type ParentNode = parse5.AST.Default.ParentNode;

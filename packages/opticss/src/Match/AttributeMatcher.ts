@@ -10,7 +10,7 @@ import {
   isStartsAndEndsWith,
   isSet,
   isChoice,
-} from '@opticss/template-api';
+} from '@opticss/element-analysis';
 import { Memoize } from 'typescript-memoize';
 import * as SelectorParser from 'postcss-selector-parser';
 import { assertNever } from "@opticss/util";

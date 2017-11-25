@@ -2,7 +2,7 @@ import * as postcss from 'postcss';
 
 import { ParsedSelector } from '../../parseSelector';
 import { Action } from "../Action";
-import { Element, SourcePosition } from "@opticss/template-api";
+import { Element, SourcePosition } from "@opticss/element-analysis";
 import { Optimizations } from "../../OpticssOptions";
 
 /**

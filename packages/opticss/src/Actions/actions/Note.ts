@@ -1,6 +1,6 @@
 import { Action } from "../Action";
-import { SourcePosition } from "@opticss/template-api";
 import { Optimizations } from "../../OpticssOptions";
+import { SourcePosition } from "@opticss/element-analysis";
 
 /**
  * Make a note about something discovered during optimization.

@@ -1,6 +1,6 @@
 import postcss = require("postcss");
 import { parseSelector, ParsedSelector } from "./parseSelector";
-import { Element } from "@opticss/template-api";
+import { Element } from "@opticss/element-analysis";
 import { rejects, matches, ElementMatcher } from "./Match";
 import { walkRules } from "./util/cssIntrospection";
 

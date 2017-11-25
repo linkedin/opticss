@@ -1,4 +1,3 @@
-import { SourceLocation, POSITION_UNKNOWN } from "./SourceLocation";
 import { assertNever } from "@opticss/util";
 
 // TODO: make selectables belong to a template. that template can have template-wide config associated to it.
@@ -524,182 +523,20 @@ export class Class extends Attribute {
 
 export type Attr = Attribute | AttributeNS | Identifier | Class;
 
-export type Tag = Tagname | TagnameNS;
-
-export type Selectable = Element | Tag | Attr;
-
-export interface TagnameValueChoice {
-  oneOf: Array<string>;
-}
-export function isTagnameValueChoice(v: TagnameValue): v is TagnameValueChoice {
-  return Object.keys(v).includes("oneOf");
-}
-
-export type TagnameValue =
-  ValueUnknown |
-  ValueConstant |
-  TagnameValueChoice;
-
-export interface SerializedTagname {
-  namespaceURL?: string | null;
-  value: TagnameValue;
-}
-
-export abstract class TagnameBase implements HasNamespace {
-  private _namespaceURL: string | null;
-  private _value: TagnameValue;
-  constructor(namespaceURL: string | null, value: TagnameValue) {
-    this._namespaceURL = namespaceURL || null;
-    this._value = value;
-  }
-
-  get namespaceURL(): string | null {
-    return this._namespaceURL;
-  }
-
-  get value(): TagnameValue {
-    return this._value;
-  }
-
-  isStatic(): boolean {
-    if (isConstant(this.value)) {
-      return true;
-    } else if (isTagnameValueChoice(this.value)) {
-      return false;
-    } else if (isUnknown(this.value)) {
-      return false;
-    } else {
-      return assertNever(this.value);
-    }
-  }
-
-  valueToString(): string {
-    if (isUnknown(this.value)) {
-      return "???";
-    } else if (isConstant(this.value)) {
-      return this.value.constant;
-    } else if (isTagChoice(this.value)) {
-      return this.value.oneOf.join("|");
-    } else {
-      return assertNever(this.value);
-    }
-  }
-
-  toString() {
-    if (this.namespaceURL === null) {
-      return `${this.valueToString()}`;
-    } else {
-      return `${this.namespaceURL}:${this.valueToString()}`;
-    }
-  }
-
-  toJSON(): SerializedTagname {
-    let result: SerializedTagname = {
-      value: this.value
-    };
-    if (this.namespaceURL) {
-      result.namespaceURL = this.namespaceURL;
-    }
-    return result;
-  }
-  static fromJSON(json: SerializedTagname): TagnameNS | Tagname {
-    if (json.namespaceURL) {
-      return new TagnameNS(json.namespaceURL, json.value as ValueConstant);
-    } else {
-      return new Tagname(json.value as ValueConstant);
-    }
-  }
-}
-
-export class TagnameNS extends TagnameBase {
-  constructor(namespaceURL: string, value: TagnameValue) {
-    super(namespaceURL, value);
-  }
-}
-
-export class Tagname extends TagnameBase {
-  constructor(value: TagnameValue) {
-    super(null, value);
-  }
-}
-
-export interface ElementInfo<TagnameType = Tag, AttributeType = Attr> {
-  sourceLocation?: SourceLocation;
-  tagname: TagnameType;
-  attributes: Array<AttributeType>;
-  id?: string;
-}
-
-export type SerializedElementInfo = ElementInfo<SerializedTagname, SerializedAttribute>;
-
-export class Element implements ElementInfo {
-  sourceLocation: SourceLocation;
-  tagname: Tag;
-  attributes: Array<Attr>;
-  id: string | undefined;
-  constructor(tagname: Tag, attributes: Array<Attr>, sourceLocation?: SourceLocation, id?: string) {
-    this.tagname = tagname;
-    this.attributes = attributes;
-    this.sourceLocation = sourceLocation || {start: POSITION_UNKNOWN};
-    this.id = id;
-  }
-
-  static fromElementInfo(info: ElementInfo): Element {
-    return new Element(info.tagname, info.attributes, info.sourceLocation, info.id);
-  }
-
-  serialize(): SerializedElementInfo {
-    let e: SerializedElementInfo = {
-      tagname: this.tagname.toJSON(),
-      attributes: this.attributes.map(a => a.toJSON())
-    };
-    if (this.sourceLocation && this.sourceLocation.start.line >= 0) {
-      e.sourceLocation = this.sourceLocation;
-    }
-    return e;
-  }
-  toString() {
-    let parts = [];
-    parts.push(this.tagname);
-    for (let attr of this.attributes) {
-      parts.push(attr);
-    }
-    return `<${parts.join(" ")}>`;
-  }
-}
-
-/*
-function isNamespaceAttr(attr: AttributeBase | undefined): attr is AttributeNS {
-  if (attr && attr.namespaceURL) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function isAttr(attr: AttributeBase | undefined): attr is Attribute {
-  if (attr && attr.namespaceURL === null) {
-    return true;
-  } else {
-    return false;
-  }
-}
-*/
-
 export function isAbsent(value: FlattenedAttributeValue | AttributeValue): value is ValueAbsent {
   return (<ValueAbsent>value).absent !== undefined;
 }
 
-export function isUnknown(value: FlattenedAttributeValue | AttributeValue | TagnameValue): value is ValueUnknown {
-  return (<ValueUnknown>value).unknown !== undefined;
+export function isUnknown(value: object): value is ValueUnknown {
+  return (<ValueUnknown>value).unknown === true;
 }
 
 export function isUnknownIdentifier(value: FlattenedAttributeValue | AttributeValue): value is ValueUnknownIdentifier {
-  return (<ValueUnknownIdentifier>value).unknownIdentifier !== undefined;
+  return (<ValueUnknownIdentifier>value).unknownIdentifier === true;
 }
 
-export function isConstant(value: FlattenedAttributeValue | AttributeValue | TagnameValue): value is ValueConstant {
-  return (<ValueConstant>value).constant !== undefined;
+export function isConstant(value: object): value is ValueConstant {
+  return typeof (<ValueConstant>value).constant === "string";
 }
 
 export function isStartsWith(value: FlattenedAttributeValue | AttributeValue): value is ValueStartsWith {
@@ -718,44 +555,10 @@ export function isChoice(value: FlattenedAttributeValue | AttributeValue): value
   return (<AttributeValueChoice>value).oneOf !== undefined;
 }
 
-export function isTagChoice(value: TagnameValue): value is TagnameValueChoice {
-  return (<TagnameValueChoice>value).oneOf !== undefined;
-}
-
 export function isSet(value: AttributeValue): value is AttributeValueSet {
   return (<AttributeValueSet>value).allOf !== undefined;
 }
 
 export function isFlattenedSet(value: FlattenedAttributeValue): value is FlattenedAttributeValueSet {
   return (<FlattenedAttributeValueSet>value).allOf !== undefined;
-}
-
-export namespace Value {
-  export function constant(constant: string): ValueConstant {
-    return {constant};
-  }
-  export function unknown(): ValueUnknown {
-    return {unknown: true};
-  }
-  export function unknownIdentifier(): ValueUnknownIdentifier {
-    return {unknownIdentifier: true};
-  }
-  export function absent(): ValueAbsent {
-    return {absent: true};
-  }
-  export function startsWith(startsWith: string, whitespace?: boolean): ValueStartsWith {
-    return {startsWith, whitespace};
-  }
-  export function endsWith(endsWith: string, whitespace?: boolean): ValueEndsWith {
-    return {endsWith, whitespace};
-  }
-  export function startsAndEndsWith(startsWith: string, endsWith: string, whitespace?: boolean): ValueStartsAndEndsWith {
-    return {startsWith, endsWith, whitespace};
-  }
-  export function allOf(allOf: Array<AttributeValueSetItem>): AttributeValueSet {
-    return {allOf};
-  }
-  export function oneOf(oneOf: Array<AttributeValueChoiceOption>): AttributeValueChoice {
-    return {oneOf};
-  }
 }

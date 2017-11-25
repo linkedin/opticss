@@ -11,6 +11,8 @@ import {
   Attribute,
   Element,
   Tagname,
+} from '@opticss/element-analysis';
+import {
   RewritableIdents,
 } from '@opticss/template-api';
 import {

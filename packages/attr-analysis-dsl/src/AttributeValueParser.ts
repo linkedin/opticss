@@ -1,4 +1,4 @@
-import { AttributeValue } from "@opticss/template-api";
+import { AttributeValue } from "@opticss/element-analysis";
 import * as nearley from "nearley";
 const grammar = require("./grammar/attrvalue");
 

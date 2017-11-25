@@ -3,7 +3,7 @@ import {
   Attribute,
   AttributeNS,
   ElementInfo
-} from '@opticss/template-api';
+} from '@opticss/element-analysis';
 import { inspect } from "util";
 import * as SelectorParser from 'postcss-selector-parser';
 import { assertNever } from "@opticss/util";

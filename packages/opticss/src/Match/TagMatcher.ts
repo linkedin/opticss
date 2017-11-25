@@ -3,7 +3,7 @@ import {
   isConstant,
   isTagChoice,
   isUnknown
-} from '@opticss/template-api';
+} from "@opticss/element-analysis";
 import * as SelectorParser from 'postcss-selector-parser';
 import { assertNever } from "@opticss/util";
 

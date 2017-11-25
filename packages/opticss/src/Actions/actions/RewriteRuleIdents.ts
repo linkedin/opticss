@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { Action, stripNL } from "../Action";
-import { SourcePosition } from "@opticss/template-api";
+import { SourcePosition } from "@opticss/element-analysis";
 import { ParsedSelector } from "../../parseSelector";
 import { OptimizationPass } from "../../OptimizationPass";
 import { IdentNode } from "../../util/cssIntrospection";

@@ -11,12 +11,8 @@ export class RewriteIdents implements MultiFileOptimization {
   name = "rewriteIdents";
   initializers: Array<keyof Initializers> = ["initKnownIdents"];
 
-  private options: OptiCSSOptions;
-  private templateOptions: TemplateIntegrationOptions;
   rewriteOptions: NormalizedRewriteOptions;
   constructor(options: OptiCSSOptions, templateOptions: TemplateIntegrationOptions) {
-    this.options = options;
-    this.templateOptions = templateOptions;
     this.rewriteOptions = rewriteOptions(options.rewriteIdents, templateOptions.rewriteIdents);
   }
   optimizeAllFiles(

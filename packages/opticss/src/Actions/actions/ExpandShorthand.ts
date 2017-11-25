@@ -1,6 +1,6 @@
 import * as postcss from "postcss";
 import { Action } from "../Action";
-import { SourcePosition } from "@opticss/template-api";
+import { SourcePosition } from "@opticss/element-analysis";
 import { Optimizations } from "../../OpticssOptions";
 import { DeclarationInfo } from "../../optimizations/MergeDeclarations/StyleInfo";
 

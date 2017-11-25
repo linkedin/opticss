@@ -9,7 +9,7 @@ import {
 import {
   ElementInfo,
   ValueUnknownIdentifier,
-} from '@opticss/template-api';
+} from '@opticss/element-analysis';
 import { clean } from '@opticss/util';
 import {
   SimpleAnalyzer,

@@ -1,7 +1,8 @@
 import { SingleFileOptimization } from "./Optimization";
 import { ParsedCssFile } from "../CssFile";
 import { OptiCSSOptions } from "../OpticssOptions";
-import { Element, TemplateTypes, TemplateAnalysis } from "@opticss/template-api";
+import { TemplateTypes, TemplateAnalysis } from "@opticss/template-api";
+import { Element } from "@opticss/element-analysis";
 import { matches, ElementMatcher } from "../Match";
 import { RemoveRule } from "../Actions";
 import { ChangeSelector } from "../Actions";
@@ -16,14 +17,12 @@ import { Initializers } from "../initializers";
 export class RemoveUnusedStyles implements SingleFileOptimization {
   name = "removeUnusedStyles";
   initializers: Array<keyof Initializers> = [];
-  private options: OptiCSSOptions;
 
   /**
    * Create a new instance of this optimizer
    * @param {OptiCSSOptions} options - The project optimizer's options.
    */
-  constructor(options: OptiCSSOptions) {
-    this.options = options;
+  constructor(_options: OptiCSSOptions) {
   }
 
   /**

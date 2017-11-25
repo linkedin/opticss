@@ -1,5 +1,5 @@
 import { and } from '../src/BooleanExpression';
-import { Attribute, Element, Tagname, Value as v } from '../src/Selectable';
+import { Attribute, Element, Tagname, attrValues as v } from "@opticss/element-analysis";
 import { SimpleAttribute, StyleMapping } from '../src/StyleMapping';
 import {
   assert,

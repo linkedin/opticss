@@ -12,6 +12,14 @@ import {
   TwoKeyMultiMap
 } from '@opticss/util';
 import {
+  isSimpleTagname,
+  SimpleAttribute,
+  simpleAttributeToString,
+  TemplateAnalysis,
+  TemplateIntegrationOptions,
+  TemplateTypes,
+} from '@opticss/template-api';
+import {
   Attr,
   Attribute,
   AttributeNS,
@@ -20,16 +28,10 @@ import {
   isAbsent,
   isChoice,
   isConstant,
-  isSimpleTagname,
-  SimpleAttribute,
-  simpleAttributeToString,
   Tagname,
-  TemplateAnalysis,
-  TemplateIntegrationOptions,
-  TemplateTypes,
   ValueAbsent,
   ValueConstant,
-} from '@opticss/template-api';
+} from '@opticss/element-analysis';
 import {
   ParsedSelector,
 } from '../../parseSelector';
@@ -98,10 +100,8 @@ export class MergeDeclarations implements MultiFileOptimization {
   name = "mergeDeclarations";
   initializers: Array<keyof Initializers> = ["initKnownIdents"];
 
-  private options: OptiCSSOptions;
   private templateOptions: TemplateIntegrationOptions;
-  constructor(options: OptiCSSOptions, templateOptions: TemplateIntegrationOptions) {
-    this.options = options;
+  constructor(_options: OptiCSSOptions, templateOptions: TemplateIntegrationOptions) {
     this.templateOptions = templateOptions;
   }
   optimizeAllFiles(

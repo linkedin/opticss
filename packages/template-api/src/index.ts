@@ -1,6 +1,4 @@
 export * from "./BooleanExpression";
-export * from "./Selectable";
-export * from "./SourceLocation";
 export * from "./StyleMapping";
 export * from "./TemplateError";
 export * from "./TemplateIntegrationOptions";
@@ -142,8 +140,17 @@ TemplateInfoFactory.constructors["Opticss.Template"] = Template.deserialize;
 
 // Contents of // ./TemplateAnalysis
 import { OptiCSSError, ObjectDictionary } from "@opticss/util";
-import { TagnameBase, AttributeBase, Element, SerializedElementInfo, Attr, Tag } from "./Selectable";
-import { SourcePosition, POSITION_UNKNOWN, SourceLocation } from "./SourceLocation";
+import {
+  TagnameBase,
+  AttributeBase,
+  Element,
+  SerializedElementInfo,
+  Attr,
+  Tag,
+  SourcePosition,
+  POSITION_UNKNOWN,
+  SourceLocation
+} from "@opticss/element-analysis";
 
 /*
  * This interface defines a JSON friendly serialization

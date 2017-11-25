@@ -1,6 +1,6 @@
 import {
   Selectable,
-} from '@opticss/template-api';
+} from '@opticss/element-analysis';
 import * as SelectorParser from 'postcss-selector-parser';
 
 import { ParsedSelector } from "../parseSelector";

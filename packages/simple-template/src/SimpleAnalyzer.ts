@@ -1,6 +1,7 @@
 import * as parse5 from "parse5";
-import { Tagname, Attribute, AttributeNS, TemplateAnalysis, POSITION_UNKNOWN  } from "@opticss/template-api";
-import { AttributeValueParser } from "./AttributeValueParser";
+import { TemplateAnalysis } from "@opticss/template-api";
+import { Tagname, Attribute, AttributeNS, POSITION_UNKNOWN  } from "@opticss/element-analysis";
+import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
 import { TestTemplate } from "./TestTemplate";
 
 export class SimpleAnalyzer {

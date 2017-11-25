@@ -1,6 +1,6 @@
 import * as postcss from "postcss";
 import { Action, stripNL } from "../Action";
-import { SourcePosition } from "@opticss/template-api";
+import { SourcePosition } from "@opticss/element-analysis";
 import { Optimizations } from "../../OpticssOptions";
 import { SelectorCache } from "../../query";
 

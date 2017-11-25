@@ -2,13 +2,15 @@ import * as postcss from 'postcss';
 import * as selectorParser from 'postcss-selector-parser';
 import {
   TemplateIntegrationOptions,
-  SourcePosition,
   ElementAttributes,
   SimpleAttribute as ElementAttribute,
   SimpleTagname as ElementTagname,
   StyleMapping,
   isSimpleTagname,
 } from '@opticss/template-api';
+import {
+  SourcePosition
+} from "@opticss/element-analysis";
 
 import { Optimizations } from '../../OpticssOptions';
 import { OptimizationPass } from '../../OptimizationPass';

@@ -28,7 +28,7 @@ import {
   isUnknown,
   Tagname,
   TagnameNS,
-} from '@opticss/template-api';
+} from '@opticss/element-analysis';
 
 const tagMatcher = TagMatcher.instance;
 

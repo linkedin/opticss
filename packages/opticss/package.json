@@ -4,7 +4,7 @@
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
-    "compile": "rm -rf dist && tsc --pretty",
+    "compile": "rm -rf dist && tsc",
     "pretest": "npm run compile && tslint --project tsconfig.json --type-check",
     "prepublish": "tsc",
     "tslint": "tslint",
@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@opticss/template-api": "^0.1.0",
+    "@opticss/element-analysis": "^0.1.0",
     "@opticss/util": "^0.1.0",
     "@types/debug": "0.0.29",
     "@types/source-map": "^0.5.0",

@@ -1,15 +1,16 @@
 {
-  "name": "@opticss/template-api",
+  "name": "@opticss/element-analysis",
   "version": "0.1.0",
-  "description": "Simple templates for use in testing with OptiCSS.",
+  "description": "Data structures for storing the analysis of elements.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "compile": "rm -rf dist test/build && tsc && tsc -p tsconfig-test.json",
+    "env": "env",
+    "compile": "rm -rf dist test/build && tsc",
     "pretest": "yarn run compile && yarn run tslint",
     "prepublish": "rm -rf dist && tsc",
-    "tslint": "tslint --project tsconfig.json && tslint --project tsconfig-test.json",
-    "test": "mocha test/build/test --opts test/mocha.opts",
+    "tslint": "tslint --project tsconfig.json",
+    "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs ."
@@ -32,14 +33,10 @@
     "opticss": "*"
   },
   "dependencies": {
-    "@opticss/util": "*",
-    "@opticss/element-analysis": "^0.1.0",
-    "postcss": "^6.0.12",
-    "typescript-collections": "^1.2.3"
+    "@opticss/util": "*"
   },
   "devDependencies": {
     "@types/node": "^8.0.26",
-    "@opticss/attr-analysis-dsl": "^0.1.0",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",
     "tslint": "^5.1.0",

@@ -1,8 +1,10 @@
 import {
-  SourcePosition,
   SimpleAttribute,
   simpleAttributeToString,
 } from "@opticss/template-api";
+import {
+  SourcePosition
+} from "@opticss/element-analysis";
 
 import { OptimizationPass } from '../../OptimizationPass';
 import { Optimizations } from '../../optimizations';

@@ -1,8 +1,9 @@
 import * as parse5 from "parse5";
-import { TemplateIntegrationOptions, Tagname, Element, Attr, AttributeNS, Attribute, StyleMapping, RewriteMapping, BooleanExpression, AndExpression, OrExpression, NotExpression, RewriteableAttrName, SimpleAttribute, SimpleTagname, isSimpleTagname } from "@opticss/template-api";
+import { TemplateIntegrationOptions, StyleMapping, RewriteMapping, BooleanExpression, AndExpression, OrExpression, NotExpression, RewriteableAttrName, SimpleAttribute, SimpleTagname, isSimpleTagname } from "@opticss/template-api";
+import { Tagname, Element, Attr, AttributeNS, Attribute } from "@opticss/element-analysis";
 import { assertNever } from "@opticss/util";
 import { allElements, bodyContents, bodyElement } from "./SimpleTemplateRunner";
-import { AttributeValueParser } from "./AttributeValueParser";
+import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
 import { TestTemplate } from "./TestTemplate";
 
 export class SimpleTemplateRewriter {

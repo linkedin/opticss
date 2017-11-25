@@ -12,7 +12,7 @@ import {
   ElementInfo,
   isConstant,
   isTagnameValueChoice,
-} from './Selectable';
+} from "@opticss/element-analysis";
 import { BooleanExpression, AndExpression, OrExpression, isOrExpression, isAndExpression, isNotExpression } from "./BooleanExpression";
 import { TemplateIntegrationOptions } from "./TemplateIntegrationOptions";
 

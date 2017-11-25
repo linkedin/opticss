@@ -3,7 +3,8 @@ import * as postcss from 'postcss';
 import * as specificity from 'specificity';
 import { BSTree, MultiDictionary } from 'typescript-collections';
 
-import { TemplateTypes, Element, TemplateAnalysis } from '@opticss/template-api';
+import { TemplateTypes, TemplateAnalysis } from '@opticss/template-api';
+import { Element } from '@opticss/element-analysis';
 import { MultiMap } from "@opticss/util";
 import { ParsedCssFile } from '../../CssFile';
 import { OptimizationPass } from '../../OptimizationPass';
