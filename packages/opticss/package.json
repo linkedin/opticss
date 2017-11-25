@@ -64,7 +64,7 @@
     "postcss-selector-parser": "^3.1.1",
     "source-map": "^0.5.6",
     "specificity": "^0.3.2",
-    "typescript-collections": "^1.2.3",
+    "typescript-collections": "^1.2.5",
     "typescript-memoize": "^1.0.0-alpha.3"
   },
   "engines": {

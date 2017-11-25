@@ -1694,9 +1694,9 @@ css-property-parser@^1.0.5:
     moo "^0.4.1"
     nearley "^2.11.0"
 
-css-select@^1.3.0-rc0:
-  version "1.3.0-rc0"
-  resolved "https://registry.yarnpkg.com/css-select/-/css-select-1.3.0-rc0.tgz#6f93196aaae737666ea1036a8cb14a8fcb7a9231"
+css-select@li:
+  version "1.3.0-li.0"
+  resolved "http://artifactory.corp.linkedin.com:8081/artifactory/api/npm/npm-external/css-select/-/css-select-1.3.0-li.0.tgz#acc926229d74c82a618a1c1bf4f14895f914776d"
   dependencies:
     boolbase "^1.0.0"
     css-what "2.1"
@@ -5483,7 +5483,7 @@ typedoc@^0.7.1:
     typedoc-default-themes "^0.5.0"
     typescript "2.3.4"
 
-typescript-collections@^1.2.3:
+typescript-collections@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/typescript-collections/-/typescript-collections-1.2.5.tgz#192978f2f432171222a5248663f45da4a0df3f18"
 

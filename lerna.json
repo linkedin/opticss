@@ -5,5 +5,16 @@
   "useWorkspaces": true,
   "packages": [
     "packages/*"
-  ]
+  ],
+  "command": {
+    "publish": {
+      "message": "chore(release): publish %s"
+    },
+    "bootstrap": {
+      "sort": true
+    },
+    "run": {
+      "sort": true
+    }
+  }
 }
