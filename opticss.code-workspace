@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "packages/attr-analysis-dsl"
+		},
+		{
+			"path": "packages/demo-app"
+		},
+		{
+			"path": "packages/element-analysis"
+		},
+		{
+			"path": "packages/opticss"
+		},
+		{
+			"path": "packages/resolve-cascade"
+		},
+		{
+			"path": "packages/simple-template"
+		},
+		{
+			"path": "packages/template-api"
+		},
+		{
+			"path": "packages/util"
+		}
+	],
+	"settings": {}
+}
