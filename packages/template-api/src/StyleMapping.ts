@@ -10,16 +10,8 @@ import {
 import {
   Attribute as SelectableAttribute,
   ElementInfo,
-  FlattenedAttributeValue,
-  isAbsent,
   isConstant,
-  isEndsWith,
-  isFlattenedSet,
-  isStartsAndEndsWith,
-  isStartsWith,
   isTagnameValueChoice,
-  isUnknown,
-  isUnknownIdentifier,
 } from './Selectable';
 import { BooleanExpression, AndExpression, OrExpression, isOrExpression, isAndExpression, isNotExpression } from "./BooleanExpression";
 import { TemplateIntegrationOptions } from "./TemplateIntegrationOptions";
@@ -280,26 +272,6 @@ export class StyleMapping {
       };
     });
   }
-}
-
-function stringsForValue(v: FlattenedAttributeValue): string[] {
-    if (isAbsent(v)) {
-      //pass
-      return [];
-    } else if (isUnknown(v) || isUnknownIdentifier(v)) {
-      // pass -- omg what to do here?
-      return [];
-    } else if (isConstant(v)) {
-      return [v.constant];
-    } else if (isStartsWith(v) || isEndsWith(v) || isStartsAndEndsWith(v)) {
-      // We can use all known idents in the css to see which of these match?
-      return [];
-    } else if (isFlattenedSet(v)) {
-      return v.allOf.reduce((prev, sv) => prev.concat(stringsForValue(sv)),
-                            new Array<string>());
-    } else {
-      return assertNever(v);
-    }
 }
 
 function sameElementTrait<T extends SimpleTagname | SimpleAttribute>(trait1: T, trait2: T): boolean {
