@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/css-blocks/opticss#readme",
   "dependencies": {
-    "typescript-collections": "^1.2.3"
+    "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
     "@types/node": "^8.0.26",

@@ -35,7 +35,7 @@
     "@opticss/util": "*",
     "@opticss/element-analysis": "^0.1.0",
     "postcss": "^6.0.12",
-    "typescript-collections": "^1.2.3"
+    "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
     "@types/node": "^8.0.26",
