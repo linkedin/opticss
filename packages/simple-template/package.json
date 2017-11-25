@@ -32,19 +32,19 @@
     "css-select": "li",
     "parse5": "^3.0.2",
     "postcss": "^6.0.12",
-    "specificity": "^0.3.2",
-    "random-js": "^1.0.8"
+    "random-js": "^1.0.8",
+    "specificity": "^0.3.2"
   },
   "devDependencies": {
-    "@types/mocha": "^2.2.41",
     "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
     "@types/random-js": "^1.0.30",
+    "chai": "^3.5.0",
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
     "remap-istanbul": "^0.9.5",
     "tslint": "^5.1.0",
-    "typescript": "^2.4.1",
-    "chai": "^3.5.0"
+    "typescript": "^2.4.1"
   }
 }

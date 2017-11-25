@@ -32,14 +32,14 @@
     "opticss": "*"
   },
   "dependencies": {
-    "@opticss/util": "*",
     "@opticss/element-analysis": "^0.1.0",
+    "@opticss/util": "^0.1.0",
     "postcss": "^6.0.12",
     "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
-    "@types/node": "^8.0.26",
     "@opticss/attr-analysis-dsl": "^0.1.0",
+    "@types/node": "^8.0.26",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",
     "tslint": "^5.1.0",

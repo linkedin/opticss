@@ -33,7 +33,7 @@
     "opticss": "*"
   },
   "dependencies": {
-    "@opticss/util": "*"
+    "@opticss/util": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^8.0.26",

@@ -34,20 +34,20 @@
   },
   "dependencies": {
     "@opticss/util": "^0.1.0",
-    "nearley": "^2.10.3",
-    "moo": "^0.4.1"
+    "moo": "^0.4.1",
+    "nearley": "^2.10.3"
   },
   "devDependencies": {
-    "@types/mocha": "^2.2.41",
     "@opticss/element-analysis": "^0.1.0",
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
+    "@types/nearley": "^2.9.0",
+    "chai": "^3.5.0",
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.0.23",
     "remap-istanbul": "^0.9.5",
     "tslint": "^5.1.0",
-    "typescript": "^2.4.1",
-    "chai": "^3.5.0",
-    "@types/chai": "^3.5.2",
-    "@types/nearley": "^2.9.0"
+    "typescript": "^2.4.1"
   }
 }

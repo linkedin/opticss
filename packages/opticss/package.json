@@ -51,8 +51,8 @@
     "typescript": "^2.4.1"
   },
   "dependencies": {
-    "@opticss/template-api": "^0.1.0",
     "@opticss/element-analysis": "^0.1.0",
+    "@opticss/template-api": "^0.1.0",
     "@opticss/util": "^0.1.0",
     "@types/debug": "0.0.29",
     "@types/source-map": "^0.5.0",
