@@ -1,6 +1,6 @@
 {
   "name": "@opticss/attr-analysis-dsl",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A DSL for writing attribute analysis objects for use in OptiCSS.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -33,12 +33,12 @@
     "@opticss/template-api": "^0.1.0"
   },
   "dependencies": {
-    "@opticss/util": "^0.1.0",
+    "@opticss/util": "^0.1.1",
     "moo": "^0.4.1",
     "nearley": "^2.10.3"
   },
   "devDependencies": {
-    "@opticss/element-analysis": "^0.1.0",
+    "@opticss/element-analysis": "^0.1.1",
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
     "@types/nearley": "^2.9.0",

@@ -1,6 +1,6 @@
 {
   "name": "@opticss/simple-template",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple templates for use in testing with OptiCSS.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -29,10 +29,10 @@
   },
   "homepage": "https://github.com/css-blocks/opticss#readme",
   "dependencies": {
-    "@opticss/template-api": "^0.1.0",
-    "@opticss/element-analysis": "^0.1.0",
-    "@opticss/attr-analysis-dsl": "^0.1.0",
-    "@opticss/util": "^0.1.0",
+    "@opticss/attr-analysis-dsl": "^0.1.1",
+    "@opticss/element-analysis": "^0.1.1",
+    "@opticss/template-api": "^0.1.1",
+    "@opticss/util": "^0.1.1",
     "css-select": "^1.3.0-li.1",
     "parse5": "^3.0.2",
     "postcss": "^6.0.12",

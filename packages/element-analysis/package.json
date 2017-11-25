@@ -1,6 +1,6 @@
 {
   "name": "@opticss/element-analysis",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Data structures for storing the analysis of elements.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -33,7 +33,7 @@
     "opticss": "*"
   },
   "dependencies": {
-    "@opticss/util": "^0.1.0"
+    "@opticss/util": "^0.1.1"
   },
   "devDependencies": {
     "@types/node": "^8.0.26",
