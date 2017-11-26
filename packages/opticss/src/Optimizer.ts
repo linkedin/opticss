@@ -209,7 +209,7 @@ export class Optimizer {
    * @returns {Promise<OptimizationResult>} The optimization result.
    */
   optimize(outputFilename: string): Promise<OptimizationResult> {
-    let pass = new OptimizationPass(this.templateOptions);
+    let pass = new OptimizationPass(this.options, this.templateOptions);
     let start = new Date();
 
     // Parse all input files.

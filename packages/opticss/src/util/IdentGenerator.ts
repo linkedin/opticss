@@ -1,17 +1,22 @@
 const FIRST_CHAR = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const OTHER_CHAR = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
 
-function identChar(c: number, i: number) {
-  return i === 0 ? FIRST_CHAR[c] : OTHER_CHAR[c];
+const FIRST_CHAR_INSENSITIVE = 'abcdefghijklmnopqrstuvwxyz';
+const OTHER_CHAR_INSENSITIVE = '0123456789abcdefghijklmnopqrstuvwxyz-_';
+
+function identChar(insensitive: boolean, c: number, i: number): string {
+  return i === 0
+    ? (insensitive ? FIRST_CHAR_INSENSITIVE : FIRST_CHAR)[c]
+    : (insensitive ? OTHER_CHAR_INSENSITIVE : OTHER_CHAR)[c];
 }
 
-function increment(counters: Array<number>, i: number) {
+function increment(insensitive: boolean, counters: Array<number>, i: number) {
   let c = counters[i] + 1;
   let carry = false;
-  if (i === 0 && c === 52) {
+  if (i === 0 && c === (insensitive ? 26 : 52)) {
     c = 0;
     carry = true;
-  } else if (i > 0 && c === 64) {
+  } else if (i > 0 && c === (insensitive ? 38 : 64)) {
     c = 0;
     carry = true;
   }
@@ -24,10 +29,14 @@ export class IdentGenerator {
   returnedIdents: Array<string>;
   reservedIdents: Set<string>;
   private counters: Array<number>;
-  constructor() {
+  private identChar: (c: number, i: number) => string;
+  private increment: (counters: Array<number>, i: number) => boolean;
+  constructor(caseInsensitive = false) {
     this.counters = [0];
     this.returnedIdents = [];
     this.reservedIdents = new Set();
+    this.identChar = identChar.bind(null, caseInsensitive);
+    this.increment = increment.bind(null, caseInsensitive);
   }
   nextIdent(): string {
     if (this.returnedIdents.length > 0) {
@@ -38,10 +47,10 @@ export class IdentGenerator {
     return this.lastIdent = ident;
   }
   private generateNextIdent() {
-    let nextIdent = this.counters.map(identChar).join("");
+    let nextIdent = this.counters.map(this.identChar).join("");
     let carry = false;
     for (let i = this.counters.length - 1; i >= 0; i--) {
-      carry = increment(this.counters, i);
+      carry = this.increment(this.counters, i);
       if (!carry) { break; }
     }
     if (carry) this.counters.push(0);
@@ -76,10 +85,10 @@ export class IdentGenerators<Namespace extends string = string> {
   namespaces: {
     [name: string]: IdentGenerator;
   };
-  constructor(...namespaces: Array<Namespace>) {
+  constructor(caseInsensitive: boolean, ...namespaces: Array<Namespace>) {
     this.namespaces = {};
     namespaces.forEach(ns => {
-      this.namespaces[ns] = new IdentGenerator();
+      this.namespaces[ns] = new IdentGenerator(caseInsensitive);
     });
   }
   /**

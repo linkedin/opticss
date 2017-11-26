@@ -58,6 +58,24 @@ export class RewriteIdentsTest {
     assert.equal(idGen.nextIdent(), "a00");
   }
 
+  @test "has an case-insensitive ident generator"() {
+    const idGen = new IdentGenerator(true);
+    assert.equal(idGen.nextIdent(), "a");
+    assert.equal(idGen.nextIdent(), "b");
+    for (let i = 2; i < 26; i++) {
+      idGen.nextIdent();
+    }
+    assert.equal(idGen.nextIdent(), "a0");
+    for (let i = 1; i < 38; i++) {
+      idGen.nextIdent();
+    }
+    assert.equal(idGen.nextIdent(), "b0");
+    for (let i = 1; i < 38 * 25; i++) {
+      idGen.nextIdent();
+    }
+    assert.equal(idGen.nextIdent(), "a00");
+  }
+
   @test "can return an ident"() {
     const idGen = new IdentGenerator();
     assert.equal(idGen.nextIdent(), "a");
@@ -66,7 +84,7 @@ export class RewriteIdentsTest {
   }
 
   @test "ident generator set"() {
-    const idGens = new IdentGenerators("id", "class", "state");
+    const idGens = new IdentGenerators(false, "id", "class", "state");
     assert.equal(idGens.nextIdent("id"), "a");
     assert.equal(idGens.nextIdent("class"), "a");
     assert.equal(idGens.nextIdent("state"), "a");
@@ -75,7 +93,7 @@ export class RewriteIdentsTest {
     assert.equal(idGens.nextIdent("class"), "b");
     assert.equal(idGens.nextIdent("state"), "b");
     try {
-      const errorProneGen = new IdentGenerators<string>("id", "class", "state");
+      const errorProneGen = new IdentGenerators<string>(false, "id", "class", "state");
       errorProneGen.nextIdent("foo");
       assert.fail("error expected");
     } catch (e) {

@@ -45,15 +45,25 @@ export interface OptiCSSOptions extends Optimizations {
    * is less optimal than if the optimization hadn't been performed.
    */
   css?: Partial<CSSFeatureFlags>;
+
 }
 
 export const DEFAULT_OPTIONS = Object.freeze<OptiCSSOptions>({
   enabled: true,
   rewriteIdents: true,
   removeUnusedStyles: true,
-  mergeDeclarations: true
+  mergeDeclarations: true,
+  css: {}
 });
 
 export interface CSSFeatureFlags {
   useMatchesPseudoClass: boolean;
+
+  /**
+   * Indicates that class and id selectors should be treated as case-insensitive.
+   * In quirksmode and some older doctypes, selectors are case insensitive.
+   *
+   * Identifiers are more compressible when case sensitivity can be assumed.
+   */
+  caseInsensitiveSelectors: boolean;
 }
