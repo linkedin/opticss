@@ -6,7 +6,7 @@
   "types": "dist/src/index.d.ts",
   "scripts": {
     "env": "env",
-    "compile": "rm -rf dist test/build && tsc",
+    "compile": "rm -rf dist && tsc",
     "pretest": "yarn run compile && yarn run tslint",
     "prepublish": "rm -rf dist && tsc",
     "tslint": "tslint --project tsconfig.json",
