@@ -1,6 +1,6 @@
 {
   "name": "opticss",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
@@ -30,7 +30,7 @@
   "types": "dist/src/index.d.ts",
   "homepage": "https://github.com/css-blocks/opticss#readme",
   "devDependencies": {
-    "@opticss/simple-template": "^0.1.1",
+    "@opticss/simple-template": "^0.2.0",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.43",
     "@types/node": "^8.0.26",
@@ -50,8 +50,8 @@
     "typescript": "^2.4.1"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.1.1",
-    "@opticss/template-api": "^0.1.1",
+    "@opticss/element-analysis": "^0.2.0",
+    "@opticss/template-api": "^0.2.0",
     "@opticss/util": "^0.1.1",
     "@types/debug": "0.0.29",
     "@types/source-map": "^0.5.0",
