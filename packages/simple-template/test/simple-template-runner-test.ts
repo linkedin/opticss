@@ -2,7 +2,6 @@ import {
   assert,
 } from 'chai';
 import {
-  only,
   suite,
   test,
 } from 'mocha-typescript';
@@ -37,7 +36,6 @@ export class SimpleTemplateTest {
       assert.deepEqual(value[1], `<div class=""></div>`);
     });
   }
-  @only
   @test "Can run all with an optional value 2"() {
     let template =  new TestTemplate("test.tmpl", clean`
     <div class="frozen orange">ORANGE</div>
