@@ -30,16 +30,16 @@
   "homepage": "https://github.com/css-blocks/resolve-cascade#readme",
   "dependencies": {
     "css-property-parser": "^1.0.5",
-    "css-select": "^1.3.0-li.1",
+    "css-select": "1.3.0-li.1",
     "domutils": "^1.6.2",
     "parse5": "^3.0.2",
     "postcss": "^6.0.13",
-    "specificity": "^0.3.2",
-    "typescript": "^2.4.1"
+    "specificity": "^0.3.2"
   },
   "devDependencies": {
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",
-    "tslint": "^5.1.0"
+    "tslint": "^5.1.0",
+    "typescript": "2.6.2"
   }
 }

@@ -40,6 +40,6 @@
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",
     "tslint": "^5.1.0",
-    "typescript": "^2.4.1"
+    "typescript": "^2.6.2"
   }
 }
