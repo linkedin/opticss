@@ -9,8 +9,7 @@ import {
   test,
 } from 'mocha-typescript';
 import {
-  isNotNull as assertNotNull,
-  isDefined as assertDefined
+  assert as typedAssert
 } from "@opticss/util";
 import {
   AttributeValueParser
@@ -57,9 +56,9 @@ export class StyleMappingTest {
     let mapping = new StyleMapping(normalizeTemplateOptions({}));
     mapping.rewriteAttribute(sClass("test"), sClass("a"));
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "(test|---)")));
-    assertNotNull(rewrite).and(rewrite => {
+    typedAssert.isNotNull(rewrite).and(rewrite => {
       let dyn = rewrite.dynamicAttributes.class!["a"];
-      assertDefined(dyn).and(dyn => {
+      typedAssert.isDefined(dyn).and(dyn => {
         assert.deepEqual(dyn, and(0));
       });
     });
@@ -68,7 +67,7 @@ export class StyleMappingTest {
     let mapping = new StyleMapping(normalizeTemplateOptions({}));
     mapping.linkAttributes(sClass("a"), [{existing: [sClass("test")], unless: []}]);
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "test")));
-    assertNotNull(rewrite).and(rewrite => {
+    typedAssert.isNotNull(rewrite).and(rewrite => {
       assert.deepEqual(rewrite.inputs[0], {name: "class", value: "test"});
       let staticClasses = rewrite.staticAttributes.class;
       assert(staticClasses.find(c => c === "a"), "linked class is missing");
@@ -79,14 +78,14 @@ export class StyleMappingTest {
     let mapping = new StyleMapping(normalizeTemplateOptions({}));
     mapping.linkAttributes(sClass("a"), [{existing: [sClass("test")], unless: []}]);
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "(test|---)")));
-    assertNotNull(rewrite).and(rewrite => {
+    typedAssert.isNotNull(rewrite).and(rewrite => {
       assert.deepEqual(rewrite.inputs[0], {name: "class", value: "test"});
       let dyn = rewrite.dynamicAttributes.class!["a"];
-      assertDefined(dyn).and(dyn => {
+      typedAssert.isDefined(dyn).and(dyn => {
         assert.deepEqual(dyn, and(0));
       });
       let source = rewrite.dynamicAttributes.class!["test"];
-      assertDefined(source).and(source => {
+      typedAssert.isDefined(source).and(source => {
         assert.deepEqual(source, and(0));
       });
     });
@@ -95,7 +94,7 @@ export class StyleMappingTest {
     let mapping = new StyleMapping(normalizeTemplateOptions({}));
     mapping.attributeIsObsolete(sClass("test"));
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "test")));
-    assertNotNull(rewrite).and(rewrite => {
+    typedAssert.isNotNull(rewrite).and(rewrite => {
       assert.deepEqual(rewrite.inputs[0], {name: "class", value: "test"});
       assert.equal(Object.keys(rewrite.dynamicAttributes.class!).length, 0);
       assert.equal(rewrite.staticAttributes.class!.length, 0);

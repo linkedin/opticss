@@ -1,3 +1,5 @@
+import { something, defined } from "./UtilityTypes";
+
 /**
  * Maybe.ts - A TypeScript implementation of the Maybe Monad.
  * ==========================================================
@@ -61,12 +63,10 @@
  * }
  * ```
  */
-export type something = string | number | boolean | symbol | object;
-export type defined = something | null;
+export type Maybe<T> = Some<T> | None;
 
 // export const MAYBE = Symbol("Maybe");
 export const NO_VALUE = Symbol("None");
-export type Maybe<T> = Some<T> | None;
 export type None = { maybe: symbol, error?: string | Error };
 export type Some<T> = { maybe: T };
 export type MaybeUndefined<T extends defined> = T | Maybe<T> | undefined;
