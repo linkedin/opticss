@@ -63,6 +63,15 @@ export class TwoKeyMultiMap<K1 extends Object, K2 extends Object, V> {
     return this;
   }
 
+  /**
+   * merge another TwoKeyMultiMap of the same type into this TwoKeyMultiMap.
+   */
+  merge(other: TwoKeyMultiMap<K1, K2, V>) {
+    for (let [key1, key2, values] of other.entries()) {
+      this.set(key1, key2, ...values);
+    }
+  }
+
   clear(): void {
     this.store.clear();
     this._sizeOfKeys = 0;
@@ -176,6 +185,12 @@ export class TwoKeyMultiMap<K1 extends Object, K2 extends Object, V> {
         yield [key1, key2];
       }
     }
+  }
+
+  subkeys(key ?: K1): IterableIterator < K1 | K2 > {
+    let map = key ? this.store.get(key) : this.store;
+    if (!map) { return (new Set<K2>()).keys(); }
+    return map.keys();
   }
 
   /** iterates over each set of values that are stored in the MultiMap. */
