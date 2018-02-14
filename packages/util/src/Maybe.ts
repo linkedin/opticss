@@ -1,4 +1,5 @@
-import { something, defined } from "./UtilityTypes";
+import { something, defined, TypeGuard, FunctionCall0, FunctionCall1, FunctionCall2, FunctionCall3, FunctionCall4 } from "./UtilityTypes";
+import { isObject, whatever } from "./index";
 
 /**
  * Maybe.ts - A TypeScript implementation of the Maybe Monad.
@@ -65,17 +66,17 @@ import { something, defined } from "./UtilityTypes";
  */
 export type Maybe<T> = Some<T> | None;
 
-// export const MAYBE = Symbol("Maybe");
+export const MAYBE = Symbol("Maybe");
 export const NO_VALUE = Symbol("None");
-export type None = { maybe: symbol, error?: string | Error };
-export type Some<T> = { maybe: T };
+export type None = { [MAYBE]: symbol, error?: string | Error };
+export type Some<T> = { [MAYBE]: T };
 export type MaybeUndefined<T extends defined> = T | Maybe<T> | undefined;
 export type OptionalMaybe<T> = T | Maybe<T>;
 
 /**
- * Passes a Maybe through. If the value is not a Maybe, undefined is converted
- * to None, all other values are treated as Some. An error message can be
- * provided for the eventual call to none() if the value is undefined.
+ * Passes a Maybe through. If the value is not a Maybe, undefined and null are
+ * converted to None, all other values are treated as Some. An error message
+ * can be provided for the eventual call to none() if the value is nothing.
  */
 export function maybe<T extends something>(v: MaybeUndefined<T>, error?: string): Maybe<T> {
   if (v === undefined || v === null) {
@@ -91,20 +92,18 @@ export function maybe<T extends something>(v: MaybeUndefined<T>, error?: string)
  * Creates a Some() value.
  */
 export function some<T>(v: T): Some<T> {
-  return {maybe: v};
+  return {[MAYBE]: v};
 }
 
 /**
  * Creates a None() value.
  */
 export function none(error?: string | Error): None {
-  return {maybe: NO_VALUE, error};
+  return {[MAYBE]: NO_VALUE, error};
 }
 
-export type FunctionCall1<A1, R> = (arg1: A1) => R;
-export type FunctionCall2<A1, A2, R> = (arg1: A1, arg2: A2) => R;
-export type FunctionCall3<A1, A2, A3, R> = (arg1: A1, arg2: A2, arg3: A3) => R;
-export type FunctionCall4<A1, A2, A3, A4, R> = (arg1: A1, arg2: A2, arg3: A3, arg4: A4) => R;
+export type CallMeMaybe0<R> = FunctionCall0<R>
+                            | FunctionCall0<Maybe<R>>;
 export type CallMeMaybe1<A1, R> = FunctionCall1<A1, R>
                                 | FunctionCall1<A1, Maybe<R>>;
 export type CallMeMaybe2<A1, A2, R> = FunctionCall2<A1, A2, R>
@@ -113,7 +112,8 @@ export type CallMeMaybe3<A1, A2, A3, R> = FunctionCall3<A1, A2, A3, R>
                                         | FunctionCall3<A1, A2, A3, Maybe<R>>;
 export type CallMeMaybe4<A1, A2, A3, A4, R> = FunctionCall4<A1, A2, A3, A4, R>
                                             | FunctionCall4<A1, A2, A3, A4, Maybe<R>>;
-export type CallMeMaybe<A1, A2, A3, A4, R> = CallMeMaybe1<A1, R>
+export type CallMeMaybe<A1, A2, A3, A4, R> = CallMeMaybe0<R>
+                                           | CallMeMaybe1<A1, R>
                                            | CallMeMaybe2<A1, A2, R>
                                            | CallMeMaybe3<A1, A2, A3, R>
                                            | CallMeMaybe4<A1, A2, A3, A4, R>;
@@ -128,12 +128,50 @@ export function callMaybe<A1, A2, A3, A4, R>(fn: CallMeMaybe4<A1, A2, A3, A4, R>
  * If the function returns a maybe, pass it through. All other return values are returned as a Some.
  */
 export function callMaybe<A1, A2, A3, A4, R>(fn: CallMeMaybe<A1, A2, A3, A4, R>, arg1: OptionalMaybe<A1>, arg2?: OptionalMaybe<A2>, arg3?: OptionalMaybe<A3>, arg4?: OptionalMaybe<A4>): Maybe<R> {
-  if (isNone(arg1)) { return arg1; }
-  else if (isNone(arg2)) { return arg2; }
-  else if (isNone(arg3)) { return arg3; }
-  else if (isNone(arg4)) { return arg4; }
+  if (isMaybe(arg1) && isNone(arg1)) { return arg1; }
+  else if (isMaybe(arg2) && isNone(arg2)) { return arg2; }
+  else if (isMaybe(arg3) && isNone(arg3)) { return arg3; }
+  else if (isMaybe(arg4) && isNone(arg4)) { return arg4; }
   let rv: OptionalMaybe<R> = fn.call(null,
-    unwrapIfMaybe(arg1),
+    arg1 && unwrapIfMaybe(arg1),
+    arg2 && unwrapIfMaybe(arg2),
+    arg3 && unwrapIfMaybe(arg3),
+    arg4 && unwrapIfMaybe(arg4)
+  );
+  if (isMaybe(rv)) return rv;
+  return maybe(rv);
+}
+
+export type HasMethod<Type extends object, N extends keyof Type, PropertyType> = Pick<{
+  [P in keyof Type]: PropertyType;
+}, N>;
+
+export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe0<R>>, R>(thisObj: Maybe<T>, fnName: N): Maybe<R>;
+export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe1<A1, R>>, A1, R>(thisObj: Maybe<T>, fnName: N, arg1: OptionalMaybe<A1>): Maybe<R>;
+export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe2<A1, A2, R>>, A1, A2, R>(thisObj: Maybe<T>, fnName: N, arg1: OptionalMaybe<A1>, arg2: OptionalMaybe<A2>): Maybe<R>;
+export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe3<A1, A2, A3, R>>, A1, A2, A3, R>(thisObj: Maybe<T>, fnName: N, arg1: OptionalMaybe<A1>, arg2: OptionalMaybe<A2>, arg3: OptionalMaybe<A3>): Maybe<R>;
+export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe4<A1, A2, A3, A4, R>>, A1, A2, A3, A4, R>(thisObj: Maybe<T>, fnName: N, arg1: OptionalMaybe<A1>, arg2: OptionalMaybe<A2>, arg3: OptionalMaybe<A3>, arg4: OptionalMaybe<A4>): Maybe<R>;
+export function methodMaybe<
+  N extends keyof T,
+  T extends HasMethod<T, N, CallMeMaybe<A1, A2, A3, A4, R>>,
+  A1, A2, A3, A4, R,
+>(
+  thisObj: Maybe<T>,
+  fnName: N,
+  arg1?: OptionalMaybe<A1>,
+  arg2?: OptionalMaybe<A2>,
+  arg3?: OptionalMaybe<A3>,
+  arg4?: OptionalMaybe<A4>
+): Maybe<R> {
+  if (isNone(thisObj)) return thisObj;
+  if (isMaybe(arg1) && isNone(arg1)) { return arg1; }
+  else if (isMaybe(arg2) && isNone(arg2)) { return arg2; }
+  else if (isMaybe(arg3) && isNone(arg3)) { return arg3; }
+  else if (isMaybe(arg4) && isNone(arg4)) { return arg4; }
+  let self: T = unwrap(thisObj);
+  let method: T[N] = self[fnName];
+  let rv: OptionalMaybe<R> = method.call(self,
+    arg1 && unwrapIfMaybe(arg1),
     arg2 && unwrapIfMaybe(arg2),
     arg3 && unwrapIfMaybe(arg3),
     arg4 && unwrapIfMaybe(arg4)
@@ -143,7 +181,13 @@ export function callMaybe<A1, A2, A3, A4, R>(fn: CallMeMaybe<A1, A2, A3, A4, R>,
 }
 
 /**
- * run the callback, if it returns a maybe, pass it through.
+ * Runs the callback.
+ *
+ * If it returns a maybe, it is returned.
+ * If it raises an error, a None is returned and the caught error is thrown
+ *   when the value is unwrapped.
+ * Otherwise the return value, is passed through `maybe()`
+ *   returning a `Some` or `None` depending on the value.
  */
 export function attempt<R>(fn: () => OptionalMaybe<R>): Maybe<R> {
   try {
@@ -158,25 +202,42 @@ export function attempt<R>(fn: () => OptionalMaybe<R>): Maybe<R> {
 /**
  * Type Guard. Test if the value is a Maybe (a Some or a None).
  */
-export function isMaybe<T extends something>(value: any): value is Maybe<T> {
-  if (value === null || value === undefined) return false;
-  return value.hasOwnProperty('maybe');
+export function isMaybe(value: whatever): value is Maybe<something> {
+  if (isObject(value)) {
+    return value.hasOwnProperty(MAYBE);
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Check if an arbitrary value is a Some of a particular type as determined by
+ * the provided type guard. Usually, you'll want to use `isSome` on a `Maybe`
+ * of a statically determined type. But this is useful if you need to accept
+ * a single value that is a `Maybe` of several types and you need to do some
+ * control flow before unwrapping.
+ */
+export function isSomeOfType<T>(value: whatever, guard: TypeGuard<T>): value is Some<T> {
+  if (isMaybe(value)) {
+    if (isNone(value)) return false;
+    return guard(unwrap(value));
+  } else {
+    return false;
+  }
 }
 
 /**
  * Type Guard. Test if the value is a Some.
  */
-export function isSome<T extends something>(value: any): value is Some<T> {
-  if (value === null || value === undefined) return false;
-  return value['maybe'] !== NO_VALUE && isMaybe(value);
+export function isSome<T extends something>(value: Maybe<T>): value is Some<T> {
+  return value[MAYBE] !== NO_VALUE;
 }
 
 /**
  * Type Guard. Test if the value is a None.
  */
-export function isNone(value: any): value is None {
-  if (value === null || value === undefined) return false;
-  return value['maybe'] === NO_VALUE;
+export function isNone(value: whatever): value is None {
+  return isObject(value) && value[MAYBE] === NO_VALUE;
 }
 
 /**
@@ -205,7 +266,7 @@ export function unwrap<T>(value: Maybe<T>): T {
       throw new UndefinedValue();
     }
   } else {
-    return value['maybe'];
+    return value[MAYBE];
   }
 }
 

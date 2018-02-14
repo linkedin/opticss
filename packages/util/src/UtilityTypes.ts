@@ -86,3 +86,19 @@ export function isStringDict(dict: whatever): dict is StringDict {
  * Set a value to the type of values in an array.
  */
 export type ItemType<T extends Array<any>> = T[0];
+
+/**
+ * represents a TypeScript type guard function.
+ */
+export type TypeGuard<T extends whatever> = (v: whatever) => v is T;
+
+/** A function that takes no arguments. */
+export type FunctionCall0<R> = () => R;
+/** A function that takes a single argument. */
+export type FunctionCall1<A1, R> = (arg1: A1) => R;
+/** A function that takes a two arguments. */
+export type FunctionCall2<A1, A2, R> = (arg1: A1, arg2: A2) => R;
+/** A function that takes a three arguments. */
+export type FunctionCall3<A1, A2, A3, R> = (arg1: A1, arg2: A2, arg3: A3) => R;
+/** A function that takes a four arguments. */
+export type FunctionCall4<A1, A2, A3, A4, R> = (arg1: A1, arg2: A2, arg3: A3, arg4: A4) => R;
