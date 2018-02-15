@@ -78,6 +78,15 @@ export class MultiMap<K extends Object, V> {
     return this;
   }
 
+  /**
+   * set all values from a MultiMap of the same type into this MultiMap.
+   */
+  setAll(other: MultiMap<K, V>) {
+    for (let [key1, values] of other.entries()) {
+      this.set(key1, ...values);
+    }
+  }
+
   clear(): void {
     this.store.clear();
     this._size = 0;
