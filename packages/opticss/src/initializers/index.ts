@@ -1,10 +1,10 @@
-import { TemplateTypes, TemplateAnalysis, TemplateIntegrationOptions } from "@opticss/template-api";
+import { TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes } from "@opticss/template-api";
 
 import { ParsedCssFile } from "../CssFile";
-import { OptimizationPass } from "../OptimizationPass";
 import { OptiCSSOptions } from "../OpticssOptions";
+import { OptimizationPass } from "../OptimizationPass";
 
-import initKnownIdents from "./initKnownIdents";
+import { initKnownIdents } from "./initKnownIdents";
 
 // The expected interface of an initializer function.
 export type Initializer = (
@@ -12,7 +12,7 @@ export type Initializer = (
   analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
   files: Array<ParsedCssFile>,
   options: OptiCSSOptions,
-  templateOptions: TemplateIntegrationOptions
+  templateOptions: TemplateIntegrationOptions,
 ) => void;
 
 // Initializer Manifest Interface
@@ -21,8 +21,6 @@ export interface Initializers {
 }
 
 // Initializer Manifest
-const initializers: Initializers = {
+export const initializers: Initializers = {
   initKnownIdents,
 };
-
-export default initializers;

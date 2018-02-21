@@ -1,9 +1,9 @@
-const gzip = require('gzip-js');
+const gzip = require("gzip-js");
 
 // TODO: Add in-app brotli compression.
 
-function getBinarySize(string: string) {
-  return Buffer.byteLength(string, 'utf8');
+function getBinarySize(str: string) {
+  return Buffer.byteLength(str, "utf8");
 }
 
 export interface SizeResults {
@@ -15,19 +15,19 @@ export interface SizeResults {
   // outBrotli: number;
 }
 
-export function process(pre: string, opts: any, post: () => Promise<string> ): Promise<SizeResults> {
-  return post().then((post: any) => {
+export function process(pre: string, opts: {level?: number}, post: () => Promise<{css: string}>): Promise<SizeResults> {
+  return post().then((post) => {
 
     let zipPre = gzip.zip(pre, {
       level: opts.level || 6,
-      name: 'pre.css',
-      timestamp: Date.now() / 1000
+      name: "pre.css",
+      timestamp: Date.now() / 1000,
     });
 
-    let zipPost = gzip.zip(post, {
+    let zipPost = gzip.zip(post.css, {
       level: opts.level || 6,
-      name: 'post.css',
-      timestamp: Date.now() / 1000
+      name: "post.css",
+      timestamp: Date.now() / 1000,
     });
 
     return Promise.resolve({

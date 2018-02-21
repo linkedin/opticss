@@ -1,11 +1,13 @@
 import * as assert from "assert";
 
-export function isDefined<X>(value: X | undefined): {and: (cb: (defValue: X) => any) => void } {
+import { whatever } from "./UtilityTypes";
+
+export function isDefined<X>(value: X | undefined): {and: (cb: (defValue: X) => whatever) => void } {
   if (value) {
     return {
       and: function(cb: (v: X) => void) {
         cb(value);
-      }
+      },
     };
   } else {
     assert(value !== undefined, `expected to be defined`);
@@ -13,12 +15,12 @@ export function isDefined<X>(value: X | undefined): {and: (cb: (defValue: X) => 
   }
 }
 
-export function isNotNull<X>(value: X | null): {and: (cb: (defValue: X) => any) => void } {
+export function isNotNull<X>(value: X | null): {and: (cb: (defValue: X) => whatever) => void } {
   if (value) {
     return {
       and: function(cb: (v: X) => void) {
         cb(value);
-      }
+      },
     };
   } else {
     assert(value !== null, `expected to not be null`);
@@ -26,12 +28,12 @@ export function isNotNull<X>(value: X | null): {and: (cb: (defValue: X) => any) 
   }
 }
 
-export function isExisting<X>(value: X | null | undefined): {and: (cb: (defValue: X) => any) => void } {
+export function isExisting<X>(value: X | null | undefined): {and: (cb: (defValue: X) => whatever) => void } {
   if (value) {
     return {
       and: function(cb: (v: X) => void) {
         cb(value);
-      }
+      },
     };
   } else {
     assert(value, `expected to exist`);
@@ -44,13 +46,14 @@ export function isType<
   AssertedType extends ArgumentType
 >(
   typeGuard: (x: ArgumentType) => x is AssertedType,
-  x: ArgumentType
-): { and: (cb: (x: AssertedType) => any) => void } {
+  x: ArgumentType,
+
+): { and: (cb: (x: AssertedType) => whatever) => void } {
   if (typeGuard(x)) {
     return {
       and: function(cb: (x: AssertedType) => void) {
         cb(x);
-      }
+      },
     };
   } else {
     assert.fail(`is not the expected type`);

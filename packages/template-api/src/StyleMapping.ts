@@ -1,19 +1,21 @@
 import {
-  Dictionary, MultiDictionary,
-} from "typescript-collections";
-import {
-  IdentityDictionary,
-  assertNever,
-  ItemType,
-  unionInto,
-} from "@opticss/util";
-import {
   Attribute as SelectableAttribute,
   ElementInfo,
   isConstant,
   isTagnameValueChoice,
 } from "@opticss/element-analysis";
-import { BooleanExpression, AndExpression, OrExpression, isOrExpression, isAndExpression, isNotExpression } from "./BooleanExpression";
+import {
+  assertNever,
+  IdentityDictionary,
+  ItemType,
+  unionInto,
+  whatever,
+} from "@opticss/util";
+import {
+  Dictionary, MultiDictionary,
+} from "typescript-collections";
+
+import { AndExpression, BooleanExpression, isAndExpression, isNotExpression, isOrExpression, OrExpression } from "./BooleanExpression";
 import { TemplateIntegrationOptions } from "./TemplateIntegrationOptions";
 
 export interface RewriteInformation<InfoType> {
@@ -21,7 +23,7 @@ export interface RewriteInformation<InfoType> {
   class: InfoType;
 }
 
-export type RewriteableAttrName = keyof RewriteInformation<any>;
+export type RewriteableAttrName = keyof RewriteInformation<whatever>;
 
 export const REWRITE_ATTRS = new Array<RewriteableAttrName>("id", "class");
 Object.freeze(REWRITE_ATTRS);
@@ -136,7 +138,7 @@ export class StyleMapping {
     } else {
       this.replacedAttributes.setValue(
         this.sourceAttributes.add(from),
-        this.optimizedAttributes.add(to)
+        this.optimizedAttributes.add(to),
       );
     }
   }
@@ -146,7 +148,7 @@ export class StyleMapping {
       let link: PrimaryAttributeLink = {
         to: newAttr,
         from: attrCondition.existing.map(a => isSimpleAttribute(a) ? this.sourceAttributes.add(a) : a),
-        unless: attrCondition.unless.map(a => isSimpleAttribute(a) ? this.sourceAttributes.add(a) : a)
+        unless: attrCondition.unless.map(a => isSimpleAttribute(a) ? this.sourceAttributes.add(a) : a),
       };
       for (let sourceAttr of link.from) {
         if (isSimpleTagname(sourceAttr)) continue;
@@ -175,7 +177,7 @@ export class StyleMapping {
           attrInputs.push({
             ns: attr.namespaceURL || undefined,
             name: attr.name,
-            value: ""
+            value: "",
           });
         }
         inputs.splice(inputs.length, 0, ...attrInputs);
@@ -187,7 +189,7 @@ export class StyleMapping {
   rewriteMapping(element: ElementInfo): RewriteMapping {
     let inputs = this.getInputs(element);
     let staticAttributes: RewriteInformation<Set<string>> = {id: new Set<string>(), class: new Set<string>()};
-    let dynamicAttributes: RewriteMapping['dynamicAttributes'] = {id: {}, class: {}};
+    let dynamicAttributes: RewriteMapping["dynamicAttributes"] = {id: {}, class: {}};
     for (let i = 0; i < inputs.length; i++) {
       let input = inputs[i];
       if (isSimpleTagname(input)) continue;
@@ -236,7 +238,7 @@ export class StyleMapping {
     return {
       inputs,
       staticAttributes: {id: [...staticAttributes.id], class: [...staticAttributes.class]},
-      dynamicAttributes
+      dynamicAttributes,
     };
   }
   replacedAttributeCount(): number {
@@ -268,7 +270,7 @@ export class StyleMapping {
     return nameArray.map(value => {
       return {
         name: attr.name,
-        value
+        value,
       };
     });
   }
@@ -299,13 +301,14 @@ function attributeDictionary<V = SimpleAttribute>(): Dictionary<SimpleAttribute,
 
 function attributeMultiDictionary<V>(
   valueEqualsFn?: (a: V, b: V) => boolean,
-  allowDuplicateValues = false
+  allowDuplicateValues = false,
+
 ): MultiDictionary<SimpleAttribute, V> {
   return new MultiDictionary<SimpleAttribute, V>(attrToKey, valueEqualsFn, allowDuplicateValues);
 }
 
 function attrToKey(attr: SimpleAttribute): string {
-  return `${attr.ns || ''}|${attr.name}=${attr.value}`;
+  return `${attr.ns || ""}|${attr.name}=${attr.value}`;
 }
 
 function extractStatic(element: ElementInfo, inputs: RewriteMapping["inputs"], dyn: DynamicExpressions): Array<string> {
@@ -324,18 +327,21 @@ function extractStatic(element: ElementInfo, inputs: RewriteMapping["inputs"], d
 function isStatic(
   value: BooleanExpression<number> | number,
   inputs: RewriteMapping["inputs"],
-  element: ElementInfo
+  element: ElementInfo,
+
 ): boolean | undefined {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return isStaticOnElement(inputs[value], element);
   } else if (isAndExpression(value) || isOrExpression(value)) {
     let values = ((<AndExpression<number>>value).and || (<OrExpression<number>>value).or);
-    return values.reduce<undefined|boolean>(((prev, a) => {
-      let result = isStatic(a, inputs, element);
-      if (prev === undefined) return result;
-      if (result === undefined) return prev;
-      return prev && result;
-    }), undefined);
+    return values.reduce<undefined | boolean>(
+      ((prev, a) => {
+        let result = isStatic(a, inputs, element);
+        if (prev === undefined) return result;
+        if (result === undefined) return prev;
+        return prev && result;
+      }),
+      undefined);
   } else if (isNotExpression(value)) {
     return isStatic(value.not, inputs, element);
   } else {

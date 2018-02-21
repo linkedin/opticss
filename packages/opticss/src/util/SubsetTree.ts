@@ -1,3 +1,4 @@
+// tslint:disable:prefer-whatever-to-any
 import { Queue } from "typescript-collections";
 
 const subsetFunctions = new WeakMap<SubsetTree<any>, IsSubsetFunction<any>>();
@@ -154,7 +155,8 @@ abstract class NodeBase<T> {
     depth: number,
     root: boolean,
     parent: NodeBase<T> | undefined,
-    value: T | undefined
+    value: T | undefined,
+
   ) {
     this.tree = tree;
     this.depth = depth;
@@ -220,7 +222,7 @@ abstract class NodeBase<T> {
   setDepth() {
     if (!this.parent) return;
     if (this.parent) {
-      this.depth = this.parent!.depth + 1;
+      this.depth = this.parent.depth + 1;
     }
     for (let dangler of this.danglingSubsets) {
       if (dangler.depth <= this.depth) {
@@ -266,12 +268,12 @@ function deepestPoint<T>(point1: InsertionPoint<T>, point2: InsertionPoint<T>): 
     let parent = point1.parentNode.depth > point2.parentNode.depth ? point1.parentNode : point2.parentNode;
     return {
       parentNode: parent,
-      subsets
+      subsets,
     };
   } else {
     return {
       parentNode: point1.parentNode || point2.parentNode,
-      subsets
+      subsets,
     };
   }
 }
@@ -315,7 +317,7 @@ class Node<T> extends NodeBase<T> {
     }
     if (!this.tree.isSubset(this.value, newValue)) {
       return {
-        subsets: this.findSubsetsOf(newValue)
+        subsets: this.findSubsetsOf(newValue),
       };
     }
     let point = this.children.map(child => child.findParentWithSubsets(newValue))

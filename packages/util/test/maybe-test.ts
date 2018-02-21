@@ -1,7 +1,7 @@
-import { assert } from 'chai';
-import { suite, test } from 'mocha-typescript';
+import { assert } from "chai";
+import { suite, test } from "mocha-typescript";
 
-import { attempt, callMaybe, isMaybe, isNone, isSome, maybe, NO_VALUE, none, None, some, unwrap, methodMaybe, Maybe, MAYBE } from '../src/Maybe';
+import { attempt, callMaybe, isMaybe, isNone, isSome, maybe, Maybe, MAYBE, methodMaybe, NO_VALUE, None, none, some, unwrap } from "../src/Maybe";
 import * as typedAssert from "../src/typedAssert";
 
 @suite("Maybe")
@@ -101,32 +101,32 @@ export class MaybeTest {
   @test "conditionally call a function with arity of 3"() {
     let wasCalled = false;
     let makeMessage = (a: string, b: number, c: {a: number}) => { wasCalled = true; return `${a} ${b} ${c.a}`; };
-    assert.equal(unwrap(callMaybe(makeMessage, 'hi', 1, {a: 42})), "hi 1 42");
+    assert.equal(unwrap(callMaybe(makeMessage, "hi", 1, {a: 42})), "hi 1 42");
     assert.isTrue(wasCalled);
     wasCalled = false;
-    assert.equal(unwrap(callMaybe(makeMessage, some('hi'), some(1), some({a: 42}))), "hi 1 42");
+    assert.equal(unwrap(callMaybe(makeMessage, some("hi"), some(1), some({a: 42}))), "hi 1 42");
     assert.isTrue(wasCalled);
     wasCalled = false;
-    assert.equal(unwrap(callMaybe(makeMessage, some('hi'), 1, some({a: 42}))), "hi 1 42");
+    assert.equal(unwrap(callMaybe(makeMessage, some("hi"), 1, some({a: 42}))), "hi 1 42");
     assert.isTrue(wasCalled);
     wasCalled = false;
     assert.isTrue(isNone(callMaybe(makeMessage, none(), 1, {a: 1})));
     assert.isFalse(wasCalled);
     wasCalled = false;
-    assert.isTrue(isNone(callMaybe(makeMessage, some('yo'), none(), {a: 42})));
+    assert.isTrue(isNone(callMaybe(makeMessage, some("yo"), none(), {a: 42})));
     assert.isFalse(wasCalled);
     wasCalled = false;
-    assert.isTrue(isNone(callMaybe(makeMessage, some('yo'), 5, none())));
+    assert.isTrue(isNone(callMaybe(makeMessage, some("yo"), 5, none())));
     assert.isFalse(wasCalled);
     wasCalled = false;
   }
   @test "conditionally call a function with arity of 4"() {
     let wasCalled = false;
     let makeMessage = (a: string, b: number, c: {a: number}, d: boolean) => { wasCalled = true; return `${a} ${b} ${c.a} ${d}`; };
-    assert.equal(unwrap(callMaybe(makeMessage, 'hi', 1, {a: 42}, true)), "hi 1 42 true");
+    assert.equal(unwrap(callMaybe(makeMessage, "hi", 1, {a: 42}, true)), "hi 1 42 true");
     assert.isTrue(wasCalled);
     wasCalled = false;
-    assert.equal(unwrap(callMaybe(makeMessage, some('hi'), some(1), some({a: 42}), some(false))), "hi 1 42 false");
+    assert.equal(unwrap(callMaybe(makeMessage, some("hi"), some(1), some({a: 42}), some(false))), "hi 1 42 false");
     assert.isTrue(wasCalled);
     wasCalled = false;
     assert.isTrue(isNone(callMaybe(makeMessage, none(), 1, {a: 1}, false)));
@@ -139,17 +139,17 @@ export class MaybeTest {
       myMethod(): number {
         wasCalled = true;
         return 42;
-      }
+      },
     });
-    assert.equal(unwrap(methodMaybe(obj, 'myMethod')), 42);
+    assert.equal(unwrap(methodMaybe(obj, "myMethod")), 42);
     assert.isTrue(wasCalled);
     wasCalled = false;
-    function getNoObj(): Maybe<{myMethod(): number;}> {
+    function getNoObj(): Maybe<{myMethod(): number}> {
       wasCalled = true;
       return none();
     }
     let noObj = getNoObj();
-    assert.equal(methodMaybe(noObj, 'myMethod'), noObj);
+    assert.equal(methodMaybe(noObj, "myMethod"), noObj);
     assert.isTrue(wasCalled);
   }
   @test "conditionally call a method with one argument"() {
@@ -158,17 +158,17 @@ export class MaybeTest {
       myMethod(n: number): number {
         wasCalled = true;
         return n + 41;
-      }
+      },
     });
-    assert.equal(unwrap(methodMaybe(obj, 'myMethod', 1)), 42);
+    assert.equal(unwrap(methodMaybe(obj, "myMethod", 1)), 42);
     assert.isTrue(wasCalled);
     wasCalled = false;
-    function getNoObj(): Maybe<{myMethod(n: number): number;}> {
+    function getNoObj(): Maybe<{myMethod(n: number): number}> {
       wasCalled = true;
       return none();
     }
     let noObj = getNoObj();
-    let result: Maybe<number> = methodMaybe(noObj, 'myMethod', 1);
+    let result: Maybe<number> = methodMaybe(noObj, "myMethod", 1);
     typedAssert.isType(isNone, noObj).and((n: None) => {
       assert.equal(result, n);
     });

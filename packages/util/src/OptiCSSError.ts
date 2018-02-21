@@ -21,14 +21,15 @@ export class OptiCSSError extends Error {
 
   private annotatedMessage() {
     let loc = this.location;
-    if ( !loc ) {
+    if (!loc) {
       return this.origMessage;
     }
-    let filename = loc.filename || '';
-    let line = loc.line ? `:${loc.line}` : '';
-    let column = loc.column ? `:${loc.column}` : '';
+    let filename = loc.filename || "";
+    let line = loc.line ? `:${loc.line}` : "";
+    let column = loc.column ? `:${loc.column}` : "";
     let locMessage = ` (${filename}${line}${column})`;
-    return `OptiCSS ${(this.constructor as any).prefix}: ${this.origMessage}${locMessage}`;
+    let prefix = (<Partial<{prefix: string}>>this.constructor).prefix;
+    return `OptiCSS ${prefix || OptiCSSError.prefix}: ${this.origMessage}${locMessage}`;
   }
 
   get location(): ErrorLocation | undefined {

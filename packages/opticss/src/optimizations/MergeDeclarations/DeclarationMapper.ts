@@ -1,24 +1,25 @@
-import * as propParser from 'css-property-parser';
-import * as postcss from 'postcss';
-import * as specificity from 'specificity';
-import { BSTree, MultiDictionary } from 'typescript-collections';
-
-import { TemplateTypes, TemplateAnalysis } from '@opticss/template-api';
-import { Element } from '@opticss/element-analysis';
+import { Element } from "@opticss/element-analysis";
+import { TemplateAnalysis, TemplateTypes } from "@opticss/template-api";
 import { MultiMap } from "@opticss/util";
-import { ParsedCssFile } from '../../CssFile';
-import { OptimizationPass } from '../../OptimizationPass';
+import * as propParser from "css-property-parser";
+import * as postcss from "postcss";
+import * as specificity from "specificity";
+import { BSTree, MultiDictionary } from "typescript-collections";
+
+import { ParsedCssFile } from "../../CssFile";
+import { ElementMatcher, matches } from "../../Match";
+import { OptimizationPass } from "../../OptimizationPass";
+import { ParsedSelector } from "../../parseSelector";
+import { walkRules } from "../../util/cssIntrospection";
 import {
   expandIfNecessary,
-} from '../../util/shorthandProperties';
-import { walkRules } from '../../util/cssIntrospection';
-import { SelectorInfo, DeclarationInfo } from './StyleInfo';
+} from "../../util/shorthandProperties";
+
 import {
   OptimizationContext,
   OptimizationContexts,
-} from './OptimizationContext';
-import { matches, ElementMatcher } from "../../Match";
-import { ParsedSelector } from '../../parseSelector';
+} from "./OptimizationContext";
+import { DeclarationInfo, SelectorInfo } from "./StyleInfo";
 
 /**
  * Efficient navigation of the selectors and declarations of a stylesheet
@@ -46,7 +47,8 @@ export class DeclarationMapper {
   constructor(
     pass: OptimizationPass,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
-    files: Array<ParsedCssFile>
+    files: Array<ParsedCssFile>,
+
   ) {
     this.declarationInfos = new MultiMap<postcss.Declaration, DeclarationInfo[]>();
     this.contexts = new OptimizationContexts();
@@ -64,7 +66,7 @@ export class DeclarationMapper {
       walkRules(file.content.root!, (rule, scope) => {
         let selectors = pass.cache.getParsedSelectors(rule);
         /** all the declarations of this rule after expanding longhand properties. */
-        let declarations = new MultiDictionary<string,[string, boolean, postcss.Declaration]>(undefined, undefined, true);
+        let declarations = new MultiDictionary<string, [string, boolean, postcss.Declaration]>(undefined, undefined, true);
         rule.walkDecls(decl => {
           declSourceIndexMap.set(decl, declSourceIndex++);
           // TODO: normalize values. E.g colors of different formats, etc.
@@ -88,7 +90,7 @@ export class DeclarationMapper {
             elements,
             ordinal: -1,
             declarations,
-            declarationInfos: new MultiDictionary<[string, string], DeclarationInfo>()
+            declarationInfos: new MultiDictionary<[string, string], DeclarationInfo>(),
           };
           let context = this.contexts.getContext(selectorInfo.rule.root(), selectorInfo.scope, selectorInfo.selector.toContext());
           for (let prop of declarations.keys()) {
@@ -159,7 +161,8 @@ export class DeclarationMapper {
     decl: postcss.Declaration,
     sourceOrdinal: number,
     ordinal: number,
-    dupeCount = 0
+    dupeCount = 0,
+
   ): DeclarationInfo {
     let declInfo: DeclarationInfo = {
       decl,
@@ -204,7 +207,8 @@ function compare(n1: number, n2: number): -1 | 0 | 1 {
 }
 
 function querySelector<T extends keyof TemplateTypes>(
-  analysis: TemplateAnalysis<T>, selector: ParsedSelector
+  analysis: TemplateAnalysis<T>, selector: ParsedSelector,
+
 ): Array<Element> {
   return analysis.elements.filter(e =>
     matches(ElementMatcher.instance.matchSelector(e, selector, true)));

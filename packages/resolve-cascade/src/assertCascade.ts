@@ -1,6 +1,6 @@
-import * as assert from 'assert';
-import * as parse5 from 'parse5';
-import * as propParser from 'css-property-parser';
+import * as assert from "assert";
+import * as propParser from "css-property-parser";
+import * as parse5 from "parse5";
 
 import {
   allElements,
@@ -11,7 +11,7 @@ import {
   ElementStyle,
   FullCascade,
   parseHtml,
-} from './index';
+} from "./index";
 
 export interface AssertionResult {
   expectedFullCascade: FullCascade;
@@ -56,7 +56,7 @@ export class ElementStyleMismatch extends assert.AssertionError implements Casca
     super({
       expected: details.expectedStyles,
       actual: details.actualStyles,
-      message: message || "Styles do not match."
+      message: message || "Styles do not match.",
     });
     Object.assign(this, details);
   }
@@ -92,6 +92,7 @@ export function assertSameStyle(
   } catch (e) {
     if (e instanceof propParser.UnknownPropertyError) {
       if (!e.property.startsWith("-")) {
+        // tslint:disable-next-line:no-console
         console.log(e.message);
       }
     } else {
@@ -107,7 +108,8 @@ export function assertSameCascade(
   expectedCss: string,
   actualCss: string,
   expectedHtml: string,
-  actualHtml: string
+  actualHtml: string,
+
 ): Promise<AssertionResult> {
   let expectedDoc = parseHtml(expectedHtml);
   let expectedFullCascade = new Cascade(expectedCss, expectedDoc);
@@ -164,7 +166,7 @@ export function assertSameCascade(
             actualCascade,
             expectedStyles,
             actualStyles,
-          }, e.message);
+          },                             e.message);
         }
       }
     }

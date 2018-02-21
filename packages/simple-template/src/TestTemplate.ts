@@ -1,7 +1,7 @@
 import {
-  TemplateInfo,
   SerializedTemplateInfo,
-  TemplateInfoFactory
+  TemplateInfo,
+  TemplateInfoFactory,
 } from "@opticss/template-api";
 
 declare module "@opticss/template-api" {
@@ -32,7 +32,7 @@ export class TestTemplate implements TemplateInfo<"TestTemplate"> {
     this.plainHtml = !!plainHtml;
   }
 
-  static deserialize(identifier: string, ...data: any[]): TestTemplate {
+  static deserialize(identifier: string, ...data: string[]): TestTemplate {
     return new TestTemplate(identifier, data[0], data[1] === "true");
   }
 
@@ -42,8 +42,8 @@ export class TestTemplate implements TemplateInfo<"TestTemplate"> {
       identifier: this.identifier,
       data: [
         this.contents,
-        this.plainHtml ? "true" : "false"
-      ]
+        this.plainHtml ? "true" : "false",
+      ],
     };
   }
 }

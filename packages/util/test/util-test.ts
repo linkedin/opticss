@@ -1,16 +1,17 @@
-import { IdentityDictionary } from '../src/IdentityDictionary';
-import { MultiMap } from '../src/MultiMap';
-import { TwoKeyMultiMap } from '../src/TwoKeyMultiMap';
-import { ObjectDictionary } from '../src/UtilityTypes';
-import * as typeAssertions from '../src/typedAssert';
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
-import clean from "../src/clean";
+} from "mocha-typescript";
+
+import { IdentityDictionary } from "../src/IdentityDictionary";
+import { MultiMap } from "../src/MultiMap";
+import { TwoKeyMultiMap } from "../src/TwoKeyMultiMap";
+import { ObjectDictionary } from "../src/UtilityTypes";
+import { clean } from "../src/clean";
+import * as typeAssertions from "../src/typedAssert";
 
 interface MultiMapKey1 {
   name: string;
@@ -42,7 +43,8 @@ export class SimpleTemplateTest {
       return x === "apple";
     }
 
-    assert.throws(() => {
+    assert.throws(
+       () => {
       typeAssertions.isDefined(undef).and((d: string) => d);
     }, "expected to be defined");
 
@@ -50,7 +52,8 @@ export class SimpleTemplateTest {
     typeAssertions.isDefined(defined).and((d: string) => callbackInvoked = !!d);
     assert(callbackInvoked, "callback was not invoked.");
 
-    assert.throws(() => {
+    assert.throws(
+       () => {
       typeAssertions.isNotNull(nil).and((d: string) => d);
     }, "expected to not be null");
 
@@ -58,7 +61,8 @@ export class SimpleTemplateTest {
     typeAssertions.isNotNull(notNull).and((d: string) => callbackInvoked = !!d);
     assert(callbackInvoked, "callback was not invoked.");
 
-    assert.throws(() => {
+    assert.throws(
+       () => {
       typeAssertions.isExisting(nil).and((d: string) => d);
     }, "expected to exist");
 
@@ -66,7 +70,8 @@ export class SimpleTemplateTest {
     typeAssertions.isExisting(notNull).and((d: string) => callbackInvoked = !!d);
     assert(callbackInvoked, "callback was not invoked.");
 
-    assert.throws(() => {
+    assert.throws(
+       () => {
       typeAssertions.isExisting(undef).and((d: string) => d);
     }, "expected to exist");
 
@@ -74,7 +79,8 @@ export class SimpleTemplateTest {
     typeAssertions.isExisting(defined).and((d: string) => callbackInvoked = !!d);
     assert(callbackInvoked, "callback was not invoked.");
 
-    assert.throws(() => {
+    assert.throws(
+       () => {
       typeAssertions.isExisting(nothing).and((d: string) => d);
     }, "expected to exist");
 
@@ -82,7 +88,8 @@ export class SimpleTemplateTest {
     typeAssertions.isExisting(something).and((d: string) => callbackInvoked = !!d);
     assert(callbackInvoked, "callback was not invoked.");
 
-    assert.throws(() => {
+    assert.throws(
+       () => {
       typeAssertions.isType(isApple, pear).and((d: "apple") => d);
     }, "expected");
 
@@ -93,7 +100,8 @@ export class SimpleTemplateTest {
 
   @test "clean"() {
     // tslint:disable:no-trailing-whitespace
-    assert.equal(clean`
+    assert.equal(
+       clean`
       foo    
         bar   
     baz
@@ -112,17 +120,17 @@ export class SimpleTemplateTest {
     let one: IdentityTest = {
       key1: "apple",
       key2: 0,
-      other1: "foo bar"
+      other1: "foo bar",
     };
     let onePrime: IdentityTest = {
       key1: "apple",
       key2: 0,
-      other1: "different"
+      other1: "different",
     };
     let two: IdentityTest = {
       key1: "orange",
       key2: 10,
-      other1: "four score and twenty years ago"
+      other1: "four score and twenty years ago",
     };
     let addedOne = dict.add(one);
     assert.strictEqual(addedOne, one);
@@ -140,7 +148,7 @@ export class SimpleTemplateTest {
     let oneReplacement: IdentityTest = {
       key1: "bad apple",
       key2: 100,
-      other1: ""
+      other1: "",
     };
     dict.update(one, (instance) => {
       assert.strictEqual(instance, one);
@@ -158,7 +166,7 @@ export class SimpleTemplateTest {
     assert.isTrue(dict.has({
       key1: "bad apple",
       key2: 100,
-      other1: ""
+      other1: "",
     }));
   }
   @test "MultiMap"() {
@@ -167,7 +175,7 @@ export class SimpleTemplateTest {
     multiMap.set(key1, 0);
     multiMap.set(key1, 1, 2);
     let values = multiMap.get(key1);
-    assert.deepEqual(values, [0,1,2]);
+    assert.deepEqual(values, [0, 1, 2]);
     assert.strictEqual(multiMap.size, 1);
     assert.strictEqual(multiMap.sizeOfKeys, 1);
     assert.strictEqual(multiMap.sizeOfValues, 3);
@@ -176,7 +184,7 @@ export class SimpleTemplateTest {
     for (let entry of multiMap.entries()) {
       entries.push(entry);
     }
-    assert.deepEqual(entries, [[key1, [0,1,2]]]);
+    assert.deepEqual(entries, [[key1, [0, 1, 2]]]);
     // can iterate entries individually
     let individualEntries = new Array<[MultiMapKey1, number]>();
     for (let entry of multiMap.individualEntries()) {
@@ -241,7 +249,7 @@ export class SimpleTemplateTest {
     multiMap.set(key1, 0);
     multiMap.set(key1, 1, 2);
     let values = multiMap.get(key1);
-    assert.deepEqual(values, [0,1,2]);
+    assert.deepEqual(values, [0, 1, 2]);
     assert.strictEqual(multiMap.size, 1);
     assert.strictEqual(multiMap.sizeOfKeys, 1);
     assert.strictEqual(multiMap.sizeOfValues, 3);
@@ -250,7 +258,7 @@ export class SimpleTemplateTest {
     for (let entry of multiMap.entries()) {
       entries.push(entry);
     }
-    assert.deepEqual(entries, [[key1, [0,1,2]]]);
+    assert.deepEqual(entries, [[key1, [0, 1, 2]]]);
     // can iterate entries individually
     let individualEntries = new Array<[MultiMapKey1, number]>();
     for (let entry of multiMap.individualEntries()) {
@@ -316,7 +324,7 @@ export class SimpleTemplateTest {
     multiMap.set(key1, key2, 0);
     multiMap.set(key1, key2, 1, 2);
     let values = multiMap.get(key1, key2);
-    assert.deepEqual(values, [0,1,2]);
+    assert.deepEqual(values, [0, 1, 2]);
     assert.strictEqual(multiMap.size, 1);
     assert.strictEqual(multiMap.sizeOfKeys, 1);
     assert.strictEqual(multiMap.sizeOfValues, 3);
@@ -325,7 +333,7 @@ export class SimpleTemplateTest {
     for (let entry of multiMap.entries()) {
       entries.push(entry);
     }
-    assert.deepEqual(entries, [[key1, key2, [0,1,2]]]);
+    assert.deepEqual(entries, [[key1, key2, [0, 1, 2]]]);
     // can iterate entries individually
     let individualEntries = new Array<[MultiMapKey1, MultiMapKey2, number]>();
     for (let entry of multiMap.individualEntries()) {
@@ -391,7 +399,7 @@ export class SimpleTemplateTest {
     multiMap.set(key1, key2, 0);
     multiMap.set(key1, key2, 1, 2);
     let values = multiMap.get(key1, key2);
-    assert.deepEqual(values, [0,1,2]);
+    assert.deepEqual(values, [0, 1, 2]);
     assert.strictEqual(multiMap.size, 1);
     assert.strictEqual(multiMap.sizeOfKeys, 1);
     assert.strictEqual(multiMap.sizeOfValues, 3);
@@ -400,7 +408,7 @@ export class SimpleTemplateTest {
     for (let entry of multiMap.entries()) {
       entries.push(entry);
     }
-    assert.deepEqual(entries, [[key1, key2, [0,1,2]]]);
+    assert.deepEqual(entries, [[key1, key2, [0, 1, 2]]]);
     // can iterate entries individually
     let individualEntries = new Array<[MultiMapKey1, MultiMapKey2, number]>();
     for (let entry of multiMap.individualEntries()) {

@@ -4,6 +4,8 @@ export interface ErrorLocation {
   column?: number;
 }
 
+type PrefixedConstructor = Function & { prefix?: string };
+
 /**
  * Custom Opticss error base class. Will format `ErrorLocation` into thrown
  * error message if provided.
@@ -21,14 +23,16 @@ export class OpticssError extends Error {
 
   private annotatedMessage() {
     let loc = this.location;
-    if ( !loc ) {
+    if (!loc) {
       return this.origMessage;
     }
-    let filename = loc.filename || '';
-    let line = loc.line ? `:${loc.line}` : '';
-    let column = loc.column ? `:${loc.column}` : '';
+    let filename = loc.filename || "";
+    let line = loc.line ? `:${loc.line}` : "";
+    let column = loc.column ? `:${loc.column}` : "";
     let locMessage = ` (${filename}${line}${column})`;
-    return `Opticss ${(this.constructor as any).prefix}: ${this.origMessage}${locMessage}`;
+    let constructor: PrefixedConstructor = this.constructor;
+    let prefix = constructor.prefix || OpticssError.prefix;
+    return `Opticss ${prefix}: ${this.origMessage}${locMessage}`;
   }
 
   get location(): ErrorLocation | undefined {

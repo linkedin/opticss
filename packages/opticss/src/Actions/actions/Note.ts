@@ -1,6 +1,7 @@
-import { Action } from "../Action";
-import { Optimizations } from "../../OpticssOptions";
 import { SourcePosition } from "@opticss/element-analysis";
+
+import { Optimizations } from "../../OpticssOptions";
+import { Action } from "../Action";
 
 /**
  * Make a note about something discovered during optimization.

@@ -1,7 +1,9 @@
-import * as parse5 from "parse5";
-import { TemplateAnalysis } from "@opticss/template-api";
-import { Tagname, Attribute, AttributeNS, POSITION_UNKNOWN  } from "@opticss/element-analysis";
 import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
+import { Attribute, AttributeNS, POSITION_UNKNOWN, Tagname  } from "@opticss/element-analysis";
+import { TemplateAnalysis } from "@opticss/template-api";
+import { whatever } from "@opticss/util";
+import * as parse5 from "parse5";
+
 import { TestTemplate } from "./TestTemplate";
 
 export class SimpleAnalyzer {
@@ -47,7 +49,7 @@ export class SimpleAnalyzer {
 
     // Return a promise that resolves with the analysis object after parsing and analysis.
     return new Promise((resolve, reject) => {
-      parser.write(this.template.contents, (err: any) => {
+      parser.write(this.template.contents, (err: whatever) => {
         if (err) { reject(err); }
         else     { resolve(analysis); }
       });

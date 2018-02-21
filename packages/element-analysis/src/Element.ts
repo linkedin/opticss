@@ -1,11 +1,12 @@
-import { SourceLocation } from "./index";
-import { Tag, SerializedTagname } from "./Tagname";
 import { Attr, SerializedAttribute } from "./Attribute";
 import { POSITION_UNKNOWN } from "./SourceLocation";
+import { SerializedTagname, Tag } from "./Tagname";
+import { SourceLocation } from "./index";
 
 export type Selectable = Element | Tag | Attr;
 
-export interface ElementInfo<TagnameType = Tag, AttributeType = Attr> { sourceLocation?: SourceLocation;
+export interface ElementInfo<TagnameType = Tag, AttributeType = Attr> {
+  sourceLocation?: SourceLocation;
   tagname: TagnameType;
   attributes: Array<AttributeType>;
   id?: string;
@@ -32,7 +33,7 @@ export class Element implements ElementInfo {
   serialize(): SerializedElementInfo {
     let e: SerializedElementInfo = {
       tagname: this.tagname.toJSON(),
-      attributes: this.attributes.map(a => a.toJSON())
+      attributes: this.attributes.map(a => a.toJSON()),
     };
     if (this.sourceLocation && this.sourceLocation.start.line >= 0) {
       e.sourceLocation = this.sourceLocation;

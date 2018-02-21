@@ -1,4 +1,5 @@
 import { assertNever } from "@opticss/util";
+
 import {
   HasNamespace,
   isConstant,
@@ -80,7 +81,7 @@ export abstract class TagnameBase implements HasNamespace {
 
   toJSON(): SerializedTagname {
     let result: SerializedTagname = {
-      value: this.value
+      value: this.value,
     };
     if (this.namespaceURL) {
       result.namespaceURL = this.namespaceURL;

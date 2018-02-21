@@ -1,9 +1,10 @@
-import * as propParser from "css-property-parser";
 import { StringDict } from "@opticss/util";
+import * as propParser from "css-property-parser";
+
 import {
   Actions,
   Note,
-} from '../Actions';
+} from "../Actions";
 
 export function expandPropertyName(prop: string, recursively = false): string[] {
   let props = propParser.getShorthandComputedProperties(prop, recursively);
@@ -25,9 +26,11 @@ export function fullyExpandShorthandProperty(prop: string, value: string) {
     return expanded;
   } catch (e) {
     if (/parsing shorthand property/.test(e.message)) {
+      // TODO: instrument this so it can be added to the optimization logger.
+      // tslint:disable-next-line:no-console
       console.log(e.message + `(long hands for this declaration will not be optimized)`);
       return {
-        [prop]: value
+        [prop]: value,
       };
     } else {
       throw e;
@@ -47,7 +50,7 @@ export function expandIfNecessary(authoredProps: Set<string>, prop: string, valu
     longHandProps = Object.keys(longHandValues);
   } catch (e) {
     if (/parsing shorthand property/.test(e.message)) {
-      actions.perform(new Note('mergeDeclarations', e.message + `(long hands for this declaration will not be optimized)`));
+      actions.perform(new Note("mergeDeclarations", e.message + `(long hands for this declaration will not be optimized)`));
       return { [prop]: value };
     } else {
       throw e;

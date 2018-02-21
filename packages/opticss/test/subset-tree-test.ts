@@ -1,21 +1,22 @@
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
-import * as RandomJS from 'random-js';
+} from "mocha-typescript";
+import * as RandomJS from "random-js";
 import {
   Set as TSCSet,
-} from 'typescript-collections';
+} from "typescript-collections";
 
 import {
   SubsetTree,
-} from '../src/util/SubsetTree';
+} from "../src/util/SubsetTree";
+
 import {
   getRandom,
-} from './util/randomness';
+} from "./util/randomness";
 
 type TestSet = TSCSet<number>;
 
@@ -41,7 +42,7 @@ export class SubsetTreeTest {
   before() {
     this.random = getRandom({
       verbose: false,
-      seed: 37784883
+      seed: 37784883,
     });
   }
   @test "construction"() {

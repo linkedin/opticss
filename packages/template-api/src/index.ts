@@ -1,3 +1,4 @@
+import { whatever } from "@opticss/util";
 export * from "./BooleanExpression";
 export * from "./StyleMapping";
 export * from "./TemplateError";
@@ -26,15 +27,12 @@ export interface SerializedTemplateInfo<K extends keyof TemplateTypes> {
   identifier: string;
 
   /** the values stored in here must be JSON-friendly. */
-  data?: any[];
+  data?: whatever[];
 }
 
 export interface TemplateInfo<K extends keyof TemplateTypes> {
   /**
    * The string under which the template is registered with the TemplateFactory.
-   *
-   * @type {K}
-   * @memberOf TemplateInfo
    */
   type: K;
 
@@ -47,7 +45,7 @@ export interface TemplateInfo<K extends keyof TemplateTypes> {
 }
 
 export type TemplateConstructors<T extends TemplateTypes = TemplateTypes> = {
-    [P in keyof T]?: (identifier: string, ..._data: any[]) => T[P];
+    [P in keyof T]?: (identifier: string, ..._data: whatever[]) => T[P];
 };
 
 /**
@@ -82,9 +80,8 @@ export type TemplateConstructors<T extends TemplateTypes = TemplateTypes> = {
 export class TemplateInfoFactory {
   static constructors: TemplateConstructors = {};
 
-  static create<K extends keyof TemplateTypes>(name: K, identifier: string, ...data: any[]): TemplateTypes[K] {
-    // TODO: get rid of this stupid any
-    let constructor: any = TemplateInfoFactory.constructors[name];
+  static create<K extends keyof TemplateTypes>(name: K, identifier: string, ...data: whatever[]): TemplateTypes[K] {
+    let constructor: TemplateConstructors[K] = TemplateInfoFactory.constructors[name];
     if (constructor !== undefined) {
       return constructor(identifier, ...data);
     } else {
@@ -92,20 +89,23 @@ export class TemplateInfoFactory {
     }
   }
   static deserialize<K extends keyof TemplateTypes>(obj: SerializedTemplateInfo<K>): TemplateTypes[K] {
-    let data: any[] = obj.data || [];
+    let data: whatever[] = obj.data || [];
     return TemplateInfoFactory.create(obj.type, obj.identifier, ...data);
   }
 }
 
 export function isTemplateType<K extends keyof TemplateTypes>(
-  type: K, template: TemplateInfo<keyof TemplateTypes>
+  type: K, template: TemplateInfo<keyof TemplateTypes>,
+
 ): template is TemplateInfo<K>;
 export function isTemplateType<K extends keyof TemplateTypes>(
-  type: K, template: TemplateTypes[keyof TemplateTypes]
+  type: K, template: TemplateTypes[keyof TemplateTypes],
+
 ): template is TemplateTypes[K];
 export function isTemplateType<K extends keyof TemplateTypes>(
   type: K,
-  template: TemplateTypes[keyof TemplateTypes] | TemplateInfo<keyof TemplateTypes>
+  template: TemplateTypes[keyof TemplateTypes] | TemplateInfo<keyof TemplateTypes>,
+
 ): template is TemplateTypes[K] | TemplateInfo<K> {
   return (template.type === type);
 }
@@ -122,7 +122,7 @@ export class Template implements TemplateInfo<"Opticss.Template"> {
     this.type = "Opticss.Template";
   }
 
-  static deserialize(identifier: string, ..._data: any[]): Template {
+  static deserialize(identifier: string, ..._data: whatever[]): Template {
     return new Template(identifier);
   }
 
@@ -139,18 +139,18 @@ export class Template implements TemplateInfo<"Opticss.Template"> {
 TemplateInfoFactory.constructors["Opticss.Template"] = Template.deserialize;
 
 // Contents of // ./TemplateAnalysis
-import { OptiCSSError, ObjectDictionary } from "@opticss/util";
 import {
-  TagnameBase,
+  Attr,
   AttributeBase,
   Element,
-  SerializedElementInfo,
-  Attr,
-  Tag,
-  SourcePosition,
   POSITION_UNKNOWN,
-  SourceLocation
+  SerializedElementInfo,
+  SourceLocation,
+  SourcePosition,
+  Tag,
+  TagnameBase,
 } from "@opticss/element-analysis";
+import { ObjectDictionary, OptiCSSError } from "@opticss/util";
 
 /*
  * This interface defines a JSON friendly serialization
@@ -216,10 +216,11 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
    * Always call [[endElement]] before calling the next [[startElement]],
    * even if the elements are nested in the document.
    */
-  startElement(tagname: Tag, position: SourcePosition ): this {
+  startElement(tagname: Tag, position: SourcePosition): this {
     if (this.currentElement) {
-       throw new OptiCSSError(`endElement wasn't called after a previous call to startElement`,
-                              {filename: this.template.identifier, ...position});
+      throw new OptiCSSError(
+        `endElement wasn't called after a previous call to startElement`,
+        {filename: this.template.identifier, ...position});
     }
     let startPos: SourceLocation | undefined = (position.line >= 0) ? {start: position} : undefined;
     this.currentElement = new Element(tagname, new Array<Attr>(), startPos);
@@ -230,8 +231,9 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
     if (this.currentElement) {
       this.currentElement.id = id;
     } else {
-       throw new OptiCSSError(`startElement() must be called before calling setId()`,
-                              {filename: this.template.identifier});
+      throw new OptiCSSError(
+        `startElement() must be called before calling setId()`,
+        {filename: this.template.identifier});
     }
     return this;
   }
@@ -288,8 +290,9 @@ export class TemplateAnalysis<K extends keyof TemplateTypes> {
     if (this.currentElement) {
       this.currentElement.attributes.push(attr);
     } else {
-       throw new OptiCSSError(`startElement() must be called before calling addAttribute()`,
-                              {filename: this.template.identifier});
+      throw new OptiCSSError(
+        `startElement() must be called before calling addAttribute()`,
+        {filename: this.template.identifier});
     }
 
     return this;

@@ -1,14 +1,14 @@
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
+} from "mocha-typescript";
 
 import {
   Optimizer,
-} from '../src/Optimizer';
+} from "../src/Optimizer";
 
 @suite("OptiCSS")
 export class OptiCSSTest {
@@ -17,7 +17,7 @@ export class OptiCSSTest {
     let css2 = `.b { width: 100%; }`;
     let optimizer = new Optimizer(
       { enabled: false },
-      { rewriteIdents: { id: false, class: true }}
+      { rewriteIdents: { id: false, class: true }},
     );
     optimizer.addSource({content: css1, filename: "test1.css"});
     optimizer.addSource({content: css2, filename: "test2.css"});

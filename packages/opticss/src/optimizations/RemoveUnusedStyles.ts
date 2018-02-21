@@ -1,14 +1,16 @@
-import { SingleFileOptimization } from "./Optimization";
-import { ParsedCssFile } from "../CssFile";
-import { OptiCSSOptions } from "../OpticssOptions";
-import { TemplateTypes, TemplateAnalysis } from "@opticss/template-api";
 import { Element } from "@opticss/element-analysis";
-import { matches, ElementMatcher } from "../Match";
+import { TemplateAnalysis, TemplateTypes } from "@opticss/template-api";
+
 import { RemoveRule } from "../Actions";
 import { ChangeSelector } from "../Actions";
-import { walkRules } from "../util/cssIntrospection";
+import { ParsedCssFile } from "../CssFile";
+import { ElementMatcher, matches } from "../Match";
+import { OptiCSSOptions } from "../OpticssOptions";
 import { OptimizationPass } from "../OptimizationPass";
 import { Initializers } from "../initializers";
+import { walkRules } from "../util/cssIntrospection";
+
+import { SingleFileOptimization } from "./Optimization";
 
 /**
  * Removed all rules in a single stylesheet that will never match any Selectables
@@ -20,7 +22,7 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
 
   /**
    * Create a new instance of this optimizer
-   * @param {OptiCSSOptions} options - The project optimizer's options.
+   * @param options - The project optimizer's options.
    */
   constructor(_options: OptiCSSOptions) {
   }
@@ -28,18 +30,20 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
   /**
    * Provided an OptimizationPass, all TemplateAnalyses, and a ParsedCssFile,
    * remove all unused styles.
-   * @param {OptimizationPass} pass
-   * @param {Array<TemplateAnalysis<keyof TemplateTypes>>} analyses - All TemplateAnalyses found during analysis
-   * @param {ParsedCssFile} file - The parsed CSS file to optimize.
+   * @param pass
+   * @param analyses - All TemplateAnalyses found during analysis
+   * @param file - The parsed CSS file to optimize.
    */
   optimizeSingleFile(
     pass: OptimizationPass,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
-    file: ParsedCssFile
+    file: ParsedCssFile,
+
   ): void {
 
     // Fetch the list of all Elements discovered during analysis.
-    let elements = analyses.reduce((elements, analysis) => {
+    let elements = analyses.reduce(
+       (elements, analysis) => {
       elements.push(...analysis.elements);
       return elements;
     }, new Array<Element>());

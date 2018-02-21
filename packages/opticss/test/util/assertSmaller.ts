@@ -1,8 +1,10 @@
-import * as cssSize from "css-size";
+// tslint:disable:no-console
 import * as assert from "assert";
-import { CascadeTestResult } from "./assertCascade";
-import { inspect } from "util";
+import * as cssSize from "css-size";
 import { documentToString } from "resolve-cascade";
+import { inspect } from "util";
+
+import { CascadeTestResult } from "./assertCascade";
 
 function assertDelta(type: keyof cssSize.Result<number>, cssDelta: cssSize.Result<number>, templateDelta: cssSize.Result<number>, assertions?: DeltaAssertions) {
     let delta = cssDelta[type].difference + templateDelta[type].difference;
@@ -16,13 +18,13 @@ function assertDelta(type: keyof cssSize.Result<number>, cssDelta: cssSize.Resul
       }
       if (assertion.notBiggerThan !== undefined) {
         if (assertion.notBiggerThan < 1) {
-          assert(-fraction <= assertion.notBiggerThan, `Expected ${type} size ratio of CSS + Template to not be bigger than ${assertion.notBiggerThan}; was ${fraction*100}% bigger.`);
+          assert(-fraction <= assertion.notBiggerThan, `Expected ${type} size ratio of CSS + Template to not be bigger than ${assertion.notBiggerThan}; was ${fraction * 100}% bigger.`);
         } else {
           assert(-delta <= assertion.notBiggerThan , `Expected ${type} size difference of CSS + Template to not be bigger than ${assertion.notBiggerThan}; was ${-delta} bytes bigger.`);
         }
       } else if (assertion.atLeastSmallerThan !== undefined) {
         if (assertion.atLeastSmallerThan < 1) {
-          assert(fraction >= assertion.atLeastSmallerThan, `Expected ${type} size ratio of CSS + Template to be smaller than ${assertion.atLeastSmallerThan}; was ${fraction*100}% smaller.`);
+          assert(fraction >= assertion.atLeastSmallerThan, `Expected ${type} size ratio of CSS + Template to be smaller than ${assertion.atLeastSmallerThan}; was ${fraction * 100}% smaller.`);
         } else {
           assert(delta >= assertion.atLeastSmallerThan , `Expected ${type} size difference of CSS + Template to be smaller than ${assertion.atLeastSmallerThan} bytes; was ${delta} bytes bigger.`);
         }
@@ -52,7 +54,8 @@ export type SizeResultPair = [cssSize.Result<number>, cssSize.Result<number>];
 export function assertSmaller(
   inputCSS: string,
   result: CascadeTestResult,
-  assertions?: DeltaAssertions
+  assertions?: DeltaAssertions,
+
 ): Promise<void> {
   return assertSmallerWithResults(inputCSS, result, assertions).then(() => {});
 }
@@ -60,7 +63,8 @@ export function assertSmaller(
 export function assertSmallerWithResults(
   inputCSS: string,
   result: CascadeTestResult,
-  assertions?: DeltaAssertions
+  assertions?: DeltaAssertions,
+
 ): Promise<SizeResultPair> {
   let assertionResults = result.testedTemplates[0].assertionResults[0];
   return assertSmallerStylesAndMarkupWithResults(
@@ -68,7 +72,7 @@ export function assertSmallerWithResults(
     result.optimization.output.content.toString(),
     documentToString(assertionResults.expectedDoc),
     documentToString(assertionResults.actualDoc),
-    assertions
+    assertions,
   );
 }
 
@@ -77,7 +81,8 @@ export function assertSmallerStylesAndMarkup(
   outputCSS: string,
   inputMarkup: string,
   outputMarkup: string,
-  assertions?: DeltaAssertions
+  assertions?: DeltaAssertions,
+
 ): Promise<void> {
   return assertSmallerStylesAndMarkupWithResults(
     inputCSS, outputCSS, inputMarkup, outputMarkup, assertions).then(() => {});
@@ -88,7 +93,8 @@ export function assertSmallerStylesAndMarkupWithResults(
   outputCSS: string,
   inputMarkup: string,
   outputMarkup: string,
-  assertions?: DeltaAssertions
+  assertions?: DeltaAssertions,
+
 ): Promise<SizeResultPair> {
   let optimizedHtml = Promise.resolve({css: outputMarkup});
   const optimizedCss = Promise.resolve({css: outputCSS});

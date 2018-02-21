@@ -1,11 +1,12 @@
+import { SourcePosition } from "@opticss/element-analysis";
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
-import { Action, stripNL } from "../Action";
-import { SourcePosition } from "@opticss/element-analysis";
-import { ParsedSelector } from "../../parseSelector";
+
 import { OptimizationPass } from "../../OptimizationPass";
-import { IdentNode } from "../../util/cssIntrospection";
 import { OpticssError } from "../../errors";
+import { ParsedSelector } from "../../parseSelector";
+import { IdentNode } from "../../util/cssIntrospection";
+import { Action, stripNL } from "../Action";
 
 const { isClassName, isIdentifier } = selectorParser;
 
@@ -33,7 +34,8 @@ export class RewriteRuleIdents extends Action {
   constructor(
     pass: OptimizationPass,
     ident: RuleIdents,
-    reason = "rewriteIdents")
+    reason = "rewriteIdents",
+  )
   {
     super(reason);
     this.pass = pass;
@@ -45,7 +47,7 @@ export class RewriteRuleIdents extends Action {
       return {
         filename: this.ident.rule.source.input.file,
         line: this.ident.rule.source.start.line,
-        column: this.ident.rule.source.start.column
+        column: this.ident.rule.source.start.column,
       };
     } else {
       return undefined;
@@ -84,7 +86,7 @@ export class RewriteRuleIdents extends Action {
     if (!toAttr) {
       toAttr = {
         name: type,
-        value: this.pass.identGenerators.nextIdent(type)
+        value: this.pass.identGenerators.nextIdent(type),
       };
       this.pass.styleMapping.rewriteAttribute(fromAttr, toAttr);
     }

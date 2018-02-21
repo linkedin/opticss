@@ -1,35 +1,34 @@
-import * as postcss from 'postcss';
-import * as selectorParser from 'postcss-selector-parser';
 import {
-  TemplateIntegrationOptions,
+  SourcePosition,
+} from "@opticss/element-analysis";
+import {
   ElementAttributes,
+  isSimpleTagname,
   SimpleAttribute as ElementAttribute,
   SimpleTagname as ElementTagname,
   StyleMapping,
-  isSimpleTagname,
-} from '@opticss/template-api';
-import {
-  SourcePosition
-} from "@opticss/element-analysis";
+  TemplateIntegrationOptions,
+} from "@opticss/template-api";
+import * as postcss from "postcss";
+import * as selectorParser from "postcss-selector-parser";
+import { isRoot } from "postcss-selector-parser";
 
-import { Optimizations } from '../../OpticssOptions';
-import { OptimizationPass } from '../../OptimizationPass';
-import { isAtRule } from '../../util/cssIntrospection';
-import { IdentGenerators } from '../../util/IdentGenerator';
-import { MultiAction } from '../Action';
+import { Optimizations } from "../../OpticssOptions";
+import { OptimizationPass } from "../../OptimizationPass";
+import {
+  DeclarationInfo,
+} from "../../optimizations/MergeDeclarations/StyleInfo";
 import {
   CompoundSelector,
   ParsedSelector,
-} from '../../parseSelector';
-
+} from "../../parseSelector";
 import {
   ParsedSelectorAndRule,
   SelectorCache,
-} from '../../query';
-import {
-  DeclarationInfo
-} from '../../optimizations/MergeDeclarations/StyleInfo';
-import { isRoot } from 'postcss-selector-parser';
+} from "../../query";
+import { IdentGenerators } from "../../util/IdentGenerator";
+import { isAtRule } from "../../util/cssIntrospection";
+import { MultiAction } from "../Action";
 
 const {
   isAttribute,
@@ -74,7 +73,7 @@ export class MergeDeclarations extends MultiAction {
     decl: Declaration,
     declInfos: Array<DeclarationInfo>,
     optimization: keyof Optimizations,
-    reason: string
+    reason: string,
   ) {
     super(optimization);
     this.templateOptions = templateOptions;
@@ -104,9 +103,9 @@ export class MergeDeclarations extends MultiAction {
       newSelector = `.${classname}`;
     }
     this.newRule = postcss.rule({selector: newSelector});
-    this.newRule.raws = { before:'\n', after: ' ', semicolon: true};
+    this.newRule.raws = { before: "\n", after: " ", semicolon: true};
     let decl = postcss.decl(this.decl);
-    decl.raws = { before:' ', after: ' '};
+    decl.raws = { before: " ", after: " "};
     this.newRule.append(decl);
 
     let insertionDecl = this.declInfos[0];
@@ -121,7 +120,7 @@ export class MergeDeclarations extends MultiAction {
       }
       sourceAttributes.push({
         existing: inputs,
-        unless: new Array<ElementTagname | ElementAttribute>() // TODO: cascade resolution of exclusion classes.
+        unless: new Array<ElementTagname | ElementAttribute>(), // TODO: cascade resolution of exclusion classes.
       });
       if (declInfo.decl.parent === undefined) {
         continue; // TODO: take this out -- it shouldn't happen.
@@ -130,7 +129,7 @@ export class MergeDeclarations extends MultiAction {
         let rule = <postcss.Rule>declInfo.decl.parent;
         let newlyRemoved: ParsedSelectorAndRule[] = this.cache.getParsedSelectors(rule).map(s => ({parsedSelector: s, rule}));
         this.removedSelectors.splice(0, 0, ...newlyRemoved);
-        let ruleParent = <postcss.Container>rule.parent;
+        let ruleParent = rule.parent;
         if (ruleParent) {
           this.removedRules.push(rule);
           ruleParent.removeChild(rule);
@@ -167,7 +166,7 @@ export class MergeDeclarations extends MultiAction {
   }
 
   declString(selector: string = this.newRule.selector): string {
-    return `${selector} { ${this.decl.prop}: ${this.decl.value}${this.decl.important ? " !important": ""}; }`;
+    return `${selector} { ${this.decl.prop}: ${this.decl.value}${this.decl.important ? " !important" : ""}; }`;
   }
 
   get sourcePosition(): SourcePosition | undefined {

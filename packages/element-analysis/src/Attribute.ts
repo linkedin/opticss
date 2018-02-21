@@ -327,12 +327,14 @@ export abstract class AttributeBase implements HasNamespace {
     } else if (isUnknown(condition) || isUnknownIdentifier(condition)) {
       return false;
     } else if (isSet(condition)) {
-      return condition.allOf.reduce<undefined | boolean>((prev, a) => {
-        let r = this.isStatic(value, a);
-        if (r === undefined) return prev;
-        if (prev === undefined) return r;
-        return prev && r;
-      }, undefined);
+      return condition.allOf.reduce<undefined | boolean>(
+        (prev, a) => {
+          let r = this.isStatic(value, a);
+          if (r === undefined) return prev;
+          if (prev === undefined) return r;
+          return prev && r;
+        },
+        undefined);
     } else {
       return false;
     }
@@ -374,31 +376,30 @@ export abstract class AttributeBase implements HasNamespace {
     if (isSet(value)) {
         let newSets = new Array<FlattenedAttributeValueSet>();
         newSets.push({
-          allOf: new Array<FlattenedAttributeValueSetItem>()
+          allOf: new Array<FlattenedAttributeValueSetItem>(),
         });
         value.allOf.forEach(v => {
           if (isChoice(v)) {
             let res = this.flattenedValue(v);
             let origLength = newSets.length;
-            for (let i = 0; i < res.length; i++) {
+            for (let vi of res) {
               for (let j = 0; j < origLength; j++) {
-                let vi = res[i];
                 if (isFlattenedSet(vi)) {
                   newSets.push({
-                    allOf: newSets[j].allOf.concat(vi.allOf)
+                    allOf: newSets[j].allOf.concat(vi.allOf),
                   });
                 } else if (isAbsent(vi)) {
                   let newSet = newSets[j].allOf.slice();
                   newSet.push(vi);
                   newSets.push({
-                    allOf: newSet
+                    allOf: newSet,
                   });
                   // TODO
                 } else if (isUnknown(vi)) {
                   // TODO
                 } else {
                   newSets.push({
-                    allOf: newSets[j].allOf.concat(vi)
+                    allOf: newSets[j].allOf.concat(vi),
                   });
                 }
               }
@@ -445,10 +446,13 @@ export abstract class AttributeBase implements HasNamespace {
     } else if (isEndsWith(value)) {
       return "*" + value.endsWith;
     } else if (isChoice(value)) {
-      return "(" + value.oneOf.reduce((prev, v) => {
-        prev.push(this.valueToString(v));
-        return prev;
-      }, new Array<string>()).join("|") + ")";
+      return "(" + value.oneOf.reduce(
+        (prev, v) => {
+          prev.push(this.valueToString(v));
+          return prev;
+        },
+        new Array<string>(),
+      ).join("|") + ")";
     } else if (isSet(value)) {
       return value.allOf.map(v => this.valueToString(v)).join(" ");
     } else {

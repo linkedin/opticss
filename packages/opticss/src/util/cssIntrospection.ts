@@ -1,11 +1,12 @@
+import { isObject, whatever } from "@opticss/util";
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
+import { isClassName, isIdentifier } from "postcss-selector-parser";
 import { inspect } from "util";
+
 import { ParsedCssFile } from "../CssFile";
-import { SelectorCache } from "../query";
 import { ParsedSelector } from "../parseSelector";
-import { isIdentifier, isClassName } from "postcss-selector-parser";
-import { ObjectDictionary, something } from "@opticss/util";
+import { SelectorCache } from "../query";
 
 export type RuleScope = Array<postcss.AtRule>;
 export type RuleIteratorWithScope = (rule: postcss.Rule, scope: RuleScope) => false | undefined | void;
@@ -25,6 +26,7 @@ function _walkRulesWithScope(container: postcss.Container, eachRule: RuleIterato
         _walkRulesWithScope(node, eachRule, scope.concat(node));
       }
     } else if (isContainer(node)) {
+      // tslint:disable-next-line:no-console
       console.log("warning: container that's not an AtRule encountered: " + inspect(node));
       _walkRulesWithScope(node, eachRule, scope);
     }
@@ -89,7 +91,7 @@ export function eachFileSelector(files: ParsedCssFile[], cache: SelectorCache, c
  * @param cache SelectorCache to ensure we are working with the same selector instances.
  * @param cb Callback function passed the rule and parsed selector.
  */
-export function eachSelector(root: postcss.Root, cache: SelectorCache, cb: (rule: postcss.Rule, sel: ParsedSelector) => void ) {
+export function eachSelector(root: postcss.Root, cache: SelectorCache, cb: (rule: postcss.Rule, sel: ParsedSelector) => void) {
   walkRules(root, (rule) => cache.getParsedSelectors(rule).forEach((sel: ParsedSelector) => cb(rule, sel)));
 }
 
@@ -101,12 +103,11 @@ const NODE_TYPES = {
   "comment": true,
 };
 
-export function isNode(node: something): node is postcss.Node {
-  if (typeof node === "object" && NODE_TYPES[(<postcss.Node>node).type]) {
-    return true;
-  } else {
-    return false;
-  }
+type MaybeNode = { type?: postcss.Node["type"] };
+
+export function isNode(node: whatever): node is postcss.Node {
+  let nodeType = isObject(node) && (<MaybeNode>node).type || undefined;
+  return nodeType && NODE_TYPES[nodeType] || false;
 }
 
 /**
@@ -114,8 +115,8 @@ export function isNode(node: something): node is postcss.Node {
  * @param node postcss node to test.
  * @returns True or false if node is an at-rule.
  */
-export function isAtRule(node: postcss.Node): node is postcss.AtRule {
-  return (node.type === "atrule");
+export function isAtRule(node: whatever): node is postcss.AtRule {
+  return (isObject(node) && (<MaybeNode>node).type === "atrule");
 }
 
 /**
@@ -123,15 +124,15 @@ export function isAtRule(node: postcss.Node): node is postcss.AtRule {
  * @param node postcss node to test.
  * @returns True or false if node is a rule.
  */
-export function isRule(node: ObjectDictionary<any>): node is postcss.Rule {
-  return (node.type === "rule");
+export function isRule(node: whatever): node is postcss.Rule {
+  return (isObject(node) && (<MaybeNode>node).type === "rule");
 }
 
 /**
  * Test if a postcss node is a declaration.
  */
-export function isDeclaration(node: ObjectDictionary<any>): node is postcss.Declaration {
-  return (node.type === "decl");
+export function isDeclaration(node: whatever): node is postcss.Declaration {
+  return (isObject(node) && (<MaybeNode>node).type === "decl");
 }
 
 /**
@@ -139,6 +140,6 @@ export function isDeclaration(node: ObjectDictionary<any>): node is postcss.Decl
  * @param node postcss node to test.
  * @returns whether the node is a container.
  */
-export function isContainer(node: postcss.Node): node is postcss.Container {
-  return (<postcss.Container>node).each !== undefined;
+export function isContainer(node: whatever): node is postcss.Container {
+  return isNode(node) && (<postcss.Container>node).each !== undefined;
 }

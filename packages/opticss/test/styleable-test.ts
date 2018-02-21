@@ -1,20 +1,4 @@
 import {
-  assert,
-} from 'chai';
-import {
-  suite,
-  test,
-} from 'mocha-typescript';
-
-import {
-  Match,
-  TagMatcher,
-} from '../src/Match';
-import {
-  CompoundSelector,
-  parseSelector,
-} from '../src/parseSelector';
-import {
   Attribute,
   AttributeValueChoiceOption,
   isAbsent,
@@ -28,7 +12,23 @@ import {
   isUnknown,
   Tagname,
   TagnameNS,
-} from '@opticss/element-analysis';
+} from "@opticss/element-analysis";
+import {
+  assert,
+} from "chai";
+import {
+  suite,
+  test,
+} from "mocha-typescript";
+
+import {
+  Match,
+  TagMatcher,
+} from "../src/Match";
+import {
+  CompoundSelector,
+  parseSelector,
+} from "../src/parseSelector";
 
 const tagMatcher = TagMatcher.instance;
 
@@ -122,12 +122,15 @@ export class SelectableAttributeTest {
     let attr = new Attribute("class", {
       oneOf: [
         {constant: "asdf"},
-        {constant: "foo"}
-      ]
+        {constant: "foo"},
+      ],
     });
-    assert.deepEqual(isChoice(attr.value) && attr.value.oneOf,
-                     [{constant: "asdf"},
-                      {constant: "foo"}]);
+    assert.deepEqual(
+      isChoice(attr.value) && attr.value.oneOf,
+      [
+        {constant: "asdf"},
+        {constant: "foo"},
+      ]);
     assert.equal(attr.toString(), 'class="(asdf|foo)"');
     assert.equal(attr.isLegal("asdf"), true);
     assert.equal(attr.isLegal("foo"), true);
@@ -161,15 +164,17 @@ export class SelectableAttributeTest {
         {startsWith: "foo", whitespace: false},
         {endsWith: "bar", whitespace: false},
         {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
-      ]
+      ],
     });
-    assert.deepEqual<AttributeValueChoiceOption[]>(isChoice(attr.value) && attr.value.oneOf || [],
-                     [{absent: true},
-                      {constant: "asdf"},
-                      {startsWith: "foo", whitespace: false},
-                      {endsWith: "bar", whitespace: false},
-                      {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
-                    ]);
+    assert.deepEqual<AttributeValueChoiceOption[]>(
+      isChoice(attr.value) && attr.value.oneOf || [],
+      [
+        {absent: true},
+        {constant: "asdf"},
+        {startsWith: "foo", whitespace: false},
+        {endsWith: "bar", whitespace: false},
+        {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
+      ]);
     assert.equal(attr.toString(), 'class="(---|asdf|foo*|*bar|aaaa*zzzz)"');
   }
   @test "can have a list of values"() {
@@ -179,14 +184,16 @@ export class SelectableAttributeTest {
         {startsWith: "foo", whitespace: false},
         {endsWith: "bar", whitespace: false},
         {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
-      ]
+      ],
     });
-    assert.deepEqual(isSet(attr.value) && attr.value.allOf,
-                     [{constant: "asdf"},
-                      {startsWith: "foo", whitespace: false},
-                      {endsWith: "bar", whitespace: false},
-                      {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
-                    ]);
+    assert.deepEqual(
+      isSet(attr.value) && attr.value.allOf,
+      [
+        {constant: "asdf"},
+        {startsWith: "foo", whitespace: false},
+        {endsWith: "bar", whitespace: false},
+        {startsWith: "aaaa", endsWith: "zzzz", whitespace: false},
+      ]);
     assert.equal(attr.toString(), 'class="asdf foo* *bar aaaa*zzzz"');
   }
   @test "can have nested lists and optionals"() {
@@ -194,13 +201,13 @@ export class SelectableAttributeTest {
       allOf: [
         {oneOf: [
           {allOf: [{constant: "a"}, {constant: "b"}]},
-          {allOf: [{constant: "c"}, {constant: "d"}]}
+          {allOf: [{constant: "c"}, {constant: "d"}]},
         ]},
         {oneOf: [
           {allOf: [{constant: "e"}, {constant: "f"}]},
-          {allOf: [{constant: "g"}, {constant: "h"}]}
-        ]}
-      ]
+          {allOf: [{constant: "g"}, {constant: "h"}]},
+        ]},
+      ],
     });
     assert.equal(attr.toString(), 'class="(a b|c d) (e f|g h)"');
   }
@@ -209,48 +216,54 @@ export class SelectableAttributeTest {
       allOf: [
         {oneOf: [
           {allOf: [{constant: "a"}, {constant: "b"}]},
-          {allOf: [{constant: "c"}, {constant: "d"}]}
+          {allOf: [{constant: "c"}, {constant: "d"}]},
         ]},
         {oneOf: [
           {allOf: [{constant: "e"}, {constant: "f"}]},
-          {allOf: [{constant: "g"}, {constant: "h"}]}
-        ]}
-      ]
+          {allOf: [{constant: "g"}, {constant: "h"}]},
+        ]},
+      ],
     });
     let flattened = attr.flattenedValue();
-    assert.deepEqual(flattened, [
-      {allOf: [{constant: "a"}, {constant: "b"}, {constant: "e"}, {constant: "f"}]},
-      {allOf: [{constant: "c"}, {constant: "d"}, {constant: "e"}, {constant: "f"}]},
-      {allOf: [{constant: "a"}, {constant: "b"}, {constant: "g"}, {constant: "h"}]},
-      {allOf: [{constant: "c"}, {constant: "d"}, {constant: "g"}, {constant: "h"}]}
-    ]);
+    assert.deepEqual(
+      flattened,
+      [
+        {allOf: [{constant: "a"}, {constant: "b"}, {constant: "e"}, {constant: "f"}]},
+        {allOf: [{constant: "c"}, {constant: "d"}, {constant: "e"}, {constant: "f"}]},
+        {allOf: [{constant: "a"}, {constant: "b"}, {constant: "g"}, {constant: "h"}]},
+        {allOf: [{constant: "c"}, {constant: "d"}, {constant: "g"}, {constant: "h"}]},
+      ]);
   }
   @test "can flatten choice of sets"() {
     let attr = new Attribute("class", {
       oneOf: [
         {allOf: [{constant: "e"}, {constant: "f"}]},
-        {allOf: [{constant: "g"}, {constant: "h"}]}
-      ]
+        {allOf: [{constant: "g"}, {constant: "h"}]},
+      ],
     });
     let flattened = attr.flattenedValue();
-    assert.deepEqual(flattened, [
-      {allOf: [{constant: "e"}, {constant: "f"}]},
-      {allOf: [{constant: "g"}, {constant: "h"}]}
-    ]);
+    assert.deepEqual(
+      flattened,
+      [
+        {allOf: [{constant: "e"}, {constant: "f"}]},
+        {allOf: [{constant: "g"}, {constant: "h"}]},
+      ]);
   }
   @test "can flatten set of choices"() {
     let attr = new Attribute("class", {
       allOf: [
         {oneOf: [{constant: "e"}, {constant: "f"}]},
-        {oneOf: [{constant: "g"}, {constant: "h"}]}
-      ]
+        {oneOf: [{constant: "g"}, {constant: "h"}]},
+      ],
     });
     let flattened = attr.flattenedValue();
-    assert.deepEqual(flattened, [
-      {allOf: [{constant: "e"}, {constant: "g"}]},
-      {allOf: [{constant: "f"}, {constant: "g"}]},
-      {allOf: [{constant: "e"}, {constant: "h"}]},
-      {allOf: [{constant: "f"}, {constant: "h"}]}
-    ]);
+    assert.deepEqual(
+      flattened,
+      [
+        {allOf: [{constant: "e"}, {constant: "g"}]},
+        {allOf: [{constant: "f"}, {constant: "g"}]},
+        {allOf: [{constant: "e"}, {constant: "h"}]},
+        {allOf: [{constant: "f"}, {constant: "h"}]},
+      ]);
   }
 }

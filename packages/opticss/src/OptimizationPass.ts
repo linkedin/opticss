@@ -1,8 +1,9 @@
 import { StyleMapping, TemplateIntegrationOptions } from "@opticss/template-api";
-import { SelectorCache } from "./query";
+
 import { Actions } from "./Actions";
-import { IdentGenerators } from "./util/IdentGenerator";
 import { OptiCSSOptions } from "./OpticssOptions";
+import { SelectorCache } from "./query";
+import { IdentGenerators } from "./util/IdentGenerator";
 
 export class OptimizationPass {
   styleMapping: StyleMapping;

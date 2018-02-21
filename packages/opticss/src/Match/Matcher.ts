@@ -1,9 +1,10 @@
 import {
   Selectable,
-} from '@opticss/element-analysis';
-import * as SelectorParser from 'postcss-selector-parser';
+} from "@opticss/element-analysis";
+import * as SelectorParser from "postcss-selector-parser";
 
 import { ParsedSelector } from "../parseSelector";
+
 import { Match, matches } from "./Match";
 
 export interface HasSelectorNodes {

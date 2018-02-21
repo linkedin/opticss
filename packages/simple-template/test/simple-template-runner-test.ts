@@ -1,16 +1,16 @@
+import { clean } from "@opticss/util";
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
+} from "mocha-typescript";
+
 import {
   SimpleTemplateRunner,
   TestTemplate,
-} from '../src';
-
-import { clean } from "@opticss/util";
+} from "../src";
 
 @suite("Simple Template Runner")
 export class SimpleTemplateTest {

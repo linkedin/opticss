@@ -1,31 +1,31 @@
 import {
-  assert,
-} from 'chai';
-import {
-  suite,
-  test,
-} from 'mocha-typescript';
-import * as path from 'path';
-
-import {
   Attribute,
   Element,
   Tagname,
-} from '@opticss/element-analysis';
+} from "@opticss/element-analysis";
+import { TestTemplate } from "@opticss/simple-template";
 import {
   RewritableIdents,
-} from '@opticss/template-api';
+} from "@opticss/template-api";
+import { clean } from "@opticss/util";
+import {
+  assert,
+} from "chai";
+import {
+  suite,
+  test,
+} from "mocha-typescript";
+import * as path from "path";
+import { documentToString } from "resolve-cascade";
+
 import {
   IdentGenerator,
   IdentGenerators,
-} from '../../src/util/IdentGenerator';
+} from "../../src/util/IdentGenerator";
 import {
   CascadeTestResult,
   testOptimizationCascade,
-} from '../util/assertCascade';
-import { TestTemplate } from '@opticss/simple-template';
-import { documentToString } from 'resolve-cascade';
-import { clean } from '@opticss/util';
+} from "../util/assertCascade";
 
 function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -33,7 +33,7 @@ function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTe
     {
       rewriteIdents: templateRewriteOpts,
       analyzedAttributes: [],
-      analyzedTagnames: true
+      analyzedTagnames: true,
     },
     ...stylesAndTemplates);
 }
@@ -228,9 +228,9 @@ export class RewriteIdentsTest {
       if (mapping) {
         assert.deepEqual(mapping.inputs, [
           { "tagname": "div" },
-          { "name": "class", "value": "a" }
+          { "name": "class", "value": "a" },
         ]);
-        assert.deepEqual(mapping.staticAttributes.class, ['b']);
+        assert.deepEqual(mapping.staticAttributes.class, ["b"]);
       }
     });
   }

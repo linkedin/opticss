@@ -1,18 +1,18 @@
 import { AttributeValue } from "@opticss/element-analysis";
 import * as nearley from "nearley";
-const grammar = require("./grammar/attrvalue");
+const grammar: nearley.CompiledRules = require("./grammar/attrvalue");
 
 export interface AttributeFlags {
   [attrName: string]: boolean;
 }
 
 const WHITESPACE_ATTRIBUTES: AttributeFlags = {
-  "class": true
+  "class": true,
 };
 
 // All attributes that are considered plaintext and cannot contain expressions.
 const TEXT_ATTRIBUTES: AttributeFlags = {
-  "title": true, "media": true, "content": true, "style": true
+  "title": true, "media": true, "content": true, "style": true,
 };
 
 export class AttributeValueParser {
@@ -38,19 +38,19 @@ export class AttributeValueParser {
     }
 
     // If begins with `javascript:`, or is an `onEvent` attr, it's script -- ignore
-    if ( attrName.match(/^on/) || value.startsWith("javascript:") ) {
+    if (attrName.match(/^on/) || value.startsWith("javascript:")) {
       return { absent: true };
     }
 
     // If it's a plain text attribute, or is a non-whitespace delimited attr in
     // an HTML document, return the constant value.
-    if ( this.textAttributes[attrKey] || (!whitespaceDelimited && this.plainHtml) ) {
+    if (this.textAttributes[attrKey] || (!whitespaceDelimited && this.plainHtml)) {
       return { constant: value };
     }
 
     // Parse the grammar, return AttributeValue object.
-    let grammarObj = nearley.Grammar.fromCompiled(<any>grammar);
-    (<any>grammarObj).start = whitespaceDelimited ? "whitespaceDelimitedAttribute" : "attribute"; // because this api is stupid.
+    let grammarObj = nearley.Grammar.fromCompiled(grammar);
+    grammarObj.start = whitespaceDelimited ? "whitespaceDelimitedAttribute" : "attribute"; // because this api is stupid.
     let parser = new nearley.Parser(grammarObj);
     parser.feed(value);
     let res = parser.finish();

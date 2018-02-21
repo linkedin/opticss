@@ -1,22 +1,23 @@
-import { and } from '../src/BooleanExpression';
-import { Attribute, Element, Tagname, attrValues as v } from "@opticss/element-analysis";
-import { SimpleAttribute, StyleMapping } from '../src/StyleMapping';
+import {
+  AttributeValueParser,
+} from "@opticss/attr-analysis-dsl";
+import { Attribute, attrValues as v, Element, Tagname } from "@opticss/element-analysis";
+import {
+  assert as typedAssert,
+} from "@opticss/util";
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
-import {
-  assert as typedAssert
-} from "@opticss/util";
-import {
-  AttributeValueParser
-} from "@opticss/attr-analysis-dsl";
+} from "mocha-typescript";
+
+import { and } from "../src/BooleanExpression";
+import { SimpleAttribute, StyleMapping } from "../src/StyleMapping";
 import {
   normalizeTemplateOptions,
-} from '../src/TemplateIntegrationOptions';
+} from "../src/TemplateIntegrationOptions";
 
 function sAttr(name: string, value: string): SimpleAttribute {
   return {name, value};
@@ -57,7 +58,7 @@ export class StyleMappingTest {
     mapping.rewriteAttribute(sClass("test"), sClass("a"));
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "(test|---)")));
     typedAssert.isNotNull(rewrite).and(rewrite => {
-      let dyn = rewrite.dynamicAttributes.class!["a"];
+      let dyn = rewrite.dynamicAttributes.class["a"];
       typedAssert.isDefined(dyn).and(dyn => {
         assert.deepEqual(dyn, and(0));
       });
@@ -80,11 +81,11 @@ export class StyleMappingTest {
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "(test|---)")));
     typedAssert.isNotNull(rewrite).and(rewrite => {
       assert.deepEqual(rewrite.inputs[0], {name: "class", value: "test"});
-      let dyn = rewrite.dynamicAttributes.class!["a"];
+      let dyn = rewrite.dynamicAttributes.class["a"];
       typedAssert.isDefined(dyn).and(dyn => {
         assert.deepEqual(dyn, and(0));
       });
-      let source = rewrite.dynamicAttributes.class!["test"];
+      let source = rewrite.dynamicAttributes.class["test"];
       typedAssert.isDefined(source).and(source => {
         assert.deepEqual(source, and(0));
       });
@@ -96,8 +97,8 @@ export class StyleMappingTest {
     let rewrite = mapping.rewriteMapping(element("?", attr("class", "test")));
     typedAssert.isNotNull(rewrite).and(rewrite => {
       assert.deepEqual(rewrite.inputs[0], {name: "class", value: "test"});
-      assert.equal(Object.keys(rewrite.dynamicAttributes.class!).length, 0);
-      assert.equal(rewrite.staticAttributes.class!.length, 0);
+      assert.equal(Object.keys(rewrite.dynamicAttributes.class).length, 0);
+      assert.equal(rewrite.staticAttributes.class.length, 0);
     });
   }
   @test "static attributes are static in the rewrite"() {
@@ -105,9 +106,9 @@ export class StyleMappingTest {
     mapping.linkAttributes(sClass("a"), [{existing: [sClass("s_a")], unless: []}]);
     mapping.linkAttributes(sClass("a"), [{existing: [sClass("s_b")], unless: []}]);
     mapping.attributeIsObsolete(sClass("s_a"));
-    let rewrite = mapping.rewriteMapping(element("?", attr("class", 's_a')));
+    let rewrite = mapping.rewriteMapping(element("?", attr("class", "s_a")));
     assert.deepEqual(rewrite.dynamicAttributes, { id: {}, class: {}});
-    assert.deepEqual(rewrite.staticAttributes, {id: [], class: ['a']});
+    assert.deepEqual(rewrite.staticAttributes, {id: [], class: ["a"]});
   }
   @test "classes can be both static and dynamic"() {
     let mapping = new StyleMapping(normalizeTemplateOptions({}));
@@ -115,11 +116,11 @@ export class StyleMappingTest {
     mapping.linkAttributes(sClass("b"), [{existing: [sClass("s_b")], unless: []}]);
     mapping.attributeIsObsolete(sClass("s_a"));
     mapping.attributeIsObsolete(sClass("s_b"));
-    let rewrite = mapping.rewriteMapping(element("?", attr("class", 's_a (s_b|---)')));
+    let rewrite = mapping.rewriteMapping(element("?", attr("class", "s_a (s_b|---)")));
     let inputs = (<SimpleAttribute[]>rewrite.inputs).map(a => a.value);
 
     assert.deepEqual(inputs, ["s_a", "s_b"]);
-    assert.deepEqual(rewrite.staticAttributes, {id: [], class: ['a']});
-    assert.deepEqual(rewrite.dynamicAttributes, { id: {}, class: {'b': {and: [1]}}});
+    assert.deepEqual(rewrite.staticAttributes, {id: [], class: ["a"]});
+    assert.deepEqual(rewrite.dynamicAttributes, { id: {}, class: {"b": {and: [1]}}});
   }
 }

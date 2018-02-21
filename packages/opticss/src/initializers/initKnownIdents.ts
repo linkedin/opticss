@@ -1,26 +1,28 @@
-import { ParsedCssFile } from "../CssFile";
-import { OptimizationPass } from "../OptimizationPass";
-import { TemplateIntegrationOptions, TemplateTypes, TemplateAnalysis, rewriteOptions } from "@opticss/template-api";
-import * as SelectorParser from "postcss-selector-parser";
-import { eachFileIdent } from "../util/cssIntrospection";
-import { OptiCSSOptions } from "../OpticssOptions";
+import { rewriteOptions, TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes } from "@opticss/template-api";
 import { assertNever } from "@opticss/util";
+import * as SelectorParser from "postcss-selector-parser";
+
+import { ParsedCssFile } from "../CssFile";
+import { OptiCSSOptions } from "../OpticssOptions";
+import { OptimizationPass } from "../OptimizationPass";
+import { eachFileIdent } from "../util/cssIntrospection";
 
 const { isClassName, isIdentifier } = SelectorParser;
 /**
  * Initializes this OptimizationPass' ident generator with blacklisted identifiers.
- * @param {OptimizationPass} pass The OptimizationPass.
- * @param {TemplateAnalysis<keyof TemplateTypes>[]} analyses - All analysis objects associated with this Optimization.
- * @param {ParsedCssFile[]} files - All parsed css files being optimized.
- * @param {OptiCSSOptions} options - This Optimization's options.
- * @param {TemplateIntegrationOptions} templateOptions - The compatible options for this integratin's Template rewriter.
+ * @param pass The OptimizationPass.
+ * @param analyses - All analysis objects associated with this Optimization.
+ * @param files - All parsed css files being optimized.
+ * @param options - This Optimization's options.
+ * @param templateOptions - The compatible options for this integratin's Template rewriter.
  */
-export default function initKnownIdents(
+export function initKnownIdents(
   pass: OptimizationPass,
   analyses: TemplateAnalysis<keyof TemplateTypes>[],
   files: ParsedCssFile[],
   options: OptiCSSOptions,
-  templateOptions: TemplateIntegrationOptions
+  templateOptions: TemplateIntegrationOptions,
+
 ): void {
   // Fetch normalized options
   let opts = rewriteOptions(options.rewriteIdents, templateOptions.rewriteIdents);

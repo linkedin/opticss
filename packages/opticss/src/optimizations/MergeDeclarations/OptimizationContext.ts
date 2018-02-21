@@ -1,11 +1,12 @@
-import * as postcss from 'postcss';
-import { Dictionary, MultiDictionary } from 'typescript-collections';
-import * as specificity from 'specificity';
-import * as selectorParser from 'postcss-selector-parser';
+import * as postcss from "postcss";
+import * as selectorParser from "postcss-selector-parser";
+import * as specificity from "specificity";
+import { Dictionary, MultiDictionary } from "typescript-collections";
 
-import { ParsedSelector } from '../../parseSelector';
-import { RuleScope } from '../../util/cssIntrospection';
-import { DeclarationInfo } from './StyleInfo';
+import { ParsedSelector } from "../../parseSelector";
+import { RuleScope } from "../../util/cssIntrospection";
+
+import { DeclarationInfo } from "./StyleInfo";
 
 export class OptimizationContext {
   /**
@@ -68,7 +69,7 @@ export class OptimizationContexts {
   private contexts: {
     [key: string]: OptimizationContext;
   };
-  constructor(){
+  constructor() {
     this.contexts = {};
   }
 

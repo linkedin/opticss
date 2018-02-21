@@ -5,11 +5,16 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "compile": "rm -rf dist test/build && tsc && tsc -p tsconfig-test.json",
-    "pretest": "yarn run compile && yarn run tslint",
-    "prepublish": "rm -rf dist && tsc",
-    "tslint": "tslint --project tsconfig.json && tslint --project tsconfig-test.json",
+    "compile-src": "rm -rf dist && tsc",
+    "compile-test": "rm -rf test/build && tsc -p tsconfig-test.json",
+    "compile": "yarn run compile-src && yarn run compile-test",
+    "pretest": "yarn run compile",
     "test": "mocha test/build/test --opts test/mocha.opts",
+    "posttest": "yarn run lint",
+    "prepublish": "yarn run compile-src",
+    "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json && tslint -t msbuild --project tsconfig-test.json -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json && tslint -t msbuild --project tsconfig-test.json -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix && tslint -t msbuild --project tsconfig-test.json -c tslint.cli.json --fix",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs ."
@@ -39,6 +44,7 @@
   },
   "devDependencies": {
     "@opticss/attr-analysis-dsl": "^0.2.0",
+    "@opticss/code-style": "^0.2.0",
     "@types/node": "^8.0.26",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",

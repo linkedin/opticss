@@ -1,11 +1,13 @@
-import { MultiFileOptimization } from "./Optimization";
+import { NormalizedRewriteOptions, rewriteOptions, TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes } from "@opticss/template-api";
+
+import { RewriteRuleIdents, RuleIdents } from "../Actions/actions/RewriteRuleIdents";
 import { ParsedCssFile } from "../CssFile";
 import { OptiCSSOptions } from "../OpticssOptions";
-import { TemplateAnalysis, TemplateTypes, TemplateIntegrationOptions, NormalizedRewriteOptions, rewriteOptions } from "@opticss/template-api";
-import { RuleIdents, RewriteRuleIdents } from "../Actions/actions/RewriteRuleIdents";
-import { eachFileIdent } from "../util/cssIntrospection";
 import { OptimizationPass } from "../OptimizationPass";
 import { Initializers } from "../initializers";
+import { eachFileIdent } from "../util/cssIntrospection";
+
+import { MultiFileOptimization } from "./Optimization";
 
 export class RewriteIdents implements MultiFileOptimization {
   name = "rewriteIdents";
@@ -18,7 +20,8 @@ export class RewriteIdents implements MultiFileOptimization {
   optimizeAllFiles(
     pass: OptimizationPass,
     _analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
-    files: ParsedCssFile[]): void
+    files: ParsedCssFile[],
+  ): void
   {
     let allIdents = new Array<RuleIdents>();
     let currentIdents: RuleIdents | undefined = undefined;
@@ -30,7 +33,7 @@ export class RewriteIdents implements MultiFileOptimization {
         currentIdents = {
           rule,
           selectors: [selector],
-          idents: [node]
+          idents: [node],
         };
       } else {
         let lastSelector =

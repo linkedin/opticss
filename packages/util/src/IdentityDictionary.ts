@@ -21,7 +21,7 @@ import {
  * invocation.
  */
 export class IdentityDictionary<T> extends Dictionary<T, T> {
-  static IdentityString = Symbol("IdentityDictionary.IdentityString");
+  static IDENTITY_STRING = Symbol("IdentityDictionary.IdentityString");
   constructor(toStrFunction?: (value: T) => string) {
     super(toStrFunction || defaultToStringFunction);
   }
@@ -89,8 +89,8 @@ export class IdentityDictionary<T> extends Dictionary<T, T> {
 }
 
 function defaultToStringFunction<T>(value: T): string {
-  if (value[IdentityDictionary.IdentityString]) {
-    return value[IdentityDictionary.IdentityString]();
+  if (value[IdentityDictionary.IDENTITY_STRING]) {
+    return value[IdentityDictionary.IDENTITY_STRING]();
   } else if (typeof value === "string") {
     return value;
   } else {

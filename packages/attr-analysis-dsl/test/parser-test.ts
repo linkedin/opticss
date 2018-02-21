@@ -1,12 +1,12 @@
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
+} from "mocha-typescript";
 
-import { AttributeValueParser } from '../src';
+import { AttributeValueParser } from "../src";
 
 @suite("Simple Templates")
 export class SimpleTemplateTest {

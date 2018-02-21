@@ -5,3 +5,5 @@ coverage/
 build/
 .DS_Store
 packages/css-property-parser
+yarn-error.log
+lerna-debug.log

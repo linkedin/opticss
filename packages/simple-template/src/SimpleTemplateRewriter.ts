@@ -1,9 +1,10 @@
-import * as parse5 from "parse5";
-import { TemplateIntegrationOptions, StyleMapping, RewriteMapping, BooleanExpression, AndExpression, OrExpression, NotExpression, RewriteableAttrName, SimpleAttribute, SimpleTagname, isSimpleTagname } from "@opticss/template-api";
-import { Tagname, Element, Attr, AttributeNS, Attribute } from "@opticss/element-analysis";
-import { assertNever } from "@opticss/util";
-import { allElements, bodyContents, bodyElement } from "./SimpleTemplateRunner";
 import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
+import { Attr, Attribute, AttributeNS, Element, Tagname } from "@opticss/element-analysis";
+import { AndExpression, BooleanExpression, isSimpleTagname, NotExpression, OrExpression, RewriteableAttrName, RewriteMapping, SimpleAttribute, SimpleTagname, StyleMapping, TemplateIntegrationOptions } from "@opticss/template-api";
+import { assertNever } from "@opticss/util";
+import * as parse5 from "parse5";
+
+import { allElements, bodyContents, bodyElement } from "./SimpleTemplateRunner";
 import { TestTemplate } from "./TestTemplate";
 
 export class SimpleTemplateRewriter {
@@ -18,10 +19,10 @@ export class SimpleTemplateRewriter {
   rewrite(template: TestTemplate, html: string) {
     let valueParser = new AttributeValueParser(template.plainHtml);
     let templateDoc = parse5.parse(template.contents, {
-      treeAdapter: parse5.treeAdapters.default
+      treeAdapter: parse5.treeAdapters.default,
     }) as parse5.AST.Default.Document;
     let document = parse5.parse(html, {
-      treeAdapter: parse5.treeAdapters.default
+      treeAdapter: parse5.treeAdapters.default,
     }) as parse5.AST.Default.Document;
 
     let templateElements = allElements(bodyElement(templateDoc)!);
@@ -72,11 +73,11 @@ export class SimpleTemplateRewriter {
   ) {
     let attrIndex = element.attrs.findIndex(a => a.name === name);
     let attr = attrIndex >= 0 ? element.attrs[attrIndex] : undefined;
-    let rewrittenValue = rewriteMapping.staticAttributes[name]!.slice();
-    let dynamicExpressions = Object.keys(rewriteMapping.dynamicAttributes[name]!);
+    let rewrittenValue = rewriteMapping.staticAttributes[name].slice();
+    let dynamicExpressions = Object.keys(rewriteMapping.dynamicAttributes[name]);
     for (let dyn of dynamicExpressions) {
-      let expression = rewriteMapping!.dynamicAttributes[name]![dyn]!;
-      if (evaluateExpression(expression, rewriteMapping!, element, inputAttrs)) {
+      let expression = rewriteMapping.dynamicAttributes[name][dyn]!;
+      if (evaluateExpression(expression, rewriteMapping, element, inputAttrs)) {
         rewrittenValue.push(dyn);
       }
     }

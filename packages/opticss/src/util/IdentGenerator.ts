@@ -1,8 +1,8 @@
-const FIRST_CHAR = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const OTHER_CHAR = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
+const FIRST_CHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const OTHER_CHAR = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
 
-const FIRST_CHAR_INSENSITIVE = 'abcdefghijklmnopqrstuvwxyz';
-const OTHER_CHAR_INSENSITIVE = '0123456789abcdefghijklmnopqrstuvwxyz-_';
+const FIRST_CHAR_INSENSITIVE = "abcdefghijklmnopqrstuvwxyz";
+const OTHER_CHAR_INSENSITIVE = "0123456789abcdefghijklmnopqrstuvwxyz-_";
 
 function identChar(insensitive: boolean, c: number, i: number): string {
   return i === 0

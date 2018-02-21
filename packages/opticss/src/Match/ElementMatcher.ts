@@ -1,17 +1,17 @@
 import {
-  Element,
   Attribute,
   AttributeNS,
-  ElementInfo
-} from '@opticss/element-analysis';
-import { inspect } from "util";
-import * as SelectorParser from 'postcss-selector-parser';
+  Element,
+  ElementInfo,
+} from "@opticss/element-analysis";
 import { assertNever } from "@opticss/util";
+import * as SelectorParser from "postcss-selector-parser";
+import { inspect } from "util";
 
-import { Match, negate } from "./Match";
-import { TagMatcher } from "./TagMatcher";
 import { AttributeMatcher } from "./AttributeMatcher";
-import { Matcher, HasSelectorNodes } from "./Matcher";
+import { Match, negate } from "./Match";
+import { HasSelectorNodes, Matcher } from "./Matcher";
+import { TagMatcher } from "./TagMatcher";
 
 export function isSelector(node: { type: string } | undefined): node is SelectorParser.Selector {
   if (node) {
@@ -37,8 +37,8 @@ export class ElementMatcher extends Matcher<Element>  {
 
   matchSelectorComponent(element: Element, selector: HasSelectorNodes): Match {
     let maybe = false;
-    for (let i = 0; i < selector.nodes.length; i++) {
-      let match = this.matchSelectorNode(element, selector.nodes[i]);
+    for (let node of selector.nodes) {
+      let match = this.matchSelectorNode(element, node);
       if (match === Match.no) {
         return match;
       } else if (match === Match.maybe) {
@@ -63,7 +63,7 @@ export class ElementMatcher extends Matcher<Element>  {
         // This is indicative of some sort of programming error.
         throw new Error(`[Internal Error] Illegal selector node: ${inspect(node)}`);
       case "pseudo":
-        let pseudo = <SelectorParser.Pseudo>node;
+        let pseudo = node;
         if (pseudo.value === ":not") {
           let negSelector = pseudo.nodes[0];
           if (isSelector(negSelector)) {

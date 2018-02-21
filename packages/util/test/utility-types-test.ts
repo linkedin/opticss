@@ -1,12 +1,12 @@
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
+} from "mocha-typescript";
 
-import { ItemType } from '../src';
+import { ItemType } from "../src";
 
 interface Association<Key, Value> {
   key: Key;
@@ -36,7 +36,7 @@ function initializeStringKeyInfo(key: string): StringKeyInfo {
   let keyIsSetDefault: ItemType<StringKeyInfo["keyIsSet"]> = {key, info: true};
   return {
     keyIndexes: [keyIndexesDefault],
-    keyIsSet: [keyIsSetDefault]
+    keyIsSet: [keyIsSetDefault],
   };
 }
 

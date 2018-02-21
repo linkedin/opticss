@@ -8,5 +8,5 @@ export * from "./Actions";
 export {
   OptimizationResult,
   TimingData,
-  Optimizer
+  Optimizer,
 } from "./Optimizer";

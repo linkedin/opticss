@@ -2,21 +2,21 @@ import {
   Attr,
   AttributeValue,
   isAbsent,
+  isChoice,
+  isConstant,
+  isEndsWith,
+  isSet,
+  isStartsAndEndsWith,
+  isStartsWith,
   isUnknown,
   isUnknownIdentifier,
-  isConstant,
-  isStartsWith,
-  isEndsWith,
-  isStartsAndEndsWith,
-  isSet,
-  isChoice,
-} from '@opticss/element-analysis';
-import { Memoize } from 'typescript-memoize';
-import * as SelectorParser from 'postcss-selector-parser';
+} from "@opticss/element-analysis";
 import { assertNever } from "@opticss/util";
+import * as SelectorParser from "postcss-selector-parser";
+import { Memoize } from "typescript-memoize";
 
-import { Match, boolToMatch, matches } from "./Match";
-import { Matcher, HasSelectorNodes } from "./Matcher";
+import { boolToMatch, Match, matches } from "./Match";
+import { HasSelectorNodes, Matcher } from "./Matcher";
 
 export function isAttrNode(node: SelectorParser.Node): node is SelectorParser.Attribute {
   if (node.type === SelectorParser.ATTRIBUTE) {
@@ -86,7 +86,7 @@ export class AttributeMatcher extends Matcher<Attr> {
           return Match.no;
         }
       case "attribute":
-        let a = <SelectorParser.Attribute>node;
+        let a = node;
         // TODO: unclear whether this is the namespace url or prefix from
         // postcss-selector-parser (it's probably the prefix so this is probably
         // broken).
@@ -97,6 +97,8 @@ export class AttributeMatcher extends Matcher<Attr> {
         }
       case "universal":
         return Match.yes;
+      default:
+        return assertNever(node);
     }
   }
 
@@ -219,11 +221,16 @@ export class AttributeMatcher extends Matcher<Attr> {
   }
 
   @Memoize()
-  regexForAttrEq(attr: Attr, caseInsensitive: boolean): RegExp {
+  regexForAttrEq(
+    attr: Attr,
+    caseInsensitive: boolean,
+  ): RegExp {
     return new RegExp("^" + this.regexPatternForAttr(attr.value) + "$", caseInsensitive ? "i" : undefined);
   }
   @Memoize()
-  regexPatternForAttr(condition: AttributeValue): string {
+  regexPatternForAttr(
+    condition: AttributeValue,
+  ): string {
     if (isUnknown(condition)) {
       return "*";
     } else if (isUnknownIdentifier(condition)) {

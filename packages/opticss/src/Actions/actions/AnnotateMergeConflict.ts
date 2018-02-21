@@ -1,9 +1,9 @@
-import * as postcss from 'postcss';
-
-import { ParsedSelector } from '../../parseSelector';
-import { Action } from "../Action";
 import { Element, SourcePosition } from "@opticss/element-analysis";
+import * as postcss from "postcss";
+
 import { Optimizations } from "../../OpticssOptions";
+import { ParsedSelector } from "../../parseSelector";
+import { Action } from "../Action";
 
 /**
  * Changes a Rule's selector string.
@@ -67,6 +67,6 @@ export class AnnotateMergeConflict extends Action {
   }
 
   declString(selector: ParsedSelector, decl: postcss.Declaration): string {
-    return `${selector} { ${decl.prop}: ${decl.value}${decl.important ? " !important": ""}; }`;
+    return `${selector} { ${decl.prop}: ${decl.value}${decl.important ? " !important" : ""}; }`;
   }
 }

@@ -1,4 +1,5 @@
 import { MultiMap } from "./MultiMap";
+import { whatever } from "./UtilityTypes";
 
 export class TwoKeyMultiMap<K1 extends Object, K2 extends Object, V> {
   private _allowDuplicates: boolean;
@@ -111,7 +112,7 @@ export class TwoKeyMultiMap<K1 extends Object, K2 extends Object, V> {
     return foundValues;
   }
 
-  forEach(callback: (values: V[], keys: [K1, K2], map: MultiMap<K1, V>) => void, thisArg?: any) {
+  forEach(callback: (values: V[], keys: [K1, K2], map: MultiMap<K1, V>) => void, thisArg?: whatever) {
     this.store.forEach(((secondaryKeys, key1) => {
       secondaryKeys.forEach((values, key2) => {
         callback.call(thisArg, values, [key1, key2], this);
@@ -119,7 +120,7 @@ export class TwoKeyMultiMap<K1 extends Object, K2 extends Object, V> {
     }));
   }
 
-  forEachValue(callback: (value: V, keys: [K1, K2], map: MultiMap<K1, V>) => void, thisArg?: any) {
+  forEachValue(callback: (value: V, keys: [K1, K2], map: MultiMap<K1, V>) => void, thisArg?: whatever) {
     this.store.forEach(((secondaryKeys, key1) => {
       secondaryKeys.forEach((values, key2) => {
         for (let value of values) {

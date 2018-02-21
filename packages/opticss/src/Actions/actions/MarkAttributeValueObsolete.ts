@@ -1,15 +1,15 @@
 import {
+  SourcePosition,
+} from "@opticss/element-analysis";
+import {
   SimpleAttribute,
   simpleAttributeToString,
 } from "@opticss/template-api";
-import {
-  SourcePosition
-} from "@opticss/element-analysis";
 
-import { OptimizationPass } from '../../OptimizationPass';
-import { Optimizations } from '../../optimizations';
-import { ParsedSelectorAndRule } from '../../query';
-import { MultiAction } from '../Action';
+import { OptimizationPass } from "../../OptimizationPass";
+import { Optimizations } from "../../optimizations";
+import { ParsedSelectorAndRule } from "../../query";
+import { MultiAction } from "../Action";
 
 /**
  * Note that an attribute value is not used and will be removed from the
@@ -26,7 +26,7 @@ export class MarkAttributeValueObsolete extends MultiAction {
     selectors: ParsedSelectorAndRule[],
     attribute: SimpleAttribute,
     reason: string,
-    optimization: keyof Optimizations = "mergeDeclarations"
+    optimization: keyof Optimizations = "mergeDeclarations",
   ) {
     super(optimization);
     this.pass = pass;

@@ -4,7 +4,7 @@
 import {
   suite,
   test,
-} from 'mocha-typescript';
+} from "mocha-typescript";
 
 // import clean from './util/clean';
 

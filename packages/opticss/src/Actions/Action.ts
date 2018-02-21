@@ -5,8 +5,9 @@
  * that was done. It can also be used to implement backtracking.
  */
 import { SourcePosition } from "@opticss/element-analysis";
-import { Optimizations } from "../optimizations";
 import * as postcss from "postcss";
+
+import { Optimizations } from "../optimizations";
 
 export abstract class Action {
   optimization: string;
@@ -53,7 +54,7 @@ export abstract class Action {
       return {
         filename: node.source.input.file,
         line: node.source.start.line,
-        column: node.source.start.column
+        column: node.source.start.column,
       };
     } else {
       return undefined;

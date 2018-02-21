@@ -1,30 +1,34 @@
-import {
-  AssertionResult,
-  assertSameCascade,
-  bodyElement,
-  serializeElement,
-  ElementStyleMismatch,
-  ElementStyle,
-  ComputedStyle,
-} from 'resolve-cascade';
-
-import {
-  OptiCSSOptions,
-} from '../../src/OpticssOptions';
-import {
-  OptimizationResult,
-  Optimizer,
-} from '../../src/Optimizer';
-import {
-  TemplateAnalysis,
-  TemplateIntegrationOptions,
-} from '@opticss/template-api';
+// tslint:disable:no-console
 import {
   SimpleAnalyzer,
   SimpleTemplateRewriter,
   SimpleTemplateRunner,
   TestTemplate,
-} from '@opticss/simple-template';
+} from "@opticss/simple-template";
+import {
+  TemplateAnalysis,
+  TemplateIntegrationOptions,
+} from "@opticss/template-api";
+import {
+  whatever,
+} from "@opticss/util";
+import {
+  AssertionResult,
+  assertSameCascade,
+  bodyElement,
+  ComputedStyle,
+  ElementStyle,
+  ElementStyleMismatch,
+  serializeElement,
+} from "resolve-cascade";
+
+import {
+  OptiCSSOptions,
+} from "../../src/OpticssOptions";
+import {
+  OptimizationResult,
+  Optimizer,
+} from "../../src/Optimizer";
 
 export interface TestedMarkup {
   originalBody: string;
@@ -52,7 +56,8 @@ export type CascadeTestError = Error & CascadeTestErrorDetails;
 export function testOptimizationCascade(
   options: Partial<OptiCSSOptions>,
   templateOptions: TemplateIntegrationOptions,
-  ...stylesAndTemplates: Array<string | TestTemplate>
+  ...stylesAndTemplates: Array<string | TestTemplate>,
+
 ): Promise<CascadeTestResult> {
   let optimizer = new Optimizer(options, templateOptions);
   let nCss = 1;
@@ -87,11 +92,11 @@ export function testOptimizationCascade(
               assertSameCascade(originalCss,
                                 optimizationToCss(optimization),
                                 html,
-                                rewrittenHtml).catch((e: any) => {
+                                rewrittenHtml).catch((e: whatever) => {
                                   Object.assign(e, {
                                     optimization,
                                     template,
-                                    rewrittenHtml
+                                    rewrittenHtml,
                                   });
                                   throw e;
                                 }));
@@ -105,7 +110,7 @@ export function testOptimizationCascade(
       return Promise.all(allTemplateRuns).then((testedTemplates) => {
         return {
           optimization,
-          testedTemplates
+          testedTemplates,
         };
       });
     });

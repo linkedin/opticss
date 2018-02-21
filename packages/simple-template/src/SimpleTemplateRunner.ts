@@ -1,11 +1,12 @@
+import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
+import { Attribute, AttributeNS, FlattenedAttributeValue, isAbsent, isConstant, isEndsWith, isFlattenedSet, isStartsAndEndsWith, isStartsWith, isUnknown, isUnknownIdentifier } from "@opticss/element-analysis";
+import { TemplateAnalysis } from "@opticss/template-api";
+import { assertNever } from "@opticss/util";
 import * as parse5 from "parse5";
 import * as Random from "random-js";
+
 import { SimpleAnalyzer } from "./SimpleAnalyzer";
 import { TestTemplate } from "./TestTemplate";
-import { TemplateAnalysis } from "@opticss/template-api";
-import { FlattenedAttributeValue, isAbsent, isUnknown, isConstant, isUnknownIdentifier, isStartsWith, isEndsWith, isStartsAndEndsWith, isFlattenedSet, Attribute, AttributeNS } from "@opticss/element-analysis";
-import { assertNever } from "@opticss/util";
-import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
 
 type Document = parse5.AST.Default.Document;
 type ParentNode = parse5.AST.Default.ParentNode;
@@ -54,7 +55,7 @@ export class SimpleTemplateRunner {
   private prepareDocument(): PreparedDocument {
     const valueParser = new AttributeValueParser(this.template.plainHtml);
     let document = parse5.parse(this.template.contents, {
-      treeAdapter: parse5.treeAdapters.default
+      treeAdapter: parse5.treeAdapters.default,
     }) as Document;
 
     let variableAttrs = new Array<VariableAttribute>();
@@ -68,7 +69,7 @@ export class SimpleTemplateRunner {
           variableAttrs.push({
             attribute: attr,
             element: element,
-            values: flattened
+            values: flattened,
           });
         } else {
           let concrete = this.concreteValue(flattened[0]);
@@ -78,7 +79,7 @@ export class SimpleTemplateRunner {
     });
     return {
       document,
-      variableAttrs
+      variableAttrs,
     };
   }
   private run(document: Document, attributes: Array<ConcreteAttribute>): string {
@@ -93,7 +94,7 @@ export class SimpleTemplateRunner {
       return {
         attribute: attr.attribute,
         element: attr.element,
-        value: this.concreteValue(attr.values[0])
+        value: this.concreteValue(attr.values[0]),
       };
     });
     return Promise.resolve(this.run(preparedDocument.document, concreteAttrs));
@@ -138,11 +139,11 @@ export class SimpleTemplateRunner {
       let concretes = value.allOf.map(v => this.concreteValue(v));
       return concretes.filter(v => !!v).join(" ");
     } else {
-      return assertNever(<never>value);
+      return assertNever(value);
     }
   }
   private possibleSpace(): string {
-    return this.random.string(1," -");
+    return this.random.string(1, " -");
   }
   private word(length: number): string {
     return this.random.string(length);
@@ -153,7 +154,7 @@ export class SimpleTemplateRunner {
       concreteAttrs.push(new Array<ConcreteAttribute>());
       return concreteAttrs;
     }
-    let nextConcreteAttrs = this.permuteAttributeValues(attributes, i+1);
+    let nextConcreteAttrs = this.permuteAttributeValues(attributes, i + 1);
     attributes[i].values.forEach(v => {
       let concrete = this.concreteValue(v);
       nextConcreteAttrs.forEach(nv => {
@@ -161,7 +162,7 @@ export class SimpleTemplateRunner {
         copy.unshift({
           element: attributes[i].element,
           attribute: attributes[i].attribute,
-          value: concrete
+          value: concrete,
         });
         concreteAttrs.push(copy);
       });

@@ -53,7 +53,7 @@ export const DEFAULT_OPTIONS = Object.freeze<OptiCSSOptions>({
   rewriteIdents: true,
   removeUnusedStyles: true,
   mergeDeclarations: true,
-  css: {}
+  css: {},
 });
 
 export interface CSSFeatureFlags {

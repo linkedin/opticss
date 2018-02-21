@@ -1,33 +1,32 @@
 import {
+  SimpleAnalyzer,
+  SimpleTemplateRewriter,
   SimpleTemplateRunner,
   TestTemplate,
-  SimpleTemplateRewriter,
-  SimpleAnalyzer,
-} from '@opticss/simple-template';
-import { Optimizer, isMultiAction, Action } from "opticss";
+} from "@opticss/simple-template";
+import * as codemirror from "codemirror";
+import * as csshint from "codemirror/addon/hint/css-hint";
+import * as showhint from "codemirror/addon/hint/show-hint";
+import * as cssmode from "codemirror/mode/css/css";
+import * as htmlmode from "codemirror/mode/htmlmixed/htmlmixed";
+import { Action, isMultiAction, Optimizer } from "opticss";
+import * as prettier from "prettier";
+import * as Split from "split.js";
 
-import * as prettier from 'prettier';
-import { SizeResults, process as cssSize } from "./css-size-fake";
-const Split = require('split.js');
-
-import * as codemirror from 'codemirror';
-import * as cssmode from 'codemirror/mode/css/css';
-import * as htmlmode from 'codemirror/mode/htmlmixed/htmlmixed';
-import * as showhint from 'codemirror/addon/hint/show-hint';
-import * as csshint from 'codemirror/addon/hint/css-hint';
-import { Demo, FeatureToggles, hush, loadDemos, FeatureFlags } from './demos';
+import { process as cssSize, SizeResults } from "./css-size-fake";
+import { Demo, FeatureFlags, FeatureToggles, hush, loadDemos } from "./demos";
 
 const FEATURE_TOGGLES: FeatureToggles = {
-  removeUnusedStyles: (document.getElementById('removeUnusedStyles') as HTMLInputElement),
+  removeUnusedStyles: (document.getElementById("removeUnusedStyles") as HTMLInputElement),
   // conflictResolution: (document.getElementById('conflictResolution') as HTMLInputElement),
-  mergeDeclarations: (document.getElementById('mergeDeclarations') as HTMLInputElement),
-  rewriteIdents: (document.getElementById('rewriteIdents') as HTMLInputElement),
-  rewriteIds: (document.getElementById('rewriteIds') as HTMLInputElement),
-  analyzeForms: (document.getElementById('analyzeForms') as HTMLInputElement),
-  analyzeIds: (document.getElementById('analyzeIds') as HTMLInputElement),
+  mergeDeclarations: (document.getElementById("mergeDeclarations") as HTMLInputElement),
+  rewriteIdents: (document.getElementById("rewriteIdents") as HTMLInputElement),
+  rewriteIds: (document.getElementById("rewriteIds") as HTMLInputElement),
+  analyzeForms: (document.getElementById("analyzeForms") as HTMLInputElement),
+  analyzeIds: (document.getElementById("analyzeIds") as HTMLInputElement),
 };
 
-const demoSelect = document.getElementById('demos') as HTMLSelectElement;
+const demoSelect = document.getElementById("demos") as HTMLSelectElement;
 
 let defaultOptions = autoSaveOptions();
 let [demos, defaultDemo] = initDemos(loadDemos(), defaultOptions);
@@ -35,53 +34,53 @@ let [demos, defaultDemo] = initDemos(loadDemos(), defaultOptions);
 // For the sake of typescript!
 hush(cssmode, htmlmode, showhint, csshint);
 
-Split(['#css-code-editor', '#tmpl-code-editor'], {
+Split(["#css-code-editor", "#tmpl-code-editor"], {
     sizes: [50, 50],
     minSize: 100,
-    direction: 'vertical',
-    cursor: 'row-resize'
+    direction: "vertical",
+    cursor: "row-resize",
 });
 
-Split(['#css-code-output', '#tmpl-code-output'], {
+Split(["#css-code-output", "#tmpl-code-output"], {
     sizes: [50, 50],
     minSize: 100,
-    direction: 'vertical',
-    cursor: 'row-resize'
+    direction: "vertical",
+    cursor: "row-resize",
 });
 
-let cssInContainer = document.getElementById('css-code-editor') as HTMLElement;
+let cssInContainer = document.getElementById("css-code-editor") as HTMLElement;
 let cssInEditor = codemirror(cssInContainer, {
   value: defaultDemo.css,
-  mode: 'css',
-  theme: 'mdn-like',
-  lineNumbers: true
+  mode: "css",
+  theme: "mdn-like",
+  lineNumbers: true,
 
 });
 
-let tmplInContainer = document.getElementById('tmpl-code-editor') as HTMLElement;
+let tmplInContainer = document.getElementById("tmpl-code-editor") as HTMLElement;
 let tmplInEditor = codemirror(tmplInContainer, {
   value: defaultDemo.template,
-  mode: 'htmlmixed',
-  theme: 'mdn-like',
-  lineNumbers: true
+  mode: "htmlmixed",
+  theme: "mdn-like",
+  lineNumbers: true,
 });
 
-let cssOutContainer = document.getElementById('css-code-output') as HTMLElement;
+let cssOutContainer = document.getElementById("css-code-output") as HTMLElement;
 let cssOutEditor = codemirror(cssOutContainer, {
   value: ``,
-  mode: 'css',
-  theme: 'mdn-like',
+  mode: "css",
+  theme: "mdn-like",
   lineNumbers: true,
-  readOnly: true
+  readOnly: true,
 });
 
-let tmplOutContainer = document.getElementById('tmpl-code-output') as HTMLElement;
+let tmplOutContainer = document.getElementById("tmpl-code-output") as HTMLElement;
 let tmplOutEditor = codemirror(tmplOutContainer, {
   value: ``,
-  mode: 'htmlmixed',
-  theme: 'mdn-like',
+  mode: "htmlmixed",
+  theme: "mdn-like",
   lineNumbers: true,
-  readOnly: true
+  readOnly: true,
 });
 
 function query(): URLSearchParams {
@@ -92,12 +91,12 @@ function autoSaveOptions() {
   return Object.keys(FEATURE_TOGGLES).reduce((flags, opt) => {
     flags[opt] = !!window.localStorage.getItem(opt);
     return flags;
-  }, {} as Partial<FeatureFlags>);
+  },                                         {} as Partial<FeatureFlags>);
 }
 
 function autoSaveData(options = autoSaveOptions()): Demo | undefined {
-  let css = window.localStorage.getItem('css-input');
-  let template = window.localStorage.getItem('tmpl-input');
+  let css = window.localStorage.getItem("css-input");
+  let template = window.localStorage.getItem("tmpl-input");
   if (!css || !template) return;
   return {
     name: "<AutoSave>",
@@ -105,7 +104,7 @@ function autoSaveData(options = autoSaveOptions()): Demo | undefined {
     default: true,
     css,
     template,
-    options
+    options,
   };
 }
 
@@ -152,7 +151,7 @@ function initDemos(demos: Array<Demo>, defaultOptions: Partial<FeatureFlags>): [
       }
       window.history.pushState(demo, demo.name, url.toString());
     }
-    process();
+    return process();
   };
   demoSelect.onchange = changeHandler.bind(null, true);
 
@@ -161,7 +160,9 @@ function initDemos(demos: Array<Demo>, defaultOptions: Partial<FeatureFlags>): [
     let i = demos.findIndex(d => d.name === demo.name);
     if (i >= 0) {
       demoSelect.selectedIndex = i;
-      changeHandler(false);
+      return changeHandler(false);
+    } else {
+      return;
     }
   };
 
@@ -171,42 +172,42 @@ function initDemos(demos: Array<Demo>, defaultOptions: Partial<FeatureFlags>): [
 export class DemoOptimizer {
   run(html: string, css: string): Promise<void> {
 
-    window.localStorage.setItem('css-input', css);
-    window.localStorage.setItem('tmpl-input', html);
+    window.localStorage.setItem("css-input", css);
+    window.localStorage.setItem("tmpl-input", html);
 
-    let template = new TestTemplate('input.tmpl', html);
+    let template = new TestTemplate("input.tmpl", html);
     let analyzer = new SimpleAnalyzer(template);
     return analyzer.analyze().then(analysis => {
       let analyzedAttributes = [];
-      if (FEATURE_TOGGLES['analyzeForms'].checked) {
-        analyzedAttributes.push('type', 'disabled', 'checked');
+      if (FEATURE_TOGGLES["analyzeForms"].checked) {
+        analyzedAttributes.push("type", "disabled", "checked");
       }
-      if (FEATURE_TOGGLES['analyzeIds'].checked) {
-        analyzedAttributes.push('id');
+      if (FEATURE_TOGGLES["analyzeIds"].checked) {
+        analyzedAttributes.push("id");
       }
       let rewriteConfig = {
         analyzedAttributes,
-        rewriteIdents: { class: true, id: FEATURE_TOGGLES['rewriteIds'].checked },
+        rewriteIdents: { class: true, id: FEATURE_TOGGLES["rewriteIds"].checked },
       };
       let optimizer = new Optimizer({
-        removeUnusedStyles: FEATURE_TOGGLES['removeUnusedStyles'].checked,
+        removeUnusedStyles: FEATURE_TOGGLES["removeUnusedStyles"].checked,
         // conflictResolution: FEATURE_TOGGLES['conflictResolution'].checked,
-        mergeDeclarations: FEATURE_TOGGLES['mergeDeclarations'].checked,
-        rewriteIdents: FEATURE_TOGGLES['rewriteIdents'].checked,
-      }, rewriteConfig);
+        mergeDeclarations: FEATURE_TOGGLES["mergeDeclarations"].checked,
+        rewriteIdents: FEATURE_TOGGLES["rewriteIdents"].checked,
+      },                            rewriteConfig);
 
       optimizer.addSource({
         content: css,
-        filename: '/FOO/input.css'
+        filename: "/FOO/input.css",
       });
       optimizer.addAnalysis(analysis);
-      return optimizer.optimize('optimized.css').then(result => {
-        let out = prettier.format(String(result.output.content), { filepath: 'input.css' });
+      return optimizer.optimize("optimized.css").then(result => {
+        let out = prettier.format(String(result.output.content), { filepath: "input.css" });
         cssOutEditor.setValue(out);
         let runner = new SimpleTemplateRunner(template);
         let rewriter = new SimpleTemplateRewriter(result.styleMapping, optimizer.templateOptions);
-        let rewritten = '';
-        let demo = '';
+        let rewritten = "";
+        let demo = "";
 
         return runner.runAll().then(permutations => {
           let idx = 0;
@@ -218,16 +219,16 @@ export class DemoOptimizer {
 
           tmplOutEditor.setValue(rewritten);
 
-          const demoContainer = document.getElementById('tmpl-live-demo') as any;
+          const demoContainer = document.getElementById("tmpl-live-demo") as HTMLIFrameElement;
           if (demoContainer) {
             demoContainer.contentWindow.document.open();
             demoContainer.contentWindow.document.write(`<style>${out}</style> ${demo}`);
             demoContainer.contentWindow.document.close();
           }
 
-          const terminal = document.getElementById('terminal') as HTMLElement;
+          const terminal = document.getElementById("terminal") as HTMLElement;
           terminal.innerHTML = "";
-          let table = document.createElement('table');
+          let table = document.createElement("table");
           terminal.appendChild(table);
           let tbody = table.createTBody();
           for (let a of result.actions.performed) {
@@ -237,24 +238,26 @@ export class DemoOptimizer {
             let positionCell = row.insertCell();
             positionCell.innerText = cleanPaths(a.positionString(a.sourcePosition));
             let messageCell = row.insertCell();
-            let messageText = document.createElement('pre');
+            let messageText = document.createElement("pre");
             messageCell.appendChild(messageText);
             messageText.appendChild(document.createTextNode(logMessage(a)));
           }
 
           let timingTotal = optimizer.timings.total.end - optimizer.timings.total.start;
 
-          (document.getElementById('build-time-output') as HTMLElement).innerHTML = `${timingTotal}ms`;
+          // tslint:disable:no-console
+          (document.getElementById("build-time-output") as HTMLElement).innerHTML = `${timingTotal}ms`;
           let sizes = [
-            cssSize(html, {}, () => Promise.resolve('')).then((res: SizeResults) => {
+            cssSize(html, {}, () => Promise.resolve({css: ""})).then((res: SizeResults) => {
               console.log("HTML Size Change");
               console.log(res);
             }),
-            cssSize(css, {}, () => Promise.resolve(result.output.content.toString())).then((res: SizeResults) => {
+            cssSize(css, {}, () => Promise.resolve({css: result.output.content.toString()})).then((res: SizeResults) => {
               console.log("CSS Size Change");
               console.log(res);
-            })
+            }),
           ];
+          // tslint:enable:no-console
           return Promise.all(sizes).then(() => {});
         });
       });
@@ -267,7 +270,7 @@ function stripPreamble(message: string): string {
   return message.substring(i + 1);
 }
 function cleanPaths(message: string): string {
-  return message.replace(/\/FOO\//g, '');
+  return message.replace(/\/FOO\//g, "");
 }
 function logMessage(action: Action): string {
   if (isMultiAction(action)) {
@@ -278,42 +281,43 @@ function logMessage(action: Action): string {
 }
 
 let optimizer = new DemoOptimizer();
-function process(){
-  optimizer.run(tmplInEditor.getValue(), cssInEditor.getValue());
+function process() {
+  return optimizer.run(tmplInEditor.getValue(), cssInEditor.getValue());
 }
-function processAndUpdateState(){
-  process();
-  if (demos[0].unlinkable) {
-    demos[0] = autoSaveData()!;
-  } else {
-    let autosave = autoSaveData();
-    if (autosave) demos.unshift(autosave);
-  }
-  let url = new URL(document.location.toString());
-  if (url.searchParams.has("demo")) {
-    url.searchParams.delete("demo");
-    demoSelect.selectedIndex = 0;
-    window.history.pushState(demos[0], "Autosave", url.toString());
-  } else {
-    window.history.replaceState(demos[0], "Autosave", url.toString());
-  }
+function processAndUpdateState() {
+  return process().then(() => {
+    if (demos[0].unlinkable) {
+      demos[0] = autoSaveData()!;
+    } else {
+      let autosave = autoSaveData();
+      if (autosave) demos.unshift(autosave);
+    }
+    let url = new URL(document.location.toString());
+    if (url.searchParams.has("demo")) {
+      url.searchParams.delete("demo");
+      demoSelect.selectedIndex = 0;
+      window.history.pushState(demos[0], "Autosave", url.toString());
+    } else {
+      window.history.replaceState(demos[0], "Autosave", url.toString());
+    }
+  });
 }
-cssInEditor.on('keyup', processAndUpdateState);
-tmplInEditor.on('keyup', processAndUpdateState);
+cssInEditor.on("keyup", processAndUpdateState);
+tmplInEditor.on("keyup", processAndUpdateState);
 
-(document.getElementById('terminal-toggle') as HTMLElement).addEventListener('click', function(e: Event) {
-  (e.target as HTMLElement).classList.toggle('active');
-  (document.getElementById('terminal') as HTMLElement).classList.toggle('show');
+(document.getElementById("terminal-toggle") as HTMLElement).addEventListener("click", function(e: Event) {
+  (e.target as HTMLElement).classList.toggle("active");
+  (document.getElementById("terminal") as HTMLElement).classList.toggle("show");
 });
 
-(document.getElementById('preview-toggle') as HTMLElement).addEventListener('click', function(e: Event) {
-  (e.target as HTMLElement).classList.toggle('active');
-  (document.getElementById('tmpl-live-demo') as HTMLElement).classList.toggle('show');
+(document.getElementById("preview-toggle") as HTMLElement).addEventListener("click", function(e: Event) {
+  (e.target as HTMLElement).classList.toggle("active");
+  (document.getElementById("tmpl-live-demo") as HTMLElement).classList.toggle("show");
 });
 
-(document.getElementById('settings-toggle') as HTMLElement).addEventListener('click', function (e: Event) {
-  (e.target as HTMLElement).classList.toggle('active');
-  (document.getElementById('options-menu') as HTMLElement).classList.toggle('open');
+(document.getElementById("settings-toggle") as HTMLElement).addEventListener("click", function (e: Event) {
+  (e.target as HTMLElement).classList.toggle("active");
+  (document.getElementById("options-menu") as HTMLElement).classList.toggle("open");
 });
 
 function objectEntries<T extends object>(v: T): Array<[keyof T, T[keyof T]]> {
@@ -325,13 +329,13 @@ function objectEntries<T extends object>(v: T): Array<[keyof T, T[keyof T]]> {
 
 let initialOptions = defaultDemo.options || defaultOptions;
 for (let [key, flag] of objectEntries(initialOptions)) {
-  window.localStorage.setItem(key, flag ? 'on' : '');
+  window.localStorage.setItem(key, flag ? "on" : "");
   let el = FEATURE_TOGGLES[key];
   el.checked = !!flag;
-  el.addEventListener('click', function(e: Event) {
+  el.addEventListener("click", function(e: Event) {
     let target = (e.target as HTMLInputElement);
-    window.localStorage.setItem(target.id, target.checked ? 'on' : '');
-    process();
+    window.localStorage.setItem(target.id, target.checked ? "on" : "");
+    return process();
   });
 }
 

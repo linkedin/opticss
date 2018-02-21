@@ -1,14 +1,19 @@
+import { TestTemplate } from "@opticss/simple-template";
+import {
+  normalizeTemplateOptions,
+  TemplateIntegrationOptions,
+} from "@opticss/template-api";
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   skip,
   suite,
   test,
-} from 'mocha-typescript';
-import * as path from 'path';
-import * as postcss from 'postcss';
-import { documentToString } from 'resolve-cascade';
+} from "mocha-typescript";
+import * as path from "path";
+import * as postcss from "postcss";
+import { documentToString } from "resolve-cascade";
 
 import {
   CascadeTestResult,
@@ -17,17 +22,12 @@ import {
   // debugResult,
   logOptimizations,
   testOptimizationCascade,
-} from '../util/assertCascade';
+} from "../util/assertCascade";
 import {
   assertSmaller,
   assertSmallerStylesAndMarkupWithResults,
-} from '../util/assertSmaller';
-import clean from '../util/clean';
-import { TestTemplate } from '@opticss/simple-template';
-import {
-  TemplateIntegrationOptions,
-  normalizeTemplateOptions
-} from '@opticss/template-api';
+} from "../util/assertSmaller";
+import { clean } from "../util/clean";
 
 function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -35,14 +35,15 @@ function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplat
     {
       rewriteIdents: { id: true, class: true },
       analyzedAttributes: [],
-      analyzedTagnames: true
+      analyzedTagnames: true,
     },
     ...stylesAndTemplates);
 }
 
 function testMergeDeclarationsWithConfig(
   templateOptions: Partial<TemplateIntegrationOptions>,
-  ...stylesAndTemplates: Array<string | TestTemplate>
+  ...stylesAndTemplates: Array<string | TestTemplate>,
+
 ): Promise<CascadeTestResult> {
   return testOptimizationCascade(
     { only: ["mergeDeclarations"] },
@@ -806,6 +807,7 @@ export class MergeDeclarationsTest {
       throw e;
     });
   }
+
   @test "handles shorthand with longhand override"() {
     // must ensure that the order of progressive enhancement declarations
     // is preserved.
@@ -1072,7 +1074,7 @@ export class MergeDeclarationsTest {
     `);
     let templateConfig: Partial<TemplateIntegrationOptions> = {
       rewriteIdents: { id: false, class: true },
-      analyzedAttributes: ["id"]
+      analyzedAttributes: ["id"],
     };
     return testMergeDeclarationsWithConfig(templateConfig, css1, template).then(result => {
       // debugResult(css1, result);
@@ -1091,7 +1093,8 @@ export class MergeDeclarationsTest {
           <span id="id2" class="b">id 2</span>
           <span id="id3" class="b">id 3</span>
           </div>
-        `, "The id attribute should not be removed.");
+        `,
+        "The id attribute should not be removed.");
       // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
     }).catch((e) => {
       debugError(css1, e);
@@ -1113,7 +1116,7 @@ export class MergeDeclarationsTest {
     `);
     let templateConfig: Partial<TemplateIntegrationOptions> = {
       rewriteIdents: { id: false, class: true },
-      analyzedAttributes: []
+      analyzedAttributes: [],
     };
     return testMergeDeclarationsWithConfig(templateConfig, css1, template).then(result => {
       // debugResult(css1, result);
@@ -1132,7 +1135,8 @@ export class MergeDeclarationsTest {
           <span id="id2">id 2</span>
           <span id="id3">id 3</span>
           </div>
-        `, "No optimization should have occurred.");
+        `,
+        "No optimization should have occurred.");
       // return assertSmaller(css1, result, {gzip: {notBiggerThan: 1}, brotli: {notBiggerThan: 1}});
     }).catch((e) => {
       debugError(css1, e);
@@ -1154,7 +1158,7 @@ export class MergeDeclarationsTest {
     `);
     let templateConfig: Partial<TemplateIntegrationOptions> = {
       rewriteIdents: { id: false, class: true },
-      analyzedAttributes: ["disabled", "type"]
+      analyzedAttributes: ["disabled", "type"],
     };
     return testMergeDeclarationsWithConfig(templateConfig, css1, template).then(result => {
       // debugResult(css1, result);
@@ -1297,9 +1301,11 @@ export class MergeDeclarationsTest {
     <span class="d f">D Not Scoped!</span>
     <span class="e">E Not Scoped!</span>`;
     return assertSmallerStylesAndMarkupWithResults(
-      inputCSS, outputCSS, inputHTML, outputHTML
+      inputCSS, outputCSS, inputHTML, outputHTML,
     ).then(([cssDelta, markupDelta]) => {
+      // tslint:disable-next-line:no-console
       console.log("CSS Delta:\n", cssDelta);
+      // tslint:disable-next-line:no-console
       console.log("Markup Delta:\n", markupDelta);
     });
   }

@@ -1,11 +1,11 @@
-import * as postcss from 'postcss';
-import * as specificity from 'specificity';
-import { MultiDictionary } from 'typescript-collections';
+import { Element } from "@opticss/element-analysis";
+import * as postcss from "postcss";
+import * as specificity from "specificity";
+import { MultiDictionary } from "typescript-collections";
 
-import { ParsedCssFile } from '../../CssFile';
-import { ParsedSelector } from '../../parseSelector';
-import { Element } from '@opticss/element-analysis';
-import { RuleScope } from '../../util/cssIntrospection';
+import { ParsedCssFile } from "../../CssFile";
+import { ParsedSelector } from "../../parseSelector";
+import { RuleScope } from "../../util/cssIntrospection";
 
 export interface SelectorInfo {
   /** The original rule node for eventual manipulation */
@@ -42,7 +42,7 @@ export interface SelectorInfo {
    * when the rule set assigns the same property multiple times as is often done
    * for progressive enhancement.
    */
-  declarations: MultiDictionary<string,[string, boolean, postcss.Declaration]>;
+  declarations: MultiDictionary<string, [string, boolean, postcss.Declaration]>;
 
   /**
    * Maps property/value pairs that might be expanded to the declaration infos

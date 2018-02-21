@@ -1,22 +1,22 @@
 import {
+  ElementInfo,
+  ValueUnknownIdentifier,
+} from "@opticss/element-analysis";
+import { clean } from "@opticss/util";
+import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
+} from "mocha-typescript";
 
 import {
-  ElementInfo,
-  ValueUnknownIdentifier,
-} from '@opticss/element-analysis';
-import { clean } from '@opticss/util';
-import {
   SimpleAnalyzer,
-} from '../src/SimpleAnalyzer';
+} from "../src/SimpleAnalyzer";
 import {
   TestTemplate,
-} from '../src/TestTemplate';
+} from "../src/TestTemplate";
 
 @suite("Template Analysis")
 export class TemplateAnalysisTest {
@@ -32,10 +32,10 @@ export class TemplateAnalysisTest {
           {
             "tagname": { "value": { "constant": "div" } },
             "attributes": [
-              { "name": "class", "value": { "constant": "foo" } }
-            ]
-          }
-        ]
+              { "name": "class", "value": { "constant": "foo" } },
+            ],
+          },
+        ],
       );
     });
   }
@@ -46,13 +46,13 @@ export class TemplateAnalysisTest {
     let analyzer = new SimpleAnalyzer(template);
     return analyzer.analyze().then(analysis => {
       assert.deepEqual(analysis.serialize().elements,
-        [
+                       [
           {
             "tagname": { "value": { "constant": "div" } },
             "attributes": [
-              { "name": "contenteditable", "value": { "absent": true } }
-            ]
-          }
+              { "name": "contenteditable", "value": { "absent": true } },
+            ],
+          },
         ] as ElementInfo[]);
     });
   }
@@ -63,13 +63,13 @@ export class TemplateAnalysisTest {
     let analyzer = new SimpleAnalyzer(template);
     return analyzer.analyze().then(analysis => {
       assert.deepEqual(analysis.serialize().elements,
-        [
+                       [
           {
             "tagname": { "value": { "constant": "div" } },
             "attributes": [
-              { "name": "data-foo", "value": { "unknown": true } }
-            ]
-          }
+              { "name": "data-foo", "value": { "unknown": true } },
+            ],
+          },
         ] as ElementInfo[]);
     });
   }
@@ -80,13 +80,13 @@ export class TemplateAnalysisTest {
     let analyzer = new SimpleAnalyzer(template);
     return analyzer.analyze().then(analysis => {
       assert.deepEqual(analysis.serialize().elements,
-        [
+                       [
           {
             "tagname": { "value": { "constant": "div" } },
             "attributes": [
-              { "name": "class", "value": { "unknownIdentifier": true } }
-            ]
-          }
+              { "name": "class", "value": { "unknownIdentifier": true } },
+            ],
+          },
         ] as ElementInfo[]);
     });
   }
@@ -97,7 +97,7 @@ export class TemplateAnalysisTest {
     let analyzer = new SimpleAnalyzer(template);
     return analyzer.analyze().then(analysis => {
       assert.deepEqual(analysis.serialize().elements,
-        [
+                       [
           {
             "tagname": { "value": { "constant": "div" } },
             "attributes": [
@@ -106,13 +106,13 @@ export class TemplateAnalysisTest {
                 "value": {
                   "allOf": [
                     <ValueUnknownIdentifier>{ "unknownIdentifier": true },
-                    <ValueUnknownIdentifier>{ "unknownIdentifier": true }
-                  ]
-                }
-              }
-            ]
-          }
-        ] as ElementInfo[]
+                    <ValueUnknownIdentifier>{ "unknownIdentifier": true },
+                  ],
+                },
+              },
+            ],
+          },
+        ] as ElementInfo[],
       );
     });
   }
@@ -131,24 +131,24 @@ export class TemplateAnalysisTest {
         {
           "tagname": { "value": { "constant": "article" } },
           "attributes": [
-            { "name": "class", "value": { "constant": "main-content" } }
-          ]
+            { "name": "class", "value": { "constant": "main-content" } },
+          ],
         },
         {
           "tagname": { "value": { "constant": "h1" } },
-          "attributes": []
+          "attributes": [],
         },
         {
           "tagname": { "value": { "constant": "img" } },
           "attributes": [
             { "name": "src", "value": { "constant": "http://foo.com/wtf" } },
-            { "name": "style", "value": { "constant": "background-color: red;" } }
-          ]
+            { "name": "style", "value": { "constant": "background-color: red;" } },
+          ],
         },
         {
           "tagname": { "value": { "constant": "p" } },
           "attributes": [],
-        }
+        },
       ]);
     });
   }
@@ -159,39 +159,39 @@ export class TemplateAnalysisTest {
     let analyzer = new SimpleAnalyzer(template);
     return analyzer.analyze().then(analysis => {
       assert.deepEqual(analysis.serialize().elements,
-        [
+                       [
           {
             "tagname": { "value": { "constant": "div" } },
             "attributes": [
               {
                 "name": "class", "value": {
                   "allOf": [{ "constant": "a" },
-                  {
+                            {
                     "oneOf": [{ "constant": "b" },
-                    {
+                              {
                       "allOf": [{ "constant": "c1" },
-                      { "constant": "c2" },
-                      { "constant": "c3" }]
+                                { "constant": "c2" },
+                                { "constant": "c3" }],
                     },
-                    { "constant": "d" }]
+                              { "constant": "d" }],
                   },
-                  { "constant": "e" },
-                  { "startsWith": "f" },
-                  { "endsWith": "g" },
-                  {
+                            { "constant": "e" },
+                            { "startsWith": "f" },
+                            { "endsWith": "g" },
+                            {
                     "startsWith": "h",
-                    "endsWith": "i"
+                    "endsWith": "i",
                   },
-                  {
+                            {
                     "oneOf": [
                       { "absent": true },
-                      { "constant": "j" }
-                    ]
+                      { "constant": "j" },
+                    ],
                   },
-                  { "unknownIdentifier": true }]
-                }
-              }]
-          }
+                            { "unknownIdentifier": true }],
+                },
+              }],
+          },
         ] as ElementInfo[]);
     });
   }

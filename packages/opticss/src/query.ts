@@ -1,7 +1,8 @@
-import postcss = require("postcss");
-import { parseSelector, ParsedSelector } from "./parseSelector";
 import { Element } from "@opticss/element-analysis";
-import { rejects, matches, ElementMatcher } from "./Match";
+import postcss = require("postcss");
+
+import { ElementMatcher, matches, rejects } from "./Match";
+import { ParsedSelector, parseSelector } from "./parseSelector";
 import { walkRules } from "./util/cssIntrospection";
 
 export interface SelectorQuery {
@@ -76,7 +77,7 @@ export class QuerySelectorReferences implements SelectorQuery {
   execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors {
     let matchedSelectors: ClassifiedParsedSelectors = {
       main: [],
-      other: {}
+      other: {},
     };
     walkRules(container, (node) => {
       let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node);
@@ -110,7 +111,7 @@ export class QueryKeySelector implements SelectorQuery {
   execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors {
     let matchedSelectors: ClassifiedParsedSelectors = {
       main: [],
-      other: {}
+      other: {},
     };
     walkRules(container, (node) => {
       let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node);

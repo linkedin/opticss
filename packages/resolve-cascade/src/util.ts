@@ -1,5 +1,5 @@
-import * as postcss from 'postcss';
-import * as parse5 from 'parse5';
+import * as parse5 from "parse5";
+import * as postcss from "postcss";
 import { inspect } from "util";
 
 export type RuleScope = Array<postcss.AtRule>;
@@ -37,6 +37,7 @@ function _walkRulesWithScope(container: postcss.Container, eachRule: RuleIterato
         _walkRulesWithScope(node, eachRule, scope.concat(node));
       }
     } else if (isContainer(node)) {
+      // tslint:disable-next-line:no-console
       console.log("warning: container that's not an AtRule encountered: " + inspect(node));
       _walkRulesWithScope(node, eachRule, scope);
     }
@@ -95,7 +96,7 @@ export function parseStylesheet(content: string): Promise<postcss.Result> {
 
 export function parseHtml(html: string): parse5.AST.HtmlParser2.Document {
   return parse5.parse(html, {
-    treeAdapter: parse5.treeAdapters.htmlparser2
+    treeAdapter: parse5.treeAdapters.htmlparser2,
   }) as parse5.AST.HtmlParser2.Document;
 }
 
@@ -129,7 +130,7 @@ export function debugElement(element: parse5.AST.HtmlParser2.Element): string {
     }
     s += `${a}="${element.attribs[a]}"`;
     return s;
-  }, "");
+  },                                              "");
   return `<${tagName} ${attrs}>`;
 }
 

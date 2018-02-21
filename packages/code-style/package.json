@@ -16,8 +16,9 @@
     "pretest": "npm run compile",
     "prepublish": "npm run compile && tslint -p . -c tslint.release.json",
     "test": "tslint --test test/rules/*/* && npm run lint",
-    "lint": "tslint -p . -c tslint.cli.json",
-    "lintfix": "tslint -p . --fix -c tslint.cli.json"
+    "lint": "tslint -t msbuild -p . -c tslint.cli.json",
+    "lintfix": "tslint -t msbuild -p . --fix -c tslint.cli.json",
+    "lintall": "tslint -t msbuild -p . -c tslint.release.json"
   },
   "bugs": {
     "url": "https://github.com/css-blocks/css-blocks/issues"
@@ -31,8 +32,8 @@
     "tslint": "^5.9.1",
     "typescript": "^2.7.1"
   },
+    "@css-blocks/code-style": "^0.17.0",
   "dependencies": {
-    "@css-blocks/code-style": "^0.17.0"
   },
   "engines": {
     "node": ">=8.0.0"

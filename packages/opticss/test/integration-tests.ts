@@ -1,24 +1,24 @@
-import * as fs from 'fs';
+import {
+  TestTemplate,
+} from "@opticss/simple-template";
+import * as fs from "fs";
 import {
   slow,
   suite,
   test,
   timeout,
-} from 'mocha-typescript';
-import * as path from 'path';
+} from "mocha-typescript";
+import * as path from "path";
 
 import {
   CascadeTestError,
   CascadeTestResult,
   debugCascadeError,
   debugError,
-  testOptimizationCascade,
   logOptimizations,
-} from './util/assertCascade';
-import {
-  TestTemplate,
-} from '@opticss/simple-template';
-import { debugSize } from './util/assertSmaller';
+  testOptimizationCascade,
+} from "./util/assertCascade";
+import { debugSize } from "./util/assertSmaller";
 
 function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -26,7 +26,7 @@ function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Prom
     {
       rewriteIdents: { id: true, class: true },
       analyzedAttributes: [],
-      analyzedTagnames: true
+      analyzedTagnames: true,
     },
     ...stylesAndTemplates).catch((e: CascadeTestError) => {
       debugError(stylesAndTemplates.filter(s => typeof s === "string").join("\n"), e);

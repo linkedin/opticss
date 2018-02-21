@@ -42,12 +42,13 @@ export interface NormalizedRewriteOptions {
 }
 
 export function normalizeTemplateOptions(
-  templateOptions: Partial<TemplateIntegrationOptions>
+  templateOptions: Partial<TemplateIntegrationOptions>,
+
 ): TemplateIntegrationOptions {
   if (templateOptions.rewriteIdents === undefined) {
     templateOptions.rewriteIdents = {
       id: false,
-      class: true
+      class: true,
     };
   }
   let analyzedAttributes = templateOptions.analyzedAttributes ?
@@ -63,12 +64,13 @@ export function normalizeTemplateOptions(
 
 export function rewriteOptions(
   appOptions: boolean | RewritableIdents,
-  templateOptions: RewritableIdents
+  templateOptions: RewritableIdents,
+
 ): NormalizedRewriteOptions {
   let combined: NormalizedRewriteOptions = {
     id: true,
     class: true,
-    omitIdents: { id: [], class: []}
+    omitIdents: { id: [], class: []},
   };
   if (appOptions === false) {
     mergeIntoRewriteOpts(combined, {id: false, class: false});
@@ -83,7 +85,8 @@ export function rewriteOptions(
 
 function mergeIntoRewriteOpts(
   normalized: NormalizedRewriteOptions,
-  opts: RewritableIdents
+  opts: RewritableIdents,
+
 ): void {
   normalized.id = normalized.id && opts.id;
   normalized.class = normalized.class && opts.class;

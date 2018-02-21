@@ -39,7 +39,7 @@ export type whatever = something | nothing;
  * Note: You can just *cast* to `whatever` from `any` with zero runtime
  * overhead, but this type guard is provided for completeness.
  */
-export function isWhatever(_v: any): _v is whatever {
+export function isWhatever(_v: whatever): _v is whatever {
   return true;
 }
 
@@ -85,7 +85,7 @@ export function isStringDict(dict: whatever): dict is StringDict {
 /**
  * Set a value to the type of values in an array.
  */
-export type ItemType<T extends Array<any>> = T[0];
+export type ItemType<T extends Array<whatever>> = T[0];
 
 /**
  * represents a TypeScript type guard function.

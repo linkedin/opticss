@@ -1,8 +1,9 @@
-import * as postcss from "postcss";
-import { Action, stripNL } from "../Action";
 import { SourcePosition } from "@opticss/element-analysis";
+import * as postcss from "postcss";
+
 import { Optimizations } from "../../OpticssOptions";
 import { SelectorCache } from "../../query";
+import { Action, stripNL } from "../Action";
 
 /**
  * Changes a Rule's selector string.
@@ -26,7 +27,7 @@ export class ChangeSelector extends Action {
       return {
         filename: this.rule.source.input.file,
         line: this.rule.source.start.line,
-        column: this.rule.source.start.column
+        column: this.rule.source.start.column,
       };
     } else {
       return undefined;

@@ -1,20 +1,20 @@
+import { clean } from "@opticss/util";
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
+} from "mocha-typescript";
 
 import {
   Cascade,
-} from '../src/Cascade';
+} from "../src/Cascade";
 import {
   bodyElement,
   parseHtml,
   walkElements,
-} from '../src/util';
-import clean from './util/clean';
+} from "../src/util";
 
 @suite("Cascade")
 export class CascadeTest {

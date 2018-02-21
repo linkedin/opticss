@@ -2,9 +2,9 @@ import {
   OptimizationConstructor,
 } from "./Optimization";
 
+import { MergeDeclarations } from "./MergeDeclarations";
 import { RemoveUnusedStyles } from "./RemoveUnusedStyles";
 import { RewriteIdents } from "./RewriteIdents";
-import { MergeDeclarations } from "./MergeDeclarations";
 
 export {
   Optimization,
@@ -12,7 +12,7 @@ export {
   MultiFileOptimization,
   SingleFileOptimization,
   isMultiFileOptimization,
-  isSingleFileOptimization
+  isSingleFileOptimization,
 } from "./Optimization";
 
 export interface Optimizations {

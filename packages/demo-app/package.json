@@ -8,10 +8,13 @@
   "scripts": {
     "demo": "bin/opticss",
     "compile": "rm -rf dist && tsc && babel dist --out-dir dist && browserify ./dist/src/index.js > ./dist/out.js",
-    "pretest": "yarn run compile && tslint --project tsconfig.json --type-check",
-    "prepublish": "rm -rf dist && tsc",
-    "tslint": "tslint --project tsconfig.json",
+    "pretest": "yarn run compile",
     "test": "mocha dist/test --opts test/mocha.opts",
+    "posttest": "yarn run lint",
+    "prepublish": "yarn run compile && yarn run lintall",
+    "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs .",
@@ -45,6 +48,8 @@
     "split.js": "^1.3.5"
   },
   "devDependencies": {
+    "@opticss/code-style": "^0.2.0",
+    "@opticss/util": "^0.1.1",
     "@types/chai": "^3.5.2",
     "@types/mkdirp": "^0.5.1",
     "@types/nearley": "^2.9.0",

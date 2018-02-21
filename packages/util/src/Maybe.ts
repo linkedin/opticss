@@ -1,4 +1,4 @@
-import { something, defined, TypeGuard, FunctionCall0, FunctionCall1, FunctionCall2, FunctionCall3, FunctionCall4 } from "./UtilityTypes";
+import { defined, FunctionCall0, FunctionCall1, FunctionCall2, FunctionCall3, FunctionCall4, something, TypeGuard } from "./UtilityTypes";
 import { isObject, whatever } from "./index";
 
 /**
@@ -68,8 +68,13 @@ export type Maybe<T> = Some<T> | None;
 
 export const MAYBE = Symbol("Maybe");
 export const NO_VALUE = Symbol("None");
-export type None = { [MAYBE]: symbol, error?: string | Error };
-export type Some<T> = { [MAYBE]: T };
+export interface None {
+  [MAYBE]: symbol;
+  error?: string | Error;
+}
+export interface Some<T> {
+  [MAYBE]: T;
+}
 export type MaybeUndefined<T extends defined> = T | Maybe<T> | undefined;
 export type OptionalMaybe<T> = T | Maybe<T>;
 
@@ -133,10 +138,10 @@ export function callMaybe<A1, A2, A3, A4, R>(fn: CallMeMaybe<A1, A2, A3, A4, R>,
   else if (isMaybe(arg3) && isNone(arg3)) { return arg3; }
   else if (isMaybe(arg4) && isNone(arg4)) { return arg4; }
   let rv: OptionalMaybe<R> = fn.call(null,
-    arg1 && unwrapIfMaybe(arg1),
-    arg2 && unwrapIfMaybe(arg2),
-    arg3 && unwrapIfMaybe(arg3),
-    arg4 && unwrapIfMaybe(arg4)
+                                     arg1 && unwrapIfMaybe(arg1),
+                                     arg2 && unwrapIfMaybe(arg2),
+                                     arg3 && unwrapIfMaybe(arg3),
+                                     arg4 && unwrapIfMaybe(arg4),
   );
   if (isMaybe(rv)) return rv;
   return maybe(rv);
@@ -161,7 +166,8 @@ export function methodMaybe<
   arg1?: OptionalMaybe<A1>,
   arg2?: OptionalMaybe<A2>,
   arg3?: OptionalMaybe<A3>,
-  arg4?: OptionalMaybe<A4>
+  arg4?: OptionalMaybe<A4>,
+
 ): Maybe<R> {
   if (isNone(thisObj)) return thisObj;
   if (isMaybe(arg1) && isNone(arg1)) { return arg1; }
@@ -171,10 +177,10 @@ export function methodMaybe<
   let self: T = unwrap(thisObj);
   let method: T[N] = self[fnName];
   let rv: OptionalMaybe<R> = method.call(self,
-    arg1 && unwrapIfMaybe(arg1),
-    arg2 && unwrapIfMaybe(arg2),
-    arg3 && unwrapIfMaybe(arg3),
-    arg4 && unwrapIfMaybe(arg4)
+                                         arg1 && unwrapIfMaybe(arg1),
+                                         arg2 && unwrapIfMaybe(arg2),
+                                         arg3 && unwrapIfMaybe(arg3),
+                                         arg4 && unwrapIfMaybe(arg4),
   );
   if (isMaybe(rv)) return rv;
   return some(rv);

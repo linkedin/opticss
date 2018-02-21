@@ -1,18 +1,18 @@
-import { assert } from 'chai';
+import { TestTemplate } from "@opticss/simple-template";
+import { assert } from "chai";
 import {
   skip,
   suite,
   test,
-} from 'mocha-typescript';
+} from "mocha-typescript";
 
-import { assertSmaller } from '../util/assertSmaller';
-import clean from '../util/clean';
-import { TestTemplate } from '@opticss/simple-template';
 import {
   CascadeTestResult,
   debugError,
   testOptimizationCascade,
-} from '../util/assertCascade';
+} from "../util/assertCascade";
+import { assertSmaller } from "../util/assertSmaller";
+import { clean } from "../util/clean";
 
 function testAll(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
@@ -20,7 +20,7 @@ function testAll(...stylesAndTemplates: Array<string | TestTemplate>): Promise<C
     {
       rewriteIdents: { id: true, class: true },
       analyzedAttributes: [],
-      analyzedTagnames: true
+      analyzedTagnames: true,
     },
     ...stylesAndTemplates);
 }

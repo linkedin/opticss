@@ -6,10 +6,13 @@
   "types": "dist/src/index.d.ts",
   "scripts": {
     "compile": "rm -rf dist && tsc && mkdir -p dist/src/grammar && cp grammar/*.js dist/src/grammar",
-    "pretest": "yarn run compile && tslint --project tsconfig.json --type-check",
-    "prepublish": "yarn run compile",
-    "tslint": "tslint --project tsconfig.json",
+    "pretest": "yarn run compile",
+    "prepublish": "yarn run compile && yarn run lintall",
+    "lint": "tslint -t msbuild --project . -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
     "test": "mocha dist/test --opts test/mocha.opts",
+    "posttest": "yarn run lint",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" -x \"**/grammar/**\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts && yarn run remap",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs .",
@@ -38,6 +41,7 @@
     "nearley": "^2.10.3"
   },
   "devDependencies": {
+    "@opticss/code-style": "^0.2.0",
     "@opticss/element-analysis": "^0.2.0",
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",

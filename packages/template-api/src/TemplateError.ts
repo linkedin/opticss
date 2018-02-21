@@ -1,6 +1,6 @@
 import {
+  ErrorLocation,
   OptiCSSError,
-  ErrorLocation
 } from "@opticss/util";
 
 /**

@@ -1,24 +1,3 @@
-import * as propParser from 'css-property-parser';
-import * as specificity from 'specificity';
-import {
-  allParsedSelectors,
-  ParsedSelectorAndRule,
-  QuerySelectorReferences,
-} from '../../query';
-import {
-  IdentityDictionary,
-  StringDict,
-  MultiMap,
-  TwoKeyMultiMap
-} from '@opticss/util';
-import {
-  isSimpleTagname,
-  SimpleAttribute,
-  simpleAttributeToString,
-  TemplateAnalysis,
-  TemplateIntegrationOptions,
-  TemplateTypes,
-} from '@opticss/template-api';
 import {
   Attr,
   Attribute,
@@ -31,24 +10,28 @@ import {
   Tagname,
   ValueAbsent,
   ValueConstant,
-} from '@opticss/element-analysis';
+} from "@opticss/element-analysis";
 import {
-  ParsedSelector,
-} from '../../parseSelector';
+  isSimpleTagname,
+  SimpleAttribute,
+  simpleAttributeToString,
+  TemplateAnalysis,
+  TemplateIntegrationOptions,
+  TemplateTypes,
+} from "@opticss/template-api";
 import {
-  expandIfNecessary,
-} from '../../util/shorthandProperties';
-import * as postcss from 'postcss';
+  IdentityDictionary,
+  MultiMap,
+  StringDict,
+  TwoKeyMultiMap,
+} from "@opticss/util";
+import * as propParser from "css-property-parser";
+import * as postcss from "postcss";
+import { isAttribute, isClassName, isIdentifier } from "postcss-selector-parser";
+import * as specificity from "specificity";
 import {
   inspect,
-} from 'util';
-import * as SelectorParser from "postcss-selector-parser";
-
-const {
-  isClassName,
-  isIdentifier,
-  isAttribute,
-} = SelectorParser;
+} from "util";
 
 import {
   Actions,
@@ -57,33 +40,45 @@ import {
   ExpandShorthand,
   MarkAttributeValueObsolete,
   MergeDeclarations as MergeDeclarationsAction,
-} from '../../Actions';
+} from "../../Actions";
 import {
   ParsedCssFile,
-} from '../../CssFile';
-import {
-  Initializers,
-} from '../../initializers';
+} from "../../CssFile";
+import { AttributeMatcher, matches, matchToBool } from "../../Match";
 import {
   OptiCSSOptions,
-} from '../../OpticssOptions';
+} from "../../OpticssOptions";
 import {
   OptimizationPass,
-} from '../../OptimizationPass';
+} from "../../OptimizationPass";
+import {
+  Initializers,
+} from "../../initializers";
+import {
+  ParsedSelector,
+} from "../../parseSelector";
+import {
+  allParsedSelectors,
+  ParsedSelectorAndRule,
+  QuerySelectorReferences,
+} from "../../query";
+import { isDeclaration } from "../../util/cssIntrospection";
+import {
+  expandIfNecessary,
+} from "../../util/shorthandProperties";
 import {
   MultiFileOptimization,
-} from '../Optimization';
+} from "../Optimization";
+
 import {
   DeclarationMapper,
-} from './DeclarationMapper';
+} from "./DeclarationMapper";
 import {
   OptimizationContext,
-} from './OptimizationContext';
+} from "./OptimizationContext";
 import {
   DeclarationInfo, SelectorInfo,
-} from './StyleInfo';
-import { matchToBool, matches, AttributeMatcher } from '../../Match';
-import { isDeclaration } from "../../util/cssIntrospection";
+} from "./StyleInfo";
 
 const attrMatcher = AttributeMatcher.instance;
 
@@ -107,7 +102,8 @@ export class MergeDeclarations implements MultiFileOptimization {
   optimizeAllFiles(
     pass: OptimizationPass,
     analyses: Array<TemplateAnalysis<keyof TemplateTypes>>,
-    files: Array<ParsedCssFile>
+    files: Array<ParsedCssFile>,
+
   ): void {
     let mapper = new DeclarationMapper(pass, analyses, files);
     // TODO: First step needs to be a stable sort of the stylesheet by specificity in a way that never introduces a conflict.
@@ -137,7 +133,7 @@ export class MergeDeclarations implements MultiFileOptimization {
       let attr: SimpleAttribute = {
         ns: unusedAttr.namespaceURL || undefined,
         name: unusedAttr.name,
-        value: isConstant(unusedAttr.value) ? unusedAttr.value.constant : ""
+        value: isConstant(unusedAttr.value) ? unusedAttr.value.constant : "",
       };
       pass.actions.perform(new MarkAttributeValueObsolete(pass, referencedSelectors, attr, "All selectors referencing it were removed."));
     }
@@ -177,14 +173,14 @@ export class MergeDeclarations implements MultiFileOptimization {
           contextMergeables.push({
             context,
             decls: importantDecls,
-            decl: { prop, value, important: true }
+            decl: { prop, value, important: true },
           });
         }
         if (normalDecls.length > 1) {
           contextMergeables.push({
             context,
             decls: normalDecls,
-            decl: { prop, value, important: false }
+            decl: { prop, value, important: false },
           });
         }
       }
@@ -272,7 +268,8 @@ export class MergeDeclarations implements MultiFileOptimization {
    */
   private mergeDeclarationSet(
     pass: OptimizationPass,
-    mergeableDeclarations: MergeableDeclarationSet
+    mergeableDeclarations: MergeableDeclarationSet,
+
   ): Array<ParsedSelectorAndRule> {
     let context = mergeableDeclarations.context;
     let declInfos = mergeableDeclarations.decls;
@@ -292,7 +289,8 @@ export class MergeDeclarations implements MultiFileOptimization {
   private checkDupesAndExpandShorthands(
     pass: OptimizationPass,
     mapper: DeclarationMapper,
-    mergeableSetsPerContext: Map<OptimizationContext, MergeableDeclarationSet[][]>
+    mergeableSetsPerContext: Map<OptimizationContext, MergeableDeclarationSet[][]>,
+
   ): MultiMap<postcss.Rule, [OptimizationContext, postcss.Declaration]> {
     let mergedDecls = new Set<DeclarationInfo>();
     let unmergedDecls = new Set<DeclarationInfo>();
@@ -392,7 +390,8 @@ export class MergeDeclarations implements MultiFileOptimization {
     actions: Actions,
     context: OptimizationContext,
     mapper: DeclarationMapper,
-    mergeables: Array<MergeableDeclarationSet>
+    mergeables: Array<MergeableDeclarationSet>,
+
   ): Array<Array<MergeableDeclarationSet>> {
     /** All mergeables for the current context */
     let contextMergeables = new Array<Array<MergeableDeclarationSet>>();
@@ -436,7 +435,7 @@ export class MergeDeclarations implements MultiFileOptimization {
         segmentedMergeables.push({
           context: mergeable.context,
           decl: mergeable.decl,
-          decls: new Array<DeclarationInfo>(unmergedDecl)
+          decls: new Array<DeclarationInfo>(unmergedDecl),
         });
       }
       for (let segment of segmentedMergeables) {
@@ -471,7 +470,7 @@ export class MergeDeclarations implements MultiFileOptimization {
       // can't remove a selector if there's properties in this rule that aren't from a shorthand expansion.
       for (let node of rule.nodes!) {
         if (isDeclaration(node)) {
-          for (let shortHand of shortHandsForRule.get(rule)!) {
+          for (let shortHand of shortHandsForRule.get(rule)) {
             if (!longHands.hasValue(shortHand.prop, node.prop, node.value)) {
               continue nextRule;
             }
@@ -502,7 +501,7 @@ export class MergeDeclarations implements MultiFileOptimization {
         for (let unusedSelector of unusedSelectors) {
           removedSelectors.push({
             rule,
-            parsedSelector: unusedSelector.selector
+            parsedSelector: unusedSelector.selector,
           });
         }
       }
@@ -517,7 +516,8 @@ function isMergeConflicted(
   expanded: StringDict,
   unmergedDecl: DeclarationInfo,
   mergedDecl: DeclarationInfo,
-  targetSpecificity: specificity.Specificity | undefined
+  targetSpecificity: specificity.Specificity | undefined,
+
 ): AnnotateMergeConflict | undefined {
   for (let element of unmergedDecl.selectorInfo.elements) {
     let elInfo = mapper.elementDeclarations.get(element);
@@ -544,7 +544,8 @@ function isMergeConflicted(
 
 function sameSpecificity(
   s1: specificity.Specificity,
-  s2: specificity.Specificity
+  s2: specificity.Specificity,
+
 ) {
   return specificity.compare(s1.specificityArray, s2.specificityArray) === 0;
 }
@@ -553,7 +554,8 @@ function checkForConflict(
   targetDecl: DeclarationInfo,
   isConflictDecl: DeclarationInfo,
   fromDecl: DeclarationInfo,
-  targetSpecificity: specificity.Specificity | undefined
+  targetSpecificity: specificity.Specificity | undefined,
+
 ): boolean {
   if (targetSpecificity
       && !sameSpecificity(targetSpecificity,
@@ -586,13 +588,14 @@ function mergeConflict(
   mergedDecl: DeclarationInfo,
   unmergedDecl: DeclarationInfo,
   conflictDecl: DeclarationInfo,
-  element: Element
+  element: Element,
+
 ): AnnotateMergeConflict {
   return new AnnotateMergeConflict(
     mergedDecl.decl, mergedDecl.selectorInfo.selector,
     unmergedDecl.decl, unmergedDecl.selectorInfo.selector,
     conflictDecl.decl, conflictDecl.selectorInfo.selector,
-    element
+    element,
   );
 }
 
@@ -611,7 +614,7 @@ function attrsForSelectors(selectors: ParsedSelectorAndRule[]): IdentityDictiona
           let attr: SimpleAttribute = {
             ns: node.namespace && node.namespaceString,
             name: node.attribute,
-            value: node.value || ""
+            value: node.value || "",
           };
           attributes.add(attr);
         }

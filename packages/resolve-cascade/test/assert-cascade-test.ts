@@ -1,15 +1,15 @@
+import { clean } from "@opticss/util";
 import {
   assert,
-} from 'chai';
+} from "chai";
 import {
   suite,
   test,
-} from 'mocha-typescript';
+} from "mocha-typescript";
 
 import {
   assertSameCascade,
-} from '../src';
-import clean from './util/clean';
+} from "../src";
 
 @suite("Cascade")
 export class CascadeTest {

@@ -1,5 +1,6 @@
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
+
 import { isRule } from "./util/cssIntrospection";
 
 const {
@@ -22,7 +23,7 @@ export class CombinedSelector<T> {
   setNext(combinator: selectorParser.Combinator, selector: T) {
     this.next = {
       combinator: combinator,
-      selector: selector
+      selector: selector,
     };
   }
 }
@@ -80,7 +81,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
       let otherEnd = other.lastSibling;
       otherEnd.next = {
         combinator: combinator,
-        selector: this.next.selector
+        selector: this.next.selector,
       };
       this.next.selector = other;
       return true;
@@ -100,7 +101,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
   append(combinator: selectorParser.Combinator, selector: CompoundSelector): CompoundSelector {
     this.lastSibling.next = {
       combinator: combinator,
-      selector: selector
+      selector: selector,
     };
     return this;
   }
@@ -127,7 +128,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
     };
     this.nodes.forEach(filterNodes);
     other.nodes.forEach(filterNodes);
-    pseudos.sort((a,b) => a.value.localeCompare(b.value));
+    pseudos.sort((a, b) => a.value.localeCompare(b.value));
     this.nodes = nodes.concat(pseudos);
     if (this.pseudoelement && other.pseudoelement && this.pseudoelement.value !== other.pseudoelement.value) {
       throw new Error("Cannot merge two compound selectors with different pseudoelements");
@@ -168,7 +169,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
       if (current.next) {
         copy.next = {
           combinator: current.next.combinator,
-          selector: current.next.selector.clone()
+          selector: current.next.selector.clone(),
         };
       }
       copy = copy.next && copy.next.selector;
@@ -182,8 +183,8 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
    * @return The selector string.
    */
   toString(shallow = false): string {
-    let s = this.nodes.map(n => n.clone({spaces: {before: '', after: ''}})).join('');
-   if (this.pseudoelement) {
+    let s = this.nodes.map(n => n.clone({spaces: {before: "", after: ""}})).join("");
+    if (this.pseudoelement) {
       s += this.pseudoelement.toString();
     }
     if (this.next && !shallow) {
@@ -226,8 +227,7 @@ export class ParsedSelector {
 
   eachSelectorNode<EarlyReturnType>(callback: (node: selectorParser.Node) =>  EarlyReturnType | undefined): EarlyReturnType | undefined {
     return this.eachCompoundSelector((sel) => {
-      for (let i = 0; i < sel.nodes.length; i++) {
-        const node = sel.nodes[i];
+      for (let node of sel.nodes) {
         let earlyReturn = callback(node);
         if (earlyReturn !== undefined) {
           return earlyReturn;
@@ -351,7 +351,7 @@ export class ParsedSelector {
 /**
  * All valid selector-like inputs to the `parseSelector` helper methods.
  */
- export type Selectorish = string | selectorParser.Root | selectorParser.Node[] | selectorParser.Node[][] | postcss.Rule;
+export type Selectorish = string | selectorParser.Root | selectorParser.Node[] | selectorParser.Node[][] | postcss.Rule;
 
 /**
  * Coerce a `selectorParser.Root` object to `selectorParser.Node[][]`.
@@ -413,7 +413,7 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
       if (n.type === selectorParser.COMBINATOR) {
         let lastCompoundSel = compoundSel;
         compoundSel = new CompoundSelector();
-        lastCompoundSel.setNext(<selectorParser.Combinator>n, compoundSel);
+        lastCompoundSel.setNext(n, compoundSel);
       }
 
       // Normalize :before and :after to always use double colons and save.
@@ -423,7 +423,7 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
           n.parent!.insertBefore(n, universal);
           compoundSel.addNode(universal);
         }
-        compoundSel.pseudoelement = <selectorParser.Pseudo>n;
+        compoundSel.pseudoelement = n;
         if (!compoundSel.pseudoelement.value.startsWith("::")) {
           compoundSel.pseudoelement.value = ":" + compoundSel.pseudoelement.value;
         }

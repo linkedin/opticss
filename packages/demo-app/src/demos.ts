@@ -1,3 +1,4 @@
+import { whatever } from "@opticss/util";
 export interface FeatureToggles {
   removeUnusedStyles: HTMLInputElement;
   // conflictResolution: HTMLInputElement;
@@ -21,7 +22,7 @@ export interface Demo {
   default?: boolean;
 }
 
-export function hush(...objs: Array<any>) {
+export function hush(...objs: Array<whatever>) {
   if (!objs[0]) { return true; }
   return false;
 }
@@ -73,7 +74,7 @@ function breakCascadeDemo(): Demo {
     options: {
       rewriteIds: false,
       rewriteIdents: false,
-    }
+    },
   };
 }
 
@@ -115,7 +116,7 @@ function optimizationScopes(): Demo {
       removeUnusedStyles: false,
       rewriteIds: false,
       rewriteIdents: false,
-    }
+    },
   };
 }
 
@@ -135,7 +136,7 @@ input[disabled] { background-color: gray; }
 .label { background-color: gray; }`.trim(),
     options: {
       analyzeForms: false,
-    }
+    },
   };
 }
 
@@ -157,7 +158,7 @@ function idAnalysis(): Demo {
 `.trim(),
     options: {
       analyzeIds: false,
-    }
+    },
   };
 }
 
@@ -189,7 +190,7 @@ function progressiveEnhancement(): Demo {
 `.trim(),
     options: {
       analyzeIds: false,
-    }
+    },
   };
 }
 function mergeComplexShorthand(): Demo {
@@ -220,6 +221,6 @@ function mergeComplexShorthand(): Demo {
     options: {
       removeUnusedStyles: false,
       analyzeIds: false,
-    }
+    },
   };
 }

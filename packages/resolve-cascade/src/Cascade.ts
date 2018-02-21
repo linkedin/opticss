@@ -1,10 +1,10 @@
-import * as propParser from 'css-property-parser';
-import * as CSSSelect from 'css-select';
-import * as parse5 from 'parse5';
-import * as postcss from 'postcss';
-import * as specificity from 'specificity';
+import * as propParser from "css-property-parser";
+import * as CSSSelect from "css-select";
+import * as parse5 from "parse5";
+import * as postcss from "postcss";
+import * as specificity from "specificity";
 
-import { bodyElement, parseStylesheet, walkRules } from './util';
+import { bodyElement, parseStylesheet, walkRules } from "./util";
 
 export interface PseudoStates {
   /**
@@ -66,7 +66,7 @@ export class ElementStyle {
     this.matchedSelectors.push({
       selector,
       rule,
-      specificity
+      specificity,
     });
   }
   private clean(): void {
@@ -138,7 +138,7 @@ function stylesForDeclaration(decl: postcss.Declaration): ComputedStyle {
     return expandedValues;
   } else {
     return {
-      [decl.prop]: decl.value
+      [decl.prop]: decl.value,
     };
   }
 }

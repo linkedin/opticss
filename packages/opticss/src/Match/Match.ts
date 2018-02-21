@@ -17,7 +17,7 @@ export enum Match {
    * The element is unrelated to the selector or selector component and no
    * information about whether the element matches can be determined.
    */
-  pass
+  pass,
 }
 
 /**

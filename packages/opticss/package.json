@@ -5,9 +5,12 @@
   "main": "dist/src/index.js",
   "scripts": {
     "compile": "rm -rf dist && tsc",
-    "pretest": "npm run compile && tslint --project tsconfig.json --type-check",
-    "prepublish": "tsc",
-    "tslint": "tslint",
+    "pretest": "npm run compile",
+    "posttest": "yarn run lint",
+    "prepublish": "yarn run compile && yarn run lintall",
+    "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
     "test": "mocha dist/test/**/*.js --opts test/mocha.opts -i --grep Integration",
     "integration": "npm run pretest && mocha dist/test --opts test/mocha.opts --grep Integration",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
@@ -31,6 +34,7 @@
   "homepage": "https://github.com/css-blocks/opticss#readme",
   "devDependencies": {
     "@opticss/simple-template": "^0.2.0",
+    "@opticss/code-style": "^0.2.0",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.43",
     "@types/node": "^8.0.26",
