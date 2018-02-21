@@ -23,6 +23,9 @@
 		},
 		{
 			"path": "packages/util"
+		},
+		{
+			"path": "packages/code-style"
 		}
 	],
 	"settings": {}
