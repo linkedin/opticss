@@ -5,7 +5,7 @@ import { rejects, matches, ElementMatcher } from "./Match";
 import { walkRules } from "./util/cssIntrospection";
 
 export interface SelectorQuery {
-  execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors;
+  execute(container: postcss.Container): ClassifiedParsedSelectors;
 }
 
 export interface ParsedSelectorAndRule {
@@ -73,13 +73,13 @@ export class QuerySelectorReferences implements SelectorQuery {
     this.targets = elements;
     this.negate = !!negate;
   }
-  execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors {
+  execute(container: postcss.Container): ClassifiedParsedSelectors {
     let matchedSelectors: ClassifiedParsedSelectors = {
       main: [],
       other: {}
     };
     walkRules(container, (node) => {
-      let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node);
+      let parsedSelectors = parseSelector(node);
       let found = parsedSelectors.filter((value: ParsedSelector) => {
          return this.targets.find((element) => {
           let match = ElementMatcher.instance.matchSelector(element, value, false);
@@ -107,13 +107,13 @@ export class QueryKeySelector implements SelectorQuery {
     this.target = obj;
   }
 
-  execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors {
+  execute(container: postcss.Container): ClassifiedParsedSelectors {
     let matchedSelectors: ClassifiedParsedSelectors = {
       main: [],
       other: {}
     };
     walkRules(container, (node) => {
-      let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node);
+      let parsedSelectors = parseSelector(node);
       let found = parsedSelectors.filter((value: ParsedSelector) => matches(ElementMatcher.instance.matchSelector(this.target, value, true)));
       found.forEach((sel) => {
         let key = sel.key;
