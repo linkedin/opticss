@@ -351,7 +351,8 @@ export class ParsedSelector {
 /**
  * All valid selector-like inputs to the `parseSelector` helper methods.
  */
- export type Selectorish = string | selectorParser.Root | selectorParser.Node[] | selectorParser.Node[][] | postcss.Rule;
+export type SelectorishObj = selectorParser.Root | selectorParser.Node[] | selectorParser.Node[][] | postcss.Rule;
+export type Selectorish = string | SelectorishObj;
 
 /**
  * Coerce a `selectorParser.Root` object to `selectorParser.Node[][]`.
@@ -452,25 +453,37 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
  * @param selector  Selector like object: including `string`, `selectorParser.Root`, `selectorParser.Selector`, or `selectorParser.Node`
  * @return Array of `ParsedSelector` objects.
  */
+const SELECTOR_CACHE: Map<string, ParsedSelector[]> = new Map();
+
 export function parseSelector(selector: Selectorish): ParsedSelector[] {
+
   let source: string | undefined = undefined;
+  let parsedSelectors: ParsedSelector[] = [];
   if (typeof selector === "string") {
-    let parsedSelectors = new Array<ParsedSelector>();
-    for (let source of selector.split(",")) {
+    if (SELECTOR_CACHE.has(selector)) { return SELECTOR_CACHE.get(selector)!; }
+    for (let source of selector.split(",").map((s) => s.trim())) {
       let compoundSelector = parseCompoundSelectors(source)[0];
       parsedSelectors.push(new ParsedSelector(compoundSelector, source));
     }
-    return parsedSelectors;
+    SELECTOR_CACHE.set(selector, parsedSelectors);
   } else if (isRule(selector)) {
-    let parsedSelectors = new Array<ParsedSelector>();
     for (let source of selector.selectors!) {
-      let compoundSelector = parseCompoundSelectors(source)[0];
-      parsedSelectors.push(new ParsedSelector(compoundSelector, source));
+      if (SELECTOR_CACHE.has(source)) {
+        parsedSelectors.push(...SELECTOR_CACHE.get(source)!);
+      }
+      else {
+        let compoundSelector = parseCompoundSelectors(source)[0];
+        let sel = new ParsedSelector(compoundSelector, source);
+        parsedSelectors.push(sel);
+      }
     }
-    return parsedSelectors;
   } else if (isRoot(selector)) {
     source = selector.toString();
+    if (SELECTOR_CACHE.has(source)) { return SELECTOR_CACHE.get(source)!; }
+    let compoundSelectors = parseCompoundSelectors(selector);
+    parsedSelectors = compoundSelectors.map(cs => new ParsedSelector(cs, source));
+    SELECTOR_CACHE.set(source, parsedSelectors);
   }
-  let compoundSelectors = parseCompoundSelectors(selector);
-  return compoundSelectors.map(cs => new ParsedSelector(cs, source));
+
+  return parsedSelectors;
 }
