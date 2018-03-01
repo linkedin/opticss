@@ -57,7 +57,7 @@ export interface ObjectDictionary<T> {
 }
 export function isObjectDictionary<T>(
   dict: whatever,
-  typeGuard: (v: whatever) => v is T,
+  typeGuard: TypeGuard<whatever, T>,
 ) {
   if (!isObject(dict)) return false;
   for (let k of Object.keys(dict)) {
@@ -66,6 +66,17 @@ export function isObjectDictionary<T>(
     }
   }
   return true;
+}
+
+/**
+ * Create an object dictionary given a map object with string keys.
+ */
+export function objectDictionaryFromMap<T>(map: Map<string, T>): ObjectDictionary<T> {
+  let d: ObjectDictionary<T> = {};
+  for (let key of map.keys()) {
+    d[key] = map.get(key)!;
+  }
+  return d;
 }
 
 /**
@@ -90,7 +101,7 @@ export type ItemType<T extends Array<whatever>> = T[0];
 /**
  * represents a TypeScript type guard function.
  */
-export type TypeGuard<T extends whatever> = (v: whatever) => v is T;
+export type TypeGuard<A extends whatever, T extends A> = (v: A) => v is T;
 
 /** A function that takes no arguments. */
 export type FunctionCall0<R> = () => R;
@@ -102,3 +113,26 @@ export type FunctionCall2<A1, A2, R> = (arg1: A1, arg2: A2) => R;
 export type FunctionCall3<A1, A2, A3, R> = (arg1: A1, arg2: A2, arg3: A3) => R;
 /** A function that takes a four arguments. */
 export type FunctionCall4<A1, A2, A3, A4, R> = (arg1: A1, arg2: A2, arg3: A3, arg4: A4) => R;
+
+/**
+ * Given a type guard function, return the first element in an array that
+ * matches it and correctly infer the type of the returned value.
+ *
+ * @param ary The array being searched.
+ * @param guard The type guard function.
+ */
+export function firstOfType<
+  ArrayType extends whatever,
+  GuardType extends ArrayType,
+>(
+  ary: Array<ArrayType>,
+  guard: TypeGuard<ArrayType, GuardType>,
+): GuardType | undefined {
+  let e: ArrayType;
+  for (e of ary) {
+    if (guard(e)) {
+      return e;
+    }
+  }
+  return undefined;
+}
