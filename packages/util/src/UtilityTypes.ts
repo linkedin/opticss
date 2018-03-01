@@ -57,7 +57,7 @@ export interface ObjectDictionary<T> {
 }
 export function isObjectDictionary<T>(
   dict: whatever,
-  typeGuard: TypeGuard<whatever, T>,
+  typeGuard: TypeGuard<T>,
 ) {
   if (!isObject(dict)) return false;
   for (let k of Object.keys(dict)) {
@@ -101,7 +101,7 @@ export type ItemType<T extends Array<whatever>> = T[0];
 /**
  * represents a TypeScript type guard function.
  */
-export type TypeGuard<A extends whatever, T extends A> = (v: A) => v is T;
+export type TypeGuard<T extends A, A extends whatever = whatever> = (v: A) => v is T;
 
 /** A function that takes no arguments. */
 export type FunctionCall0<R> = () => R;
@@ -126,7 +126,7 @@ export function firstOfType<
   GuardType extends ArrayType,
 >(
   ary: Array<ArrayType>,
-  guard: TypeGuard<ArrayType, GuardType>,
+  guard: TypeGuard<GuardType, ArrayType>,
 ): GuardType | undefined {
   let e: ArrayType;
   for (e of ary) {

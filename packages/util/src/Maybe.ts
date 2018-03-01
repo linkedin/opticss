@@ -223,7 +223,7 @@ export function isMaybe(value: whatever): value is Maybe<something> {
  * a single value that is a `Maybe` of several types and you need to do some
  * control flow before unwrapping.
  */
-export function isSomeOfType<T>(value: whatever, guard: TypeGuard<whatever, T>): value is Some<T> {
+export function isSomeOfType<T>(value: whatever, guard: TypeGuard<T>): value is Some<T> {
   if (isMaybe(value)) {
     if (isNone(value)) return false;
     return guard(unwrap(value));
