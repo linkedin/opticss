@@ -34,7 +34,7 @@
   "dependencies": {
     "@opticss/util": "^0.1.1",
     "css-property-parser": "^1.0.5",
-    "css-select": "1.3.0-li.1",
+    "@opticss/css-select": "1.3.0-li.3",
     "domutils": "^1.6.2",
     "parse5": "^3.0.2",
     "postcss": "^6.0.13",
