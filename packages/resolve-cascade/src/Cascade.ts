@@ -1,5 +1,5 @@
-import * as propParser from "css-property-parser";
 import * as CSSSelect from "@opticss/css-select";
+import * as propParser from "css-property-parser";
 import * as parse5 from "parse5";
 import * as postcss from "postcss";
 import * as specificity from "specificity";
