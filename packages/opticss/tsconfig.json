@@ -7,7 +7,7 @@
       "@types/chai",
       "@types/debug",
       "@types/mocha",
-      "@types/source-map"
+      "@types/node"
     ],
     "paths": {
       "concat-with-sourcemaps": [

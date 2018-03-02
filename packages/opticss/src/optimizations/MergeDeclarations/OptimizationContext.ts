@@ -56,7 +56,7 @@ export class OptimizationContext {
   getDeclarationValues(prop: string): MultiDictionary<string, DeclarationInfo> {
     let valueInfo: MultiDictionary<string, DeclarationInfo>;
     if (this.declarationMap.containsKey(prop)) {
-      valueInfo = this.declarationMap.getValue(prop);
+      valueInfo = this.declarationMap.getValue(prop)!;
     } else {
       valueInfo = new MultiDictionary<string, DeclarationInfo>();
       this.declarationMap.setValue(prop, valueInfo);

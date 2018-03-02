@@ -242,7 +242,7 @@ abstract class NodeBase<T> {
     let q = new Queue<NodeBase<T>>();
     q.enqueue(this);
     while (!q.isEmpty()) {
-      let node = q.dequeue();
+      let node = q.dequeue()!;
       if (node.value !== undefined) {
         yield node.value;
       }

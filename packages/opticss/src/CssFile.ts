@@ -44,7 +44,7 @@ export interface ParsedCssFile {
 export function sourceMapFromCssFile(file: CssFile): RawSourceMap | string | undefined {
   let sourceMap: RawSourceMap | string | undefined = file.sourceMap;
   if (!sourceMap && (<postcss.Result>file.content).map) {
-    sourceMap = <RawSourceMap>(<postcss.Result>file.content).map.toJSON();
+    sourceMap = (<postcss.Result>file.content).map.toJSON();
   }
   return sourceMap;
 }

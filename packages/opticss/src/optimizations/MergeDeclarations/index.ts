@@ -163,7 +163,7 @@ export class MergeDeclarations implements MultiFileOptimization {
   private mergeablesForContext(pass: OptimizationPass, context: OptimizationContext) {
     let contextMergeables = new Array<MergeableDeclarationSet>();
     for (let prop of context.declarationMap.keys()) {
-      let values = context.declarationMap.getValue(prop);
+      let values = context.declarationMap.getValue(prop)!;
       for (let value of values.keys()) {
         let decls = values.getValue(value);
         decls = decls.filter(d => this.isMergeable(this.templateOptions, pass, d));
