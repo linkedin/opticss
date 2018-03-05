@@ -31,6 +31,9 @@
     "url": "https://github.com/css-blocks/opticss/issues"
   },
   "homepage": "https://github.com/css-blocks/opticss#readme",
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "dependencies": {
     "@opticss/attr-analysis-dsl": "^0.2.0",
     "@opticss/element-analysis": "^0.2.0",

@@ -31,6 +31,9 @@
     "url": "https://github.com/css-blocks/resolve-cascade/issues"
   },
   "homepage": "https://github.com/css-blocks/resolve-cascade#readme",
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "dependencies": {
     "@opticss/util": "^0.1.1",
     "css-property-parser": "^1.0.5",

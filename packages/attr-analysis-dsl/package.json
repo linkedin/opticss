@@ -35,6 +35,9 @@
   "peerDependencies": {
     "@opticss/template-api": "^0.1.0"
   },
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "dependencies": {
     "@opticss/util": "^0.1.1",
     "moo": "^0.4.1",

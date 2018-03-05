@@ -32,6 +32,9 @@
   },
   "types": "dist/src/index.d.ts",
   "homepage": "https://github.com/css-blocks/opticss#readme",
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "devDependencies": {
     "@opticss/simple-template": "^0.2.0",
     "@opticss/code-style": "^0.2.0",

@@ -31,6 +31,9 @@
     "url": "https://github.com/css-blocks/opticss/issues"
   },
   "homepage": "https://github.com/css-blocks/opticss#readme",
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "peerDependencies": {
     "opticss": "*"
   },
