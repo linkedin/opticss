@@ -28,5 +28,14 @@
 			"path": "packages/code-style"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"cSpell.ignorePaths": [
+			"**/node_modules/**",
+			"**/vscode-extension/**",
+			"**/.git/**",
+			".vscode",
+			"typings",
+			"**/*.json"
+		]
+	}
 }
