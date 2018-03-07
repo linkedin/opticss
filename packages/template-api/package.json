@@ -37,21 +37,21 @@
     "node": ">=8.0.0"
   },
   "peerDependencies": {
-    "opticss": "*"
+    "opticss": "file:../opticss"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.2.0",
-    "@opticss/util": "^0.1.1",
+    "@opticss/element-analysis": "file:../element-analysis",
+    "@opticss/util": "file:../util",
     "postcss": "^6.0.12",
     "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
-    "@opticss/attr-analysis-dsl": "^0.2.0",
-    "@opticss/code-style": "^0.2.0",
+    "@opticss/attr-analysis-dsl": "file:../attr-analysis-dsl",
+    "@opticss/code-style": "file:../code-style",
     "@types/node": "8.x.x - 9.x.x",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",
     "tslint": "^5.1.0",
-    "typescript": "^2.7.1"
+    "typescript": "^2.7.2"
   }
 }

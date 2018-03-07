@@ -35,17 +35,17 @@
     "node": ">=8.0.0"
   },
   "dependencies": {
-    "@opticss/attr-analysis-dsl": "^0.2.0",
-    "@opticss/element-analysis": "^0.2.0",
-    "@opticss/template-api": "^0.2.0",
-    "@opticss/util": "^0.1.1",
+    "@opticss/attr-analysis-dsl": "file:../attr-analysis-dsl",
+    "@opticss/element-analysis": "file:../element-analysis",
+    "@opticss/template-api": "file:../template-api",
+    "@opticss/util": "file:../util",
     "parse5": "^3.0.2",
     "postcss": "^6.0.12",
     "random-js": "^1.0.8",
     "specificity": "^0.3.2"
   },
   "devDependencies": {
-    "@opticss/code-style": "^0.2.0",
+    "@opticss/code-style": "file:../code-style",
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
     "@types/random-js": "^1.0.30",
@@ -55,6 +55,6 @@
     "mocha-typescript": "^1.0.23",
     "remap-istanbul": "^0.9.5",
     "tslint": "^5.1.0",
-    "typescript": "^2.7.1"
+    "typescript": "^2.7.2"
   }
 }
