@@ -132,6 +132,16 @@
     mkdirp "^0.5.1"
     rimraf "^2.5.2"
 
+"@opticss/attr-analysis-dsl@file:packages/attr-analysis-dsl":
+  version "0.2.0"
+  dependencies:
+    "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
+    moo "^0.4.1"
+    nearley "^2.10.3"
+
+"@opticss/code-style@file:packages/code-style":
+  version "0.2.0"
+
 "@opticss/css-select@1.3.0-li.3":
   version "1.3.0-li.3"
   resolved "https://registry.yarnpkg.com/@opticss/css-select/-/css-select-1.3.0-li.3.tgz#31076d3b066c79960a6233bf5879bce41e55f948"
@@ -141,6 +151,36 @@
     domutils "^1.7.0"
     es6-set "^0.1.5"
     nth-check "^1.0.1"
+
+"@opticss/element-analysis@file:packages/element-analysis":
+  version "0.2.0"
+  dependencies:
+    "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
+
+"@opticss/simple-template@file:packages/simple-template":
+  version "0.2.0"
+  dependencies:
+    "@opticss/attr-analysis-dsl" "file:../../Library/Caches/Yarn/v1/npm-@opticss/attr-analysis-dsl"
+    "@opticss/element-analysis" "file:../../Library/Caches/Yarn/v1/npm-@opticss/element-analysis"
+    "@opticss/template-api" "file:../../Library/Caches/Yarn/v1/npm-@opticss/template-api"
+    "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
+    parse5 "^3.0.2"
+    postcss "^6.0.12"
+    random-js "^1.0.8"
+    specificity "^0.3.2"
+
+"@opticss/template-api@file:packages/template-api":
+  version "0.2.0"
+  dependencies:
+    "@opticss/element-analysis" "file:../../Library/Caches/Yarn/v1/npm-@opticss/element-analysis"
+    "@opticss/util" "file:../../Library/Caches/Yarn/v1/npm-@opticss/util"
+    postcss "^6.0.12"
+    typescript-collections "^1.2.5"
+
+"@opticss/util@file:packages/util":
+  version "0.1.1"
+  dependencies:
+    typescript-collections "^1.2.5"
 
 "@types/chai@^3.5.2":
   version "3.5.2"
@@ -4763,6 +4803,24 @@ onetime@^2.0.0:
   dependencies:
     mimic-fn "^1.0.0"
 
+"opticss@file:packages/opticss":
+  version "0.2.0"
+  dependencies:
+    "@opticss/element-analysis" "file:../../Library/Caches/Yarn/v1/element-analysis"
+    "@opticss/template-api" "file:../../Library/Caches/Yarn/v1/template-api"
+    "@opticss/util" "file:../../Library/Caches/Yarn/v1/util"
+    "@types/debug" "0.0.29"
+    concat-with-sourcemaps "^1.0.4"
+    css-property-parser "^1.0.5"
+    debug "^2.6.8"
+    object.values "^1.0.4"
+    postcss "^6.0.12"
+    postcss-selector-parser "^3.1.1"
+    source-map "^0.6.1"
+    specificity "^0.3.2"
+    typescript-collections "^1.2.5"
+    typescript-memoize "^1.0.0-alpha.3"
+
 optimist@^0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/optimist/-/optimist-0.6.1.tgz#da3ea74686fa21a19a111c326e90eb15a0196686"
@@ -6677,7 +6735,7 @@ typescript@2.3.4:
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.3.4.tgz#3d38321828231e434f287514959c37a82b629f42"
 
-typescript@^2.7.1:
+typescript@^2.7.2:
   version "2.7.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.7.2.tgz#2d615a1ef4aee4f574425cdff7026edf81919836"
 

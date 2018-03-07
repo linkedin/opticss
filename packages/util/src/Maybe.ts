@@ -158,9 +158,7 @@ export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeM
 export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe4<A1, A2, A3, A4, R>>, A1, A2, A3, A4, R>(thisObj: Maybe<T>, fnName: N, arg1: OptionalMaybe<A1>, arg2: OptionalMaybe<A2>, arg3: OptionalMaybe<A3>, arg4: OptionalMaybe<A4>): Maybe<R>;
 export function methodMaybe<
   N extends keyof T,
-  T extends HasMethod<T, N, CallMeMaybe<A1, A2, A3, A4, R>>,
-  A1, A2, A3, A4, R,
->(
+  T extends HasMethod<T, N, CallMeMaybe<A1, A2, A3, A4, R>>, A1, A2, A3, A4, R>(
   thisObj: Maybe<T>,
   fnName: N,
   arg1?: OptionalMaybe<A1>,

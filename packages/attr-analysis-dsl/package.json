@@ -33,19 +33,19 @@
   },
   "homepage": "https://github.com/css-blocks/opticss#readme",
   "peerDependencies": {
-    "@opticss/template-api": "^0.1.0"
+    "@opticss/template-api": "file:../template-api"
   },
   "engines": {
     "node": ">=8.0.0"
   },
   "dependencies": {
-    "@opticss/util": "^0.1.1",
+    "@opticss/util": "file:../util",
     "moo": "^0.4.1",
     "nearley": "^2.10.3"
   },
   "devDependencies": {
-    "@opticss/code-style": "^0.2.0",
-    "@opticss/element-analysis": "^0.2.0",
+    "@opticss/code-style": "file:../code-style",
+    "@opticss/element-analysis": "file:../element-analysis",
     "@types/chai": "^3.5.2",
     "@types/mocha": "^2.2.41",
     "@types/nearley": "^2.9.0",
@@ -55,6 +55,6 @@
     "mocha-typescript": "^1.0.23",
     "remap-istanbul": "^0.9.5",
     "tslint": "^5.1.0",
-    "typescript": "^2.7.1"
+    "typescript": "^2.7.2"
   }
 }

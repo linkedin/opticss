@@ -35,17 +35,17 @@
     "node": ">=8.0.0"
   },
   "peerDependencies": {
-    "opticss": "*"
+    "opticss": "file:../opticss"
   },
   "dependencies": {
-    "@opticss/util": "^0.1.1"
+    "@opticss/util": "file:../util"
   },
   "devDependencies": {
-    "@opticss/code-style": "^0.2.0",
+    "@opticss/code-style": "file:../code-style",
     "@types/node": "8.x.x - 9.x.x",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",
     "tslint": "^5.1.0",
-    "typescript": "^2.7.1"
+    "typescript": "^2.7.2"
   }
 }
