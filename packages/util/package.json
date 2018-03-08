@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/css-blocks/opticss#readme",
   "engines": {
-    "node": ">=8.0.0"
+    "node": "8"
   },
   "dependencies": {
     "typescript-collections": "^1.2.5"

@@ -15,7 +15,7 @@
     "resolve-cascade": "file:./packages/resolve-cascade",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.43",
-    "@types/node": "8.x.x - 9.x.x",
+    "@types/node": "^8.0.0",
     "@types/nearley": "^2.9.0",
     "@types/random-js": "^1.0.30",
     "husky": "^0.14.3",
