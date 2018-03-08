@@ -13,13 +13,13 @@
   "types": "dist",
   "scripts": {
     "compile": "rm -rf dist && tsc",
-    "pretest": "yarn run compile",
+    "pretest": "npm run compile",
     "test": "tslint --test test/rules/*/*",
-    "posttest": "yarn run lint",
+    "posttest": "npm run lint",
     "lint": "tslint -t msbuild -p . -c tslint.cli.json",
     "lintall": "tslint -t msbuild -p . -c tslint.release.json",
     "lintfix": "tslint -t msbuild -p . --fix -c tslint.cli.json",
-    "prepublish": "yarn run compile && yarn run lintall"
+    "prepublishOnly": "npm run compile && npm run lintall"
   },
   "bugs": {
     "url": "https://github.com/css-blocks/css-blocks/issues"
@@ -33,10 +33,6 @@
     "node": ">=8.0.0"
   },
   "peerDependencies": {
-    "tslint": "^5.9.1",
-    "typescript": "^2.7.2"
-  },
-  "devDependencies": {
     "tslint": "^5.9.1",
     "typescript": "^2.7.2"
   },

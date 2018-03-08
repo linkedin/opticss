@@ -6,10 +6,10 @@
   "types": "dist/src/index.d.ts",
   "scripts": {
     "compile": "rm -rf dist && tsc",
-    "pretest": "yarn run compile",
+    "pretest": "npm run compile",
     "test": "mocha dist/test --opts test/mocha.opts",
-    "posttest": "yarn run lint",
-    "prepublish": "yarn run compile && yarn run lintall",
+    "posttest": "npm run lint",
+    "prepublishOnly": "npm run compile && npm run lintall",
     "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
     "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json",
     "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
@@ -39,9 +39,13 @@
   },
   "devDependencies": {
     "@opticss/code-style": "file:../code-style",
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.43",
     "@types/node": "8.x.x - 9.x.x",
+    "chai": "^4.1.2",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",
+    "source-map-support": "^0.5.3",
     "tslint": "^5.1.0",
     "typescript": "^2.7.2"
   }
