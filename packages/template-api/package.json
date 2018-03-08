@@ -7,11 +7,11 @@
   "scripts": {
     "compile-src": "rm -rf dist && tsc",
     "compile-test": "rm -rf test/build && tsc -p tsconfig-test.json",
-    "compile": "yarn run compile-src && yarn run compile-test",
-    "pretest": "yarn run compile",
+    "compile": "npm run compile-src && npm run compile-test",
+    "pretest": "npm run compile",
     "test": "mocha test/build/test --opts test/mocha.opts",
-    "posttest": "yarn run lint",
-    "prepublish": "yarn run compile-src",
+    "posttest": "npm run lint",
+    "prepublishOnly": "npm run compile-src",
     "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json && tslint -t msbuild --project tsconfig-test.json -c tslint.cli.json",
     "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json && tslint -t msbuild --project tsconfig-test.json -c tslint.release.json",
     "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix && tslint -t msbuild --project tsconfig-test.json -c tslint.cli.json --fix",
@@ -44,14 +44,5 @@
     "@opticss/util": "file:../util",
     "postcss": "^6.0.12",
     "typescript-collections": "^1.2.5"
-  },
-  "devDependencies": {
-    "@opticss/attr-analysis-dsl": "file:../attr-analysis-dsl",
-    "@opticss/code-style": "file:../code-style",
-    "@types/node": "8.x.x - 9.x.x",
-    "mocha": "^3.4.2",
-    "mocha-typescript": "^1.1.9",
-    "tslint": "^5.1.0",
-    "typescript": "^2.7.2"
   }
 }

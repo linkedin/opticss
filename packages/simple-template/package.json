@@ -6,14 +6,14 @@
   "types": "dist/src/index.d.ts",
   "scripts": {
     "compile": "rm -rf dist && tsc",
-    "pretest": "yarn run compile",
+    "pretest": "npm run compile",
     "test": "mocha dist/test --opts test/mocha.opts",
-    "posttest": "yarn run lint",
-    "prepublish": "yarn run compile",
+    "posttest": "npm run lint",
+    "prepublishOnly": "npm run compile",
     "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
     "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json",
     "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
-    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts && yarn run remap",
+    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts && npm run remap",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs ."
   },
@@ -43,18 +43,5 @@
     "postcss": "^6.0.12",
     "random-js": "^1.0.8",
     "specificity": "^0.3.2"
-  },
-  "devDependencies": {
-    "@opticss/code-style": "file:../code-style",
-    "@types/chai": "^3.5.2",
-    "@types/mocha": "^2.2.41",
-    "@types/random-js": "^1.0.30",
-    "chai": "^3.5.0",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.4.2",
-    "mocha-typescript": "^1.0.23",
-    "remap-istanbul": "^0.9.5",
-    "tslint": "^5.1.0",
-    "typescript": "^2.7.2"
   }
 }

@@ -6,8 +6,8 @@
   "scripts": {
     "compile": "rm -rf dist && tsc",
     "pretest": "npm run compile",
-    "posttest": "yarn run lint",
-    "prepublish": "yarn run compile && yarn run lintall",
+    "posttest": "npm run lint",
+    "prepublishOnly": "npm run compile && npm run lintall",
     "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
     "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json",
     "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
@@ -35,27 +35,6 @@
   "engines": {
     "node": ">=8.0.0"
   },
-  "devDependencies": {
-    "@opticss/simple-template": "file:../simple-template",
-    "@opticss/code-style": "file:../code-style",
-    "@types/chai": "^4.0.4",
-    "@types/mocha": "^2.2.43",
-    "@types/node": "8.x.x - 9.x.x",
-    "@types/random-js": "^1.0.30",
-    "chai": "^3.5.0",
-    "css-size": "^4.0.0-rc.4",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.4.2",
-    "mocha-typescript": "^1.0.23",
-    "parse5": "^3.0.2",
-    "random-js": "^1.0.8",
-    "remap-istanbul": "^0.9.5",
-    "resolve-cascade": "^0.1.1",
-    "source-map-support": "^0.4.17",
-    "tslint": "^5.1.0",
-    "typedoc": "^0.7.1",
-    "typescript": "^2.7.2"
-  },
   "dependencies": {
     "@opticss/element-analysis": "file:../element-analysis",
     "@opticss/template-api": "file:../template-api",
@@ -72,8 +51,8 @@
     "typescript-collections": "^1.2.5",
     "typescript-memoize": "^1.0.0-alpha.3"
   },
-  "engines": {
-    "node": ">=8.0.0"
+  "devDependencies": {
+    "@opticss/simple-template": "file:../simple-template"
   },
   "engineStrict": true
 }

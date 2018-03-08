@@ -4,12 +4,39 @@
   "devDependencies": {
     "@commitlint/cli": "^6.1.0",
     "@commitlint/config-conventional": "^6.1.0",
+    "@opticss/attr-analysis-dsl": "file:./packages/attr-analysis-dsl",
+    "@opticss/code-style": "file:./packages/code-style",
+    "@opticss/demo-app": "file:./packages/demo-app",
+    "@opticss/element-analysis": "file:./packages/element-analysis",
+    "@opticss/simple-template": "file:./packages/simple-template",
+    "@opticss/template-api": "file:./packages/template-api",
+    "@opticss/util": "file:./packages/util",
+    "opticss": "file:./packages/opticss",
+    "resolve-cascade": "file:./packages/resolve-cascade",
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.43",
+    "@types/node": "8.x.x - 9.x.x",
+    "@types/nearley": "^2.9.0",
+    "@types/random-js": "^1.0.30",
     "husky": "^0.14.3",
-    "lerna": "^3.0.0-beta.0"
+    "lerna": "^3.0.0-beta.0",
+    "chai": "^4.1.2",
+    "mocha": "^3.4.2",
+    "mocha-typescript": "^1.1.9",
+    "source-map-support": "^0.5.3",
+    "tslint": "^5.1.0",
+    "typescript": "^2.7.2",
+    "istanbul": "^0.4.5",
+    "remap-istanbul": "^0.9.5",
+    "typedoc": "^0.7.1",
+    "css-size": "^4.0.0-rc.4",
+    "parse5": "^3.0.2",
+    "random-js": "^1.0.8"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "commitmsg": "commitlint --edit $GIT_PARAMS"
+    "commitmsg": "commitlint --edit $GIT_PARAMS",
+    "cleandist": "rm -rf dist"
   },
   "workspaces": [
     "packages/*"
