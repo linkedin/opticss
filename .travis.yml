@@ -5,6 +5,7 @@ sudo: false
 language: node_js
 node_js:
   - "8"
+  - "9"
 
 before_install:
   - npm install -g lerna@3.0.0-beta.0
