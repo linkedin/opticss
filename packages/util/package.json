@@ -38,15 +38,6 @@
     "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
-    "@opticss/code-style": "file:../code-style",
-    "@types/chai": "^4.0.4",
-    "@types/mocha": "^2.2.43",
-    "@types/node": "8.x.x - 9.x.x",
-    "chai": "^4.1.2",
-    "mocha": "^3.4.2",
-    "mocha-typescript": "^1.1.9",
-    "source-map-support": "^0.5.3",
-    "tslint": "^5.1.0",
-    "typescript": "^2.7.2"
+    "@opticss/code-style": "file:../code-style"
   }
 }

@@ -40,7 +40,7 @@
     "@opticss/template-api": "file:../template-api",
     "@opticss/util": "file:../util",
     "parse5": "^3.0.2",
-    "postcss": "^6.0.12",
+    "postcss": "^6.0.13",
     "random-js": "^1.0.8",
     "specificity": "^0.3.2"
   }
