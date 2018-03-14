@@ -1,5 +1,5 @@
-Code Style for `css-blocks`
-===========================
+Code Style for `css-blocks` and `OptiCSS`
+=========================================
 
 This project adheres to the following conventions for code and its style.
 These conventions govern the code that runs during build-time. There are
@@ -8,9 +8,10 @@ separate conventions for code intended to run in the browser.
 Node Support Policy
 -------------------
 
-Starting with Node 8, CSS Blocks and related projects will support all
-[Active LTS releases of Node][node-releases]. Once a node version moves into
-"Maintenance LTS" we reserve the right to drop support for it with the next
+Starting with Node 8, `css-blocks`, `OptiCSS` and related projects will
+support all [Active LTS releases of Node][node-releases]. Once a node version
+moves into "Maintenance LTS" we reserve the right to drop support for it with
+the next
 *minor* release. Our projects are configured to set the node `engine` version
 in their `package.json`, so such releases will not regress for projects using
 older versions of node &mdash; but bug fixes and new features may not be

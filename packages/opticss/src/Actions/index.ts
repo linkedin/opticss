@@ -11,6 +11,9 @@ export class Actions {
   perform(action: Action) {
     this.performed.push(action.perform());
   }
+  logStrings(): Array<string> {
+    return this.performed.map(a => a.logString());
+  }
   // TODO: Add undo method.
 }
 
