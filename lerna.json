@@ -2,7 +2,7 @@
   "lerna": "3.0.0-beta.0",
   "version": "0.2.0",
   "npmClient": "npm",
-  "hoist": true,
+  "hoist": "**",
   "useWorkspaces": false,
   "packages": [
     "packages/*"
