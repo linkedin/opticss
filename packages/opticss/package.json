@@ -33,7 +33,7 @@
   "types": "dist/src/index.d.ts",
   "homepage": "https://github.com/css-blocks/opticss#readme",
   "engines": {
-    "node": "8"
+    "node": ">=8"
   },
   "dependencies": {
     "@opticss/element-analysis": "file:../element-analysis",

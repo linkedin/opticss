@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/code-style",
   "engines": {
-    "node": "8"
+    "node": ">=8"
   },
   "peerDependencies": {
     "tslint": "^5.9.1",
