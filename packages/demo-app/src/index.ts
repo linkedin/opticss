@@ -1,9 +1,4 @@
-import {
-  SimpleAnalyzer,
-  SimpleTemplateRewriter,
-  SimpleTemplateRunner,
-  TestTemplate,
-} from "@opticss/simple-template";
+import { SimpleAnalyzer, SimpleTemplateRewriter, SimpleTemplateRunner, TestTemplate } from "@opticss/simple-template";
 import * as codemirror from "codemirror";
 import * as csshint from "codemirror/addon/hint/css-hint";
 import * as showhint from "codemirror/addon/hint/show-hint";
@@ -220,7 +215,7 @@ export class DemoOptimizer {
           tmplOutEditor.setValue(rewritten);
 
           const demoContainer = document.getElementById("tmpl-live-demo") as HTMLIFrameElement;
-          if (demoContainer) {
+          if (demoContainer && demoContainer.contentWindow) {
             demoContainer.contentWindow.document.open();
             demoContainer.contentWindow.document.write(`<style>${out}</style> ${demo}`);
             demoContainer.contentWindow.document.close();
