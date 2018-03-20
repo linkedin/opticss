@@ -29,6 +29,9 @@
 		},
 		{
 			"path": "docs"
+		},
+		{
+			"path": "."
 		}
 	],
 	"settings": {
@@ -39,6 +42,7 @@
 			".vscode",
 			"typings",
 			"**/*.json"
-		]
+		],
+		"typescript.tsdk": "opticss/node_modules/typescript/lib"
 	}
 }
