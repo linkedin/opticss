@@ -16,24 +16,25 @@ Frameworks Integration with OptiCSS
 Currently, the only CSS framework that uses OptiCSS is
 [css-blocks](http://css-blocks.com/). The css-blocks framework provides
 application integrations for Glimmer Applications, (some) Ember Applications,
-React/Preact apps using webpack. More app framework integrations are on the way.
+React/Preact apps using webpack. More application framework integrations are on the way.
 
 If you maintain a CSS framework or styling library, we're excited to help you
-design a solution that can correctly analyze styles and safely integrate with this tool.
+design a solution that can correctly analyze styles and safely integrate with
+this tool.
 
 Running the Optimizer
 ---------------------
 
-The optimizer takes as input one or more CSS files and one or template analyses.
-As well as configuration that describes the capabilities of the template integration
-and the features that the application wants enabled.
+The optimizer takes as input one or more CSS files and one or template
+analyses. As well as configuration that describes the capabilities of the
+template integration and the features that the application wants enabled.
 
-The optimizer runs asynchronously and when complete, provides optimized CSS, information
-for debugging purposes, and metadata that directs the template integration on how to
-rewrite the templates to use the new css selectors.
+The optimizer runs asynchronously and when complete, provides optimized CSS,
+information for debugging purposes, and metadata that directs the template
+integration on how to rewrite the templates to use the new css selectors.
 
-The following example demonstrates how to use the optimizer with a single CSS file
-when no template analysis information is available.
+The following example demonstrates how to use the optimizer with a single CSS
+file when no template analysis information is available.
 
 ```ts
 import * as fs from "fs";
@@ -94,35 +95,94 @@ opticss.optimize(outputName).then(result => {
 });
 ```
 
+OptiCSS Configuration Options
+-----------------------------
+
+#### Enabling/Disabling Optimizations
+
+An optimization can be disabled by setting the optimization to `false` in the configuration option.
+If set to true, the optimization is enabled with its
+default configuration. Some optimizations have an optimization-specific configuration that can be provided instead of setting it to `true`.
+
+As a convenience, there are two configuration properties, `only` and `except`, that accept an array of
+optimization names. When `only` is provided, only those
+optimizations specified are ran, regardless of the
+optimization's setting in base options object. When
+`except` is provided, those optimizations are never ran. Should an optimization be found in both the `only`
+and the `except` lists, the optimization is not ran.
+
+The `enabled` configuration option is a boolean value that controls whether any optimizations are performed. When set to `false`, it is the same as specifying all optimizations to the `except` option. When set to true (the default), the normal configuration options for what optimizations to run are respected.
+
+#### Optimizations:
+
+* `"rewriteIdents"` - Convert identifiers into new identifiers in order to make them shorter and more compressible. Different namespaces will re-use the same identifiers. (Enabled by default)
+* `"removeUnusedStyles"` - Remove selectors that are proven to not match any analyzed element. If the removed selector is the only remaining selector, the associated rule set is removed. (Enabled by default)
+* `"mergeDeclarations"` - Remove declarations from rules if there are several with the same value that can be combined and generate a new selector for it.
+Rewrite elements such that the new selector matches the element whenever the original selector would have matched (and with the same cascade resolution). (Enabled by default)
+* More optimizations are planned...
+
+#### Optimization specific options:
+
+The `rewriteIdents` optimization is the only optimization that has it's own configuration options (so far). To specify a configuration, set `rewriteIdents` to an object with the following keys:
+
+* `id` - whether the `id` attribute should be rewritten.
+* `class` - whether the `class` attribute should be rewritten.
+* `omitIdents` - (optional) An object that specifies identifiers that are reserved and should not be used by opticss in a specific namespace. The object can have keys of `id` and `class` with the value being an array of reserved identifiers.
+
+#### CSS Feature Support
+
+The `css` configuration option can be set to an object that provides information about the CSS features and support that OptiCSS can expect.
+
+The following CSS features are currently supported:
+
+* `caseInsensitiveSelectors` - In older versions of CSS, id and class selectors were case insensitive. This continues to be true for pages that end up in "quirks mode". Setting this value to `true`, forces opticss to assume that those identifiers are case insensitve. This forces the ident generator to use only lower case letters for identifiers which is not as compressible.
+
+#### More About Configuration
+
+The configuration options to OptiCSS are available as a strongly typed interface that can be found at [OpticssOptions.ts](./src/OpticssOptions.ts)
+
+The analyzer/rewriter implementation must also tell OptiCSS about its capabilities. OptiCSS will not honor a user request to enable features that the rewrite configuration says it does not support. See the [template-api package](../template-api) in this repo for more information.
+
 Combining OptiCSS with other CSS Processors
 -------------------------------------------
 
 OptiCSS takes CSS as input. It has a deep understanding of css selector
 semantics and also about the syntax of CSS property values and how different
-CSS properties conflict/override.
+CSS properties conflict/override. Alternative syntaxes, future syntax,
+and any other authoring conveniences of that sort should be processed into
+to CSS a browser would understand before loading it into OptiCSS (input sourcemaps
+are accepted).
+
+Depending on how you it's being used (E.g. for per-browser builds), it may be
+better to run tools like autoprefixer before optimization, but it should
+also be safe to run it afterwards. In general, running tools that change
+what css properties are present or what their values are in a meaningful way
+should run before optimization.
 
 It is not only safe, but recommended to use a CSS minifier with OptiCSS.
 OptiCSS approaches CSS optimization with a completely different approach.
-Minification and compression are both important steps required to optimize
+Minification and compression are both important steps when optimizing
 your styles for over-the-wire transfer.
 
-Development with OptiCSS
-------------------------
+Configuring OptiCSS for Development
+-----------------------------------
 
 The nature of an optimizing compiler is that small changes to input can have
-changes that affect styles across an application. During application
-development, we recommend that OptiCSS is disabled so that re-build caching
-is effective and to make it easier for developers to make sense of the styles
-they see in their browser.
+changes that affect how the computed style is assembled for many seemingly
+unrelated elements across an application. During application development, we
+recommend that OptiCSS is disabled so that re-build caching is effective and
+to make it easier for developers to make sense of the styles they see in
+their browser.
 
 When disabled, opticss still runs, but it returns an identity mapping that
 rewrites all styles such that they are left intact. This reduces some of the risk
 inherent with running an different set of tools in development than in production.
 
-If a template integration supports rewriting attributes that aren't the html
-class attribute into class names, you may consider leaving that feature
-enabled but setting the ident generator into dev mode (TODO: create a dev
-mode for the ident generator.)
+If a template integration supports rewriting selectors that target attributes
+that aren't the html class attribute into class names, you may consider
+leaving that feature enabled but setting the ident generator into dev mode
+
+**(TODO: create a dev mode for the ident generator.)**
 
 Browser Targeting
 -----------------
