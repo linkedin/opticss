@@ -43,6 +43,11 @@
 			"typings",
 			"**/*.json"
 		],
-		"typescript.tsdk": "opticss/node_modules/typescript/lib"
+		"typescript.tsdk": "opticss/node_modules/typescript/lib",
+		"cSpell.words": [
+			"Opti",
+			"stylesheet",
+			"unoptimized"
+		]
 	}
 }
