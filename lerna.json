@@ -9,7 +9,7 @@
   ],
   "command": {
     "publish": {
-      "message": "chore(release): publish %s"
+      "message": "chore(release): Publish %s."
     },
     "bootstrap": {
       "sort": true
