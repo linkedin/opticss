@@ -31,7 +31,7 @@
     "source-map-support": "^0.5.3",
     "tslint": "^5.1.0",
     "typedoc": "^0.7.1",
-    "typescript": "^2.8.0-rc"
+    "typescript": "^2.8.1"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap",
