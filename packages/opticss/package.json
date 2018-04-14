@@ -45,7 +45,7 @@
     "debug": "^2.6.8",
     "object.values": "^1.0.4",
     "postcss": "^6.0.21",
-    "postcss-selector-parser": "^4.0.0-rc.0",
+    "postcss-selector-parser": "^4.0.0-rc.1",
     "source-map": "^0.6.1",
     "specificity": "^0.3.2",
     "typescript-collections": "^1.2.5",
