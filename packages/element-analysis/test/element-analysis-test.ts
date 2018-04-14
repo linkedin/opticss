@@ -4,9 +4,9 @@ import { suite, test } from "mocha-typescript";
 import {
   Attribute,
   AttributeValueSet,
-  attrValues,
   Element,
   Tagname,
+  attrValues,
 } from "../src";
 
 @suite("Element Analysis")

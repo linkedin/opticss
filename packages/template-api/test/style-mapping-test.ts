@@ -1,7 +1,7 @@
 import {
   AttributeValueParser,
 } from "@opticss/attr-analysis-dsl";
-import { Attribute, attrValues as v, Element, Tagname } from "@opticss/element-analysis";
+import { Attribute, Element, Tagname, attrValues as v } from "@opticss/element-analysis";
 import {
   assert as typedAssert,
 } from "@opticss/util";

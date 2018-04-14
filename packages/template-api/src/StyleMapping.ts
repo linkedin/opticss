@@ -5,9 +5,9 @@ import {
   isTagnameValueChoice,
 } from "@opticss/element-analysis";
 import {
-  assertNever,
   IdentityDictionary,
   ItemType,
+  assertNever,
   unionInto,
   whatever,
 } from "@opticss/util";
@@ -15,7 +15,7 @@ import {
   Dictionary, MultiDictionary,
 } from "typescript-collections";
 
-import { AndExpression, BooleanExpression, isAndExpression, isNotExpression, isOrExpression, OrExpression } from "./BooleanExpression";
+import { AndExpression, BooleanExpression, OrExpression, isAndExpression, isNotExpression, isOrExpression } from "./BooleanExpression";
 import { TemplateIntegrationOptions } from "./TemplateIntegrationOptions";
 
 export interface RewriteInformation<InfoType> {

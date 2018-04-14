@@ -1,6 +1,6 @@
 import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
 import { Attr, Attribute, AttributeNS, Element, Tagname } from "@opticss/element-analysis";
-import { AndExpression, BooleanExpression, isSimpleTagname, NotExpression, OrExpression, RewriteableAttrName, RewriteMapping, SimpleAttribute, SimpleTagname, StyleMapping, TemplateIntegrationOptions } from "@opticss/template-api";
+import { AndExpression, BooleanExpression, NotExpression, OrExpression, RewriteMapping, RewriteableAttrName, SimpleAttribute, SimpleTagname, StyleMapping, TemplateIntegrationOptions, isSimpleTagname } from "@opticss/template-api";
 import { assertNever } from "@opticss/util";
 import * as parse5 from "parse5";
 

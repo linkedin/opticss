@@ -1,9 +1,9 @@
 import { TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes } from "@opticss/template-api";
 
 import { ParsedCssFile } from "../CssFile";
+import { Initializers } from "../initializers";
 import { OptiCSSOptions } from "../OpticssOptions";
 import { OptimizationPass } from "../OptimizationPass";
-import { Initializers } from "../initializers";
 
 // Optimizations TODO:
 //   ✓ Remove unused styles.

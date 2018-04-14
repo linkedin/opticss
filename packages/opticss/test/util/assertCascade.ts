@@ -14,11 +14,11 @@ import {
 } from "@opticss/util";
 import {
   AssertionResult,
-  assertSameCascade,
-  bodyElement,
   ComputedStyle,
   ElementStyle,
   ElementStyleMismatch,
+  assertSameCascade,
+  bodyElement,
   serializeElement,
 } from "resolve-cascade";
 

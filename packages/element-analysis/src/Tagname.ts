@@ -2,10 +2,10 @@ import { assertNever } from "@opticss/util";
 
 import {
   HasNamespace,
-  isConstant,
-  isUnknown,
   ValueConstant,
   ValueUnknown,
+  isConstant,
+  isUnknown,
 } from "./Attribute";
 
 export type Tag = Tagname | TagnameNS;

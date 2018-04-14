@@ -15,7 +15,7 @@ import { assertNever } from "@opticss/util";
 import * as SelectorParser from "postcss-selector-parser";
 import { Memoize } from "typescript-memoize";
 
-import { boolToMatch, Match, matches } from "./Match";
+import { Match, boolToMatch, matches } from "./Match";
 import { HasSelectorNodes, Matcher } from "./Matcher";
 
 export function isAttrNode(node: SelectorParser.Node): node is SelectorParser.Attribute {

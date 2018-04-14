@@ -7,9 +7,9 @@ import {
 } from "mocha-typescript";
 
 import {
-  firstOfType,
   ItemType,
   ObjectDictionary,
+  firstOfType,
   objectDictionaryFromMap,
 } from "../src";
 

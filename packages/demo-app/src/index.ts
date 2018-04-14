@@ -4,11 +4,11 @@ import * as csshint from "codemirror/addon/hint/css-hint";
 import * as showhint from "codemirror/addon/hint/show-hint";
 import * as cssmode from "codemirror/mode/css/css";
 import * as htmlmode from "codemirror/mode/htmlmixed/htmlmixed";
-import { Action, isMultiAction, Optimizer } from "opticss";
+import { Action, Optimizer, isMultiAction } from "opticss";
 import * as prettier from "prettier";
 import * as Split from "split.js";
 
-import { process as cssSize, SizeResults } from "./css-size-fake";
+import { SizeResults, process as cssSize } from "./css-size-fake";
 import { Demo, FeatureFlags, FeatureToggles, hush, loadDemos } from "./demos";
 
 const FEATURE_TOGGLES: FeatureToggles = {

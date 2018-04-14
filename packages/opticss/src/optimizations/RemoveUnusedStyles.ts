@@ -4,10 +4,10 @@ import { TemplateAnalysis, TemplateTypes } from "@opticss/template-api";
 import { RemoveRule } from "../Actions";
 import { ChangeSelector } from "../Actions";
 import { ParsedCssFile } from "../CssFile";
+import { Initializers } from "../initializers";
 import { ElementMatcher, matches } from "../Match";
 import { OptiCSSOptions } from "../OpticssOptions";
 import { OptimizationPass } from "../OptimizationPass";
-import { Initializers } from "../initializers";
 import { walkRules } from "../util/cssIntrospection";
 
 import { SingleFileOptimization } from "./Optimization";

@@ -1,22 +1,22 @@
 import {
-  normalizeTemplateOptions,
   StyleMapping,
   TemplateAnalysis,
   TemplateIntegrationOptions,
   TemplateTypes,
+  normalizeTemplateOptions,
 } from "@opticss/template-api";
 import Concat = require("concat-with-sourcemaps");
 import * as postcss from "postcss";
 
 import { Actions } from "./Actions";
 import { CssFile, ParsedCssFile } from "./CssFile";
+import { Initializers, initializers } from "./initializers";
 import { DEFAULT_OPTIONS, OptiCSSOptions } from "./OpticssOptions";
 import { OptimizationPass } from "./OptimizationPass";
-import { initializers, Initializers } from "./initializers";
 import {
+  Optimization,
   isMultiFileOptimization,
   isSingleFileOptimization,
-  Optimization,
   optimizations,
 } from "./optimizations";
 

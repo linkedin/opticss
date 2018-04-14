@@ -3,13 +3,13 @@ import * as propParser from "css-property-parser";
 import * as parse5 from "parse5";
 
 import {
-  allElements,
-  bodyElement,
   Cascade,
   ComputedStyle,
-  debugElement,
   ElementStyle,
   FullCascade,
+  allElements,
+  bodyElement,
+  debugElement,
   parseHtml,
 } from "./index";
 

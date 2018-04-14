@@ -3,11 +3,11 @@ import {
 } from "@opticss/element-analysis";
 import {
   ElementAttributes,
-  isSimpleTagname,
   SimpleAttribute as ElementAttribute,
   SimpleTagname as ElementTagname,
   StyleMapping,
   TemplateIntegrationOptions,
+  isSimpleTagname,
 } from "@opticss/template-api";
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
@@ -26,8 +26,8 @@ import {
   ParsedSelectorAndRule,
   SelectorCache,
 } from "../../query";
-import { IdentGenerators } from "../../util/IdentGenerator";
 import { isAtRule } from "../../util/cssIntrospection";
+import { IdentGenerators } from "../../util/IdentGenerator";
 import { MultiAction } from "../Action";
 
 const {

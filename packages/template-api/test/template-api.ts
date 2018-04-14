@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { and, BooleanExpression, not, or } from "../src";
+import { BooleanExpression, and, not, or } from "../src";
 
 // import clean from './util/clean';
 
