@@ -108,6 +108,6 @@ Shared Configuration Files
 [ts-mocha]: https://www.npmjs.com/package/ts-mocha
 [chai]: http://chaijs.com/api/assert/
 [generators]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators
-[interactive-lint-config]: https://github.com/css-blocks/css-blocks/tree/master/packages/code-style/configs/tslint.interactive.json
-[cli-lint-config]: https://github.com/css-blocks/css-blocks/tree/master/packages/code-style/configs/tslint.cli.json
-[release-lint-config]: https://github.com/css-blocks/css-blocks/tree/master/packages/code-style/configs/tslint.release.json
+[interactive-lint-config]: https://github.com/linkedin/opticss/tree/master/packages/code-style/configs/tslint.interactive.json
+[cli-lint-config]: https://github.com/linkedin/opticss/tree/master/packages/code-style/configs/tslint.cli.json
+[release-lint-config]: https://github.com/linkedin/opticss/tree/master/packages/code-style/configs/tslint.release.json
