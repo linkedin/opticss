@@ -6,12 +6,12 @@ import {
   test,
 } from "mocha-typescript";
 
+import { clean } from "../src/clean";
 import { IdentityDictionary } from "../src/IdentityDictionary";
 import { MultiMap } from "../src/MultiMap";
 import { TwoKeyMultiMap } from "../src/TwoKeyMultiMap";
-import { ObjectDictionary } from "../src/UtilityTypes";
-import { clean } from "../src/clean";
 import * as typeAssertions from "../src/typedAssert";
+import { ObjectDictionary } from "../src/UtilityTypes";
 
 interface MultiMapKey1 {
   name: string;

@@ -1,5 +1,5 @@
-import { defined, FunctionCall0, FunctionCall1, FunctionCall2, FunctionCall3, FunctionCall4, something, TypeGuard } from "./UtilityTypes";
 import { isObject, whatever } from "./index";
+import { FunctionCall0, FunctionCall1, FunctionCall2, FunctionCall3, FunctionCall4, TypeGuard, defined, something } from "./UtilityTypes";
 
 /**
  * Maybe.ts - A TypeScript implementation of the Maybe Monad.

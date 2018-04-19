@@ -2,8 +2,8 @@ import { SourcePosition } from "@opticss/element-analysis";
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 
-import { OptimizationPass } from "../../OptimizationPass";
 import { OpticssError } from "../../errors";
+import { OptimizationPass } from "../../OptimizationPass";
 import { ParsedSelector } from "../../parseSelector";
 import { IdentNode } from "../../util/cssIntrospection";
 import { Action, stripNL } from "../Action";

@@ -1,7 +1,7 @@
 import { TestTemplate } from "@opticss/simple-template";
 import {
-  normalizeTemplateOptions,
   TemplateIntegrationOptions,
+  normalizeTemplateOptions,
 } from "@opticss/template-api";
 import {
   assert,

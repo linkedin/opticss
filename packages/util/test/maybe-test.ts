@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { attempt, callMaybe, isMaybe, isNone, isSome, maybe, Maybe, MAYBE, methodMaybe, NO_VALUE, None, none, some, unwrap } from "../src/Maybe";
+import { MAYBE, Maybe, NO_VALUE, None, attempt, callMaybe, isMaybe, isNone, isSome, maybe, methodMaybe, none, some, unwrap } from "../src/Maybe";
 import * as typedAssert from "../src/typedAssert";
 
 @suite("Maybe")

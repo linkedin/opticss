@@ -1,3 +1,7 @@
+import * as postcss from "postcss";
+import * as postcssSelectorParser from "postcss-selector-parser";
+import * as TSCollections from "typescript-collections";
+
 export * from "./CssFile";
 export * from "./errors";
 export * from "./query";
@@ -10,3 +14,8 @@ export {
   TimingData,
   Optimizer,
 } from "./Optimizer";
+export {
+  postcss,
+  postcssSelectorParser,
+  TSCollections,
+};

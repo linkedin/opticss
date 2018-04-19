@@ -4,22 +4,22 @@
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
-    "compile": "rm -rf dist && tsc",
+    "compile": "rm -rf dist && ../../node_modules/.bin/tsc",
     "pretest": "npm run compile",
     "posttest": "npm run lint",
     "prepublishOnly": "npm run compile && npm run lintall",
-    "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
-    "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json",
-    "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
-    "test": "mocha dist/test/**/*.js --opts test/mocha.opts -i --grep Integration",
-    "integration": "npm run pretest && mocha dist/test --opts test/mocha.opts --grep Integration",
-    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
-    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "docs": "typedoc --out ./docs ."
+    "lint": "../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
+    "lintall": "../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.release.json",
+    "lintfix": "../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
+    "test": "../../node_modules/.bin/mocha dist/test/**/*.js --opts test/mocha.opts -i --grep Integration",
+    "integration": "npm run pretest && ../../node_modules/.bin/mocha dist/test --opts test/mocha.opts --grep Integration",
+    "coverage": "../../node_modules/.bin/istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "../../node_modules/.bin/remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "../../node_modules/.bin/typedoc --out ./docs ."
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-blocks/opticss.git"
+    "url": "git+https://github.com/linkedin/opticss.git"
   },
   "keywords": [
     "css",
@@ -28,10 +28,10 @@
   "author": "Chris Eppstein",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/css-blocks/opticss/issues"
+    "url": "https://github.com/linkedin/opticss/issues"
   },
   "types": "dist/src/index.d.ts",
-  "homepage": "https://github.com/css-blocks/opticss#readme",
+  "homepage": "https://github.com/linkedin/opticss#readme",
   "engines": {
     "node": ">=8"
   },
@@ -44,8 +44,8 @@
     "css-property-parser": "^1.0.5",
     "debug": "^2.6.8",
     "object.values": "^1.0.4",
-    "postcss": "^6.0.13",
-    "postcss-selector-parser": "^3.1.1",
+    "postcss": "^6.0.21",
+    "postcss-selector-parser": "^4.0.0-rc.1",
     "source-map": "^0.6.1",
     "specificity": "^0.3.2",
     "typescript-collections": "^1.2.5",

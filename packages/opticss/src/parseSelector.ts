@@ -1,5 +1,5 @@
 import * as postcss from "postcss";
-import * as selectorParser from "postcss-selector-parser";
+import * as postcssSelectorParser from "postcss-selector-parser";
 
 import { isRule } from "./util/cssIntrospection";
 
@@ -9,10 +9,10 @@ const {
   isPseudoElement,
   isRoot,
   isSelector,
-} = selectorParser;
+} = postcssSelectorParser;
 
 export interface CombinatorAndSelector<SelectorType> {
-  combinator: selectorParser.Combinator;
+  combinator: postcssSelectorParser.Combinator;
   selector: SelectorType;
 }
 
@@ -20,7 +20,7 @@ export type CombinatorAndCompoundSelector = CombinatorAndSelector<CompoundSelect
 
 export class CombinedSelector<T> {
   next?: CombinatorAndSelector<T>;
-  setNext(combinator: selectorParser.Combinator, selector: T) {
+  setNext(combinator: postcssSelectorParser.Combinator, selector: T) {
     this.next = {
       combinator: combinator,
       selector: selector,
@@ -33,8 +33,8 @@ export class CombinedSelector<T> {
  * `CompoundSelector` in the chan, and the combinator that connects them.
  */
 export class CompoundSelector extends CombinedSelector<CompoundSelector> {
-  nodes: selectorParser.Node[];
-  pseudoelement?: selectorParser.Pseudo;
+  nodes: postcssSelectorParser.Node[];
+  pseudoelement?: postcssSelectorParser.Pseudo;
   next?: CombinatorAndCompoundSelector;
 
   constructor() {
@@ -58,7 +58,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
    * Add a node to `CompoundSelector`.
    * @param Simple selector node to add.
    */
-  addNode(node: selectorParser.Node) {
+  addNode(node: postcssSelectorParser.Node) {
     this.nodes.push(node);
   }
 
@@ -66,7 +66,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
    * Set pseudo element type on this `CompoundSelector`.
    * @param The `selectorParser.Pseudo` to assign.
    */
-  setPseudoelement(pseudo: selectorParser.Pseudo) {
+  setPseudoelement(pseudo: postcssSelectorParser.Pseudo) {
     this.pseudoelement = pseudo;
   }
 
@@ -76,7 +76,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
    * @param combinator The combinator connecting these two selectors.
    * @param reference The `CompoundSelector` to insert this selector before.
    */
-  insertBefore(other: CompoundSelector, combinator: selectorParser.Combinator, reference: CompoundSelector): boolean {
+  insertBefore(other: CompoundSelector, combinator: postcssSelectorParser.Combinator, reference: CompoundSelector): boolean {
     if (this.next && this.next.selector === reference) {
       let otherEnd = other.lastSibling;
       otherEnd.next = {
@@ -98,7 +98,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
    * @param selector The `CompoundSelector` to append.
    * @return This `CompoundSelector`.
    */
-  append(combinator: selectorParser.Combinator, selector: CompoundSelector): CompoundSelector {
+  append(combinator: postcssSelectorParser.Combinator, selector: CompoundSelector): CompoundSelector {
     this.lastSibling.next = {
       combinator: combinator,
       selector: selector,
@@ -113,9 +113,9 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
    */
   mergeNodes(other: CompoundSelector): CompoundSelector {
     let foundNodes = new Set<string>();
-    let pseudos: selectorParser.Pseudo[] = [];
-    let nodes: selectorParser.Node[] = [];
-    let filterNodes = function(node: selectorParser.Node) {
+    let pseudos: postcssSelectorParser.Pseudo[] = [];
+    let nodes: postcssSelectorParser.Node[] = [];
+    let filterNodes = function(node: postcssSelectorParser.Node) {
       let nodeStr = node.toString();
       if (!foundNodes.has(nodeStr)) {
         foundNodes.add(nodeStr);
@@ -225,7 +225,7 @@ export class ParsedSelector {
     return earlyReturn;
   }
 
-  eachSelectorNode<EarlyReturnType>(callback: (node: selectorParser.Node) =>  EarlyReturnType | undefined): EarlyReturnType | undefined {
+  eachSelectorNode<EarlyReturnType>(callback: (node: postcssSelectorParser.Node) =>  EarlyReturnType | undefined): EarlyReturnType | undefined {
     return this.eachCompoundSelector((sel) => {
       for (let node of sel.nodes) {
         let earlyReturn = callback(node);
@@ -310,14 +310,14 @@ export class ParsedSelector {
     return this.selector.toString();
   }
 
-  toContext(...keyNodes: Array<selectorParser.Node>): ParsedSelector {
+  toContext(...keyNodes: Array<postcssSelectorParser.Node>): ParsedSelector {
     let context = this.clone();
     let key = context.key;
     key.nodes = key.nodes.filter(node => isPseudo(node)).sort((a, b) => a.value!.localeCompare(b.value!));
     if (keyNodes.length > 0) {
       key.nodes.unshift(...keyNodes);
     } else {
-      key.nodes.unshift(selectorParser.universal());
+      key.nodes.unshift(postcssSelectorParser.universal());
     }
     return context;
   }
@@ -351,7 +351,7 @@ export class ParsedSelector {
 /**
  * All valid selector-like inputs to the `parseSelector` helper methods.
  */
-export type Selectorish = string | selectorParser.Root | selectorParser.Node[] | selectorParser.Node[][] | postcss.Rule;
+export type Selectorish = string | postcssSelectorParser.Root | postcssSelectorParser.Node[] | postcssSelectorParser.Node[][] | postcss.Rule;
 
 /**
  * Coerce a `selectorParser.Root` object to `selectorParser.Node[][]`.
@@ -359,8 +359,8 @@ export type Selectorish = string | selectorParser.Root | selectorParser.Node[] |
  * @param root  `selectorParser.Root` object
  * @return Array of `selectorParser.Node` arrays.
  */
-function coerceRootToNodeList(root: selectorParser.Root): selectorParser.Node[][] {
-  return root.nodes.map(n => (<selectorParser.Container>n).nodes);
+function coerceRootToNodeList(root: postcssSelectorParser.Root): postcssSelectorParser.Node[][] {
+  return root.nodes.map(n => (<postcssSelectorParser.Container>n).nodes);
 }
 
 /**
@@ -369,14 +369,14 @@ function coerceRootToNodeList(root: selectorParser.Root): selectorParser.Node[][
  * @param selector  Selector like object: including `string`, `selectorParser.Root`, `selectorParser.Selector`, or `selectorParser.Node`
  * @return Array of `selectorParser.Node` arrays.
  */
-function toNodes(selector: Selectorish): selectorParser.Node[][] {
+function toNodes(selector: Selectorish): postcssSelectorParser.Node[][] {
 
   // If input is already an array of Nodes, return.
   if (Array.isArray(selector)) {
     if (Array.isArray(selector[0])) {
-      return <selectorParser.Node[][]>selector;
+      return <postcssSelectorParser.Node[][]>selector;
     } else {
-      return [<selectorParser.Node[]>selector];
+      return [<postcssSelectorParser.Node[]>selector];
     }
   }
 
@@ -390,7 +390,7 @@ function toNodes(selector: Selectorish): selectorParser.Node[][] {
     return [selector.nodes];
   }
 
-  let res: selectorParser.Root =  selectorParser().astSync(selector, {updateSelector: false});
+  let res: postcssSelectorParser.Root =  postcssSelectorParser().astSync(selector, {updateSelector: false});
   return coerceRootToNodeList(res);
 }
 
@@ -410,7 +410,7 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
     nodes.forEach((n) => {
 
       // If a combinator is encountered, start a new `CompoundSelector` and link to the previous.
-      if (n.type === selectorParser.COMBINATOR) {
+      if (n.type === postcssSelectorParser.COMBINATOR) {
         let lastCompoundSel = compoundSel;
         compoundSel = new CompoundSelector();
         lastCompoundSel.setNext(n, compoundSel);
@@ -419,7 +419,7 @@ export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[
       // Normalize :before and :after to always use double colons and save.
       else if (isPseudoElement(n)) {
         if (compoundSel.nodes.length === 0) {
-          let universal = selectorParser.universal();
+          let universal = postcssSelectorParser.universal();
           n.parent!.insertBefore(n, universal);
           compoundSel.addNode(universal);
         }

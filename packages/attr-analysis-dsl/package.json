@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/css-blocks/opticss.git"
+    "url": "git+https://github.com/linkedin/opticss.git"
   },
   "keywords": [
     "css",
@@ -29,9 +29,9 @@
   "author": "Chris Eppstein",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/css-blocks/opticss/issues"
+    "url": "https://github.com/linkedin/opticss/issues"
   },
-  "homepage": "https://github.com/css-blocks/opticss#readme",
+  "homepage": "https://github.com/linkedin/opticss#readme",
   "peerDependencies": {
     "@opticss/template-api": "file:../template-api"
   },

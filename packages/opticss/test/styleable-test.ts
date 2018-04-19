@@ -1,6 +1,8 @@
 import {
   Attribute,
   AttributeValueChoiceOption,
+  Tagname,
+  TagnameNS,
   isAbsent,
   isChoice,
   isConstant,
@@ -10,8 +12,6 @@ import {
   isStartsWith,
   isTagChoice,
   isUnknown,
-  Tagname,
-  TagnameNS,
 } from "@opticss/element-analysis";
 import {
   assert,

@@ -1,10 +1,10 @@
-import { NormalizedRewriteOptions, rewriteOptions, TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes } from "@opticss/template-api";
+import { NormalizedRewriteOptions, TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes, rewriteOptions } from "@opticss/template-api";
 
 import { RewriteRuleIdents, RuleIdents } from "../Actions/actions/RewriteRuleIdents";
 import { ParsedCssFile } from "../CssFile";
+import { Initializers } from "../initializers";
 import { OptiCSSOptions } from "../OpticssOptions";
 import { OptimizationPass } from "../OptimizationPass";
-import { Initializers } from "../initializers";
 import { eachFileIdent } from "../util/cssIntrospection";
 
 import { MultiFileOptimization } from "./Optimization";

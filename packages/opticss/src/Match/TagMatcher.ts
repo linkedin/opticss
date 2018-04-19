@@ -1,13 +1,13 @@
 import {
+  Tag,
   isConstant,
   isTagChoice,
   isUnknown,
-  Tag,
 } from "@opticss/element-analysis";
 import { assertNever } from "@opticss/util";
 import * as SelectorParser from "postcss-selector-parser";
 
-import { boolToMatch, Match } from "./Match";
+import { Match, boolToMatch } from "./Match";
 import { HasSelectorNodes, Matcher } from "./Matcher";
 
 export function isTag(tag: { type: string } | undefined): tag is SelectorParser.Tag {

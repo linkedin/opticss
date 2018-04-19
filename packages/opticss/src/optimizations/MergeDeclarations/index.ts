@@ -4,20 +4,20 @@ import {
   AttributeNS,
   AttributeValueChoice,
   Element,
-  isAbsent,
-  isChoice,
-  isConstant,
   Tagname,
   ValueAbsent,
   ValueConstant,
+  isAbsent,
+  isChoice,
+  isConstant,
 } from "@opticss/element-analysis";
 import {
-  isSimpleTagname,
   SimpleAttribute,
-  simpleAttributeToString,
   TemplateAnalysis,
   TemplateIntegrationOptions,
   TemplateTypes,
+  isSimpleTagname,
+  simpleAttributeToString,
 } from "@opticss/template-api";
 import {
   IdentityDictionary,
@@ -44,7 +44,10 @@ import {
 import {
   ParsedCssFile,
 } from "../../CssFile";
-import { AttributeMatcher, matches, matchToBool } from "../../Match";
+import {
+  Initializers,
+} from "../../initializers";
+import { AttributeMatcher, matchToBool, matches } from "../../Match";
 import {
   OptiCSSOptions,
 } from "../../OpticssOptions";
@@ -52,15 +55,12 @@ import {
   OptimizationPass,
 } from "../../OptimizationPass";
 import {
-  Initializers,
-} from "../../initializers";
-import {
   ParsedSelector,
 } from "../../parseSelector";
 import {
-  allParsedSelectors,
   ParsedSelectorAndRule,
   QuerySelectorReferences,
+  allParsedSelectors,
 } from "../../query";
 import { isDeclaration } from "../../util/cssIntrospection";
 import {

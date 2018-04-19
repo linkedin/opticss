@@ -20,7 +20,7 @@
     "css-size": "^4.0.0-rc.4",
     "husky": "^0.14.3",
     "istanbul": "^0.4.5",
-    "lerna": "^3.0.0-beta.7",
+    "lerna": "^3.0.0-beta.16",
     "mocha": "^3.4.2",
     "mocha-typescript": "^1.1.9",
     "opticss": "file:./packages/opticss",
@@ -31,7 +31,7 @@
     "source-map-support": "^0.5.3",
     "tslint": "^5.1.0",
     "typedoc": "^0.7.1",
-    "typescript": "^2.8.0-rc"
+    "typescript": "^2.8.1"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap",

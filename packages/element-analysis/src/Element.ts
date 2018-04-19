@@ -1,7 +1,7 @@
-import { Attr, Attribute, SerializedAttribute } from "./Attribute";
-import { POSITION_UNKNOWN, SourcePosition } from "./SourceLocation";
-import { SerializedTagname, Tag, Tagname } from "./Tagname";
-import { attrValues, SourceLocation } from "./index";
+import { Attr, SerializedAttribute } from "./Attribute";
+import { SourceLocation } from "./index";
+import { POSITION_UNKNOWN } from "./SourceLocation";
+import { SerializedTagname, Tag } from "./Tagname";
 
 export type Selectable = Element | Tag | Attr;
 
