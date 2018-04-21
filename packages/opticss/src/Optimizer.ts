@@ -203,7 +203,8 @@ export class Optimizer {
   /**
    * Main runner method for the Optimizer. After all Sources and Analyses are registered,
    * calling this method executes all requested optimizations and returns an optimization result.
-   * @param The output's filename.
+   * @param outputFilename - The output's filename. The file is not written
+   *   but it is needed to ensure that source maps works correctly.
    * @returns The optimization result.
    */
   optimize(outputFilename: string): Promise<OptimizationResult> {

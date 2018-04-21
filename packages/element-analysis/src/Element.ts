@@ -1,7 +1,8 @@
-import { Attr, SerializedAttribute } from "./Attribute";
-import { SourceLocation } from "./index";
-import { POSITION_UNKNOWN } from "./SourceLocation";
-import { SerializedTagname, Tag } from "./Tagname";
+import { Attr, Attribute, SerializedAttribute } from "./Attribute";
+import { attrValues } from "./attrValues";
+import { SourceLocation } from "./SourceLocation";
+import { POSITION_UNKNOWN, SourcePosition } from "./SourceLocation";
+import { SerializedTagname, Tag, Tagname } from "./Tagname";
 
 export type Selectable = Element | Tag | Attr;
 
@@ -48,4 +49,31 @@ export class Element implements ElementInfo {
     }
     return `<${parts.join(" ")}>`;
   }
+}
+
+/**
+ * Returns an unknown element. Use of this element in an analysis
+ * has the effect of putting the optimizer into a conservative optimization
+ * mode since there's no longer any guarantees about what values maybe be
+ * correlated on the element's attributes. Essentially, every selector will
+ * match this element.
+ *
+ * @param [unknownAttrs=["class", "id"]] Which attributes should be marked as unknown.
+ * @param [startPosition] if the start position is known it can be provided.
+ * @param [endPosition] if the end position is known it can be provided.
+ */
+export function unknownElement(unknownAttrs = ["class", "id"], startPosition?: SourcePosition, endPosition?: SourcePosition): Element {
+  let tagname = new Tagname(attrValues.unknown());
+  let attrs = new Array<Attribute>();
+  for (let attrName of unknownAttrs) {
+    attrs.push(new Attribute(attrName, attrValues.unknown()));
+  }
+  let loc: SourceLocation | undefined = undefined;
+  if (startPosition) {
+    loc = {start: startPosition};
+    if (endPosition) {
+      loc.end = endPosition;
+    }
+  }
+  return new Element(tagname, attrs, loc);
 }
