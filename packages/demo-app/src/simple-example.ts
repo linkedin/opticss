@@ -8,13 +8,13 @@ import { OptiCSSOptions, Optimizer } from "opticss";
 // App level control of enabled features, enabling a feature that
 // the template integration doesn't support, has no effect.
 const options: Partial<OptiCSSOptions> = {
-  rewriteIdents: { id: false, class: true }
+  rewriteIdents: { id: false, class: true },
 };
 
 // This value usually comes from the template integration library.
 const templateOptions: Partial<TemplateIntegrationOptions> = {
   rewriteIdents: { id: false, class: true },
-  analyzedTagnames: true
+  analyzedTagnames: true,
 };
 
 // A new optimizer instance is required for every optimization.
@@ -27,7 +27,7 @@ let cssFile = "build/assets/myapp.css";
 opticss.addSource({
   filename: cssFile,
   content: fs.readFileSync(cssFile, "utf-8"),
-  sourceMap: fs.readFileSync(`${cssFile}.map`, "utf-8") 
+  sourceMap: fs.readFileSync(`${cssFile}.map`, "utf-8"),
 });
 
 // This example doesn't use an analyzer. Instead, we create an analysis that
@@ -41,6 +41,7 @@ opticss.addAnalysis(analysis);
 
 // Perform the optimization and output the results.
 let outputName = "build/assets/optimized.css";
+// tslint:disable-next-line:no-floating-promises
 opticss.optimize(outputName).then(result => {
   fs.writeFileSync(outputName, result.output.content.toString(), "utf-8");
   fs.writeFileSync(`${outputName}.log`, result.actions.logStrings().join("\n"), "utf-8");
@@ -56,4 +57,3 @@ opticss.optimize(outputName).then(result => {
   // styleMapping result to the template rewriter.
   //let rewriteInfo = result.styleMapping;
 });
-

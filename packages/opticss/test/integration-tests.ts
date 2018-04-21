@@ -18,11 +18,11 @@ import {
   logOptimizations,
   testOptimizationCascade,
 } from "./util/assertCascade";
-import { debugSize } from "./util/assertSmaller";
+// import { debugSize } from "./util/assertSmaller";
 
 function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
   return testOptimizationCascade(
-    { except: ["removeUnusedStyles"] },
+    { },
     {
       rewriteIdents: { id: true, class: true },
       analyzedAttributes: [],
@@ -36,34 +36,18 @@ function testDefaults(...stylesAndTemplates: Array<string | TestTemplate>): Prom
 
 @suite("Integration Tests", slow(3000), timeout(5000))
 export class IntegrationTests {
-  @test "Google Homepage"() {
-    let css = fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/integration-tests/google-homepage/styles.css"), "utf-8");
-    let markup = fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/integration-tests/google-homepage/markup.html"), "utf-8");
+  @test "simple page"() {
+    let css = fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/integration-tests/simple/styles.css"), "utf-8");
+    let markup = fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/integration-tests/simple/markup.html"), "utf-8");
     let template = new TestTemplate("test", markup, true);
     return testDefaults(css, template).then(_result => {
       // logOptimizations(result.optimization);
-      // return debugSize(css, result).then(() => {
+      // return debugSize(result).then(() => {
       //   // debugResult(css, result);
       // });
     }).catch(e => {
       logOptimizations(e.optimization);
       debugCascadeError(e);
-      throw e;
-    });
-  }
-  @test "NYT Homepage"() {
-    let markup = fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/integration-tests/nytimes-homepage/markup.html"), "utf-8");
-    let css = fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/integration-tests/nytimes-homepage/styles.css"), "utf-8");
-    let template = new TestTemplate("test", markup, true);
-    return testDefaults(css, template).then(result => {
-      return debugSize(result);
-      // logOptimizations(result.optimization);
-      // return debugSize(css, result).then(() => {
-      //   debugResult(css, result);
-      // });
-    }).catch(e => {
-      debugCascadeError(e);
-      logOptimizations(e.optimization);
       throw e;
     });
   }
