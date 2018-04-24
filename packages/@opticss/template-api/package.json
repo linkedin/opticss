@@ -40,11 +40,11 @@
     "access": "public"
   },
   "peerDependencies": {
-    "opticss": "file:../../opticss"
+    "opticss": "0.3.0-rc.0"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.3.0",
-    "@opticss/util": "^0.3.0",
+    "@opticss/element-analysis": "0.3.0-rc.0",
+    "@opticss/util": "0.3.0-rc.0",
     "postcss": "^6.0.21",
     "typescript-collections": "^1.2.5"
   },

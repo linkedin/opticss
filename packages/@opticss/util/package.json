@@ -44,7 +44,7 @@
     "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
-    "@opticss/code-style": "^0.3.0"
+    "@opticss/code-style": "0.3.0-rc.0"
   },
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }

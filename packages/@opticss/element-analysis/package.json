@@ -38,10 +38,10 @@
     "access": "public"
   },
   "peerDependencies": {
-    "opticss": "file:../../opticss"
+    "opticss": "0.3.0-rc.0"
   },
   "dependencies": {
-    "@opticss/util": "^0.3.0"
+    "@opticss/util": "0.3.0-rc.0"
   },
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }
