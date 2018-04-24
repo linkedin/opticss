@@ -1,18 +1,18 @@
 {
-  "name": "@opticss/util",
-  "version": "0.3.0",
-  "description": "Utility library for misc shared code for @opticss packages.",
+  "name": "opticss",
+  "version": "0.3.0-rc.1",
+  "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
   "scripts": {
     "compile": "rm -rf dist && tsc",
     "pretest": "yarn run compile",
-    "test": "mocha dist/test --opts test/mocha.opts",
     "posttest": "yarn run lint",
     "prepublishOnly": "yarn run compile && yarn run lintall",
     "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
     "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json",
     "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
+    "test": "mocha dist/test/**/*.js --opts test/mocha.opts -i --grep Integration",
+    "integration": "yarn run pretest && mocha dist/test --opts test/mocha.opts --grep Integration",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage _mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs ."
@@ -23,17 +23,15 @@
   },
   "keywords": [
     "css",
-    "cascade",
-    "typescript",
-    "maybe",
-    "datastructures"
+    "optimizer"
   ],
   "author": "Chris Eppstein",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/linkedin/opticss/issues?q=is%3Aopen+is%3Aissue+label%3Apkg%3Autil"
+    "url": "https://github.com/linkedin/opticss/issues"
   },
-  "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/util",
+  "types": "dist/src/index.d.ts",
+  "homepage": "https://github.com/linkedin/opticss#readme",
   "engines": {
     "node": ">=8"
   },
@@ -41,10 +39,24 @@
     "access": "public"
   },
   "dependencies": {
-    "typescript-collections": "^1.2.5"
+    "@opticss/element-analysis": "^0.3.0",
+    "@opticss/template-api": "^0.3.0",
+    "@opticss/util": "^0.3.0",
+    "@types/debug": "0.0.29",
+    "concat-with-sourcemaps": "^1.0.4",
+    "css-property-parser": "^1.0.5",
+    "debug": "^2.6.8",
+    "object.values": "^1.0.4",
+    "postcss": "^6.0.21",
+    "postcss-selector-parser": "^4.0.0",
+    "source-map": "^0.6.1",
+    "specificity": "^0.3.2",
+    "typescript-collections": "^1.2.5",
+    "typescript-memoize": "^1.0.0-alpha.3"
   },
   "devDependencies": {
-    "@opticss/code-style": "^0.3.0"
+    "@opticss/simple-template": "^0.3.0"
   },
+  "engineStrict": true,
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }

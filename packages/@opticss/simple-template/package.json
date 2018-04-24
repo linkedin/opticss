@@ -5,17 +5,17 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "compile": "rm -rf dist && ../../../node_modules/.bin/tsc",
-    "pretest": "npm run compile",
-    "test": "../../../node_modules/.bin/mocha dist/test --opts test/mocha.opts",
-    "posttest": "npm run lint",
-    "prepublishOnly": "npm run compile",
-    "lint": "../../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
-    "lintall": "../../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.release.json",
-    "lintfix": "../../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
-    "coverage": "../../../node_modules/.bin/istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage ../../../node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts && npm run remap",
-    "remap": "../../../node_modules/.bin/remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "docs": "../../../node_modules/.bin/typedoc --out ./docs ."
+    "compile": "rm -rf dist && tsc",
+    "pretest": "yarn run compile",
+    "test": "mocha dist/test --opts test/mocha.opts",
+    "posttest": "yarn run lint",
+    "prepublishOnly": "yarn run compile",
+    "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
+    "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json",
+    "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
+    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage _mocha -- dist/test --opts test/mocha.opts && yarn run remap",
+    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "typedoc --out ./docs ."
   },
   "repository": {
     "type": "git",

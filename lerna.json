@@ -1,16 +1,16 @@
 {
-  "lerna": "3.0.0-beta.0",
+  "lerna": "3.0.0-beta.17",
   "version": "0.3.0",
-  "npmClient": "npm",
-  "hoist": "**",
-  "useWorkspaces": false,
+  "npmClient": "yarn",
+  "useWorkspaces": true,
   "packages": [
     "packages/*",
     "packages/@opticss/*"
   ],
   "command": {
     "publish": {
-      "message": "chore(release): Publish %s."
+      "message": "chore(release): Publish %s.",
+      "sort": true
     },
     "bootstrap": {
       "sort": true

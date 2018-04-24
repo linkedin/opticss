@@ -12,16 +12,16 @@
   ],
   "types": "dist",
   "scripts": {
-    "compile": "rm -rf dist && ../../../node_modules/.bin/tsc",
-    "pretest": "npm run compile",
+    "compile": "rm -rf dist && tsc",
+    "pretest": "yarn run compile",
     "which": "echo $PATH",
-    "test": "../../../node_modules/.bin/tslint --test test/rules/*/*",
-    "debug": "echo `pwd` && node --inspect-brk=9229 ../../node_modules/.bin/tslint --test test/rules/*/*",
-    "posttest": "npm run lint",
-    "lint": "../../../node_modules/.bin/tslint -t msbuild -p . -c tslint.cli.json",
-    "lintall": "../../../node_modules/.bin/tslint -t msbuild -p . -c tslint.release.json",
-    "lintfix": "../../../node_modules/.bin/tslint -t msbuild -p . --fix -c tslint.cli.json",
-    "prepublishOnly": "npm run compile && npm run lintall"
+    "test": "tslint --test test/rules/*/*",
+    "debug": "echo `pwd` && node --inspect-brk=9229 tslint --test test/rules/*/*",
+    "posttest": "yarn run lint",
+    "lint": "tslint -t msbuild -p . -c tslint.cli.json",
+    "lintall": "tslint -t msbuild -p . -c tslint.release.json",
+    "lintfix": "tslint -t msbuild -p . --fix -c tslint.cli.json",
+    "prepublishOnly": "yarn run compile && yarn run lintall"
   },
   "bugs": {
     "url": "https://github.com/linkedin/opticss/issues?q=is%3Aopen+is%3Aissue+label%3Apkg%3Acode-style"

@@ -29,6 +29,7 @@
     "random-js": "^1.0.8",
     "remap-istanbul": "^0.11.1",
     "resolve-cascade": "file:./packages/resolve-cascade",
+    "source-map": "^0.6.1",
     "source-map-support": "^0.5.3",
     "tslint": "^5.1.0",
     "typedoc": "^0.11.1",
@@ -42,6 +43,7 @@
     "cleandist": "rm -rf dist"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/@opticss/*"
   ]
 }
