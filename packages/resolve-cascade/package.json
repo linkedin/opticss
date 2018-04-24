@@ -34,6 +34,9 @@
   "engines": {
     "node": ">=8"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@opticss/css-select": "1.3.0-li.3",
     "@opticss/util": "^0.3.0",

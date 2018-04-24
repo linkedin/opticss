@@ -35,6 +35,9 @@
   "engines": {
     "node": ">=8"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@opticss/element-analysis": "^0.3.0",
     "@opticss/template-api": "^0.3.0",

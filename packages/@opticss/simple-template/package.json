@@ -34,6 +34,9 @@
   "engines": {
     "node": ">=8"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@opticss/attr-analysis-dsl": "^0.3.0",
     "@opticss/element-analysis": "^0.3.0",

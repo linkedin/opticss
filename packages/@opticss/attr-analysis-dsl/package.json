@@ -38,6 +38,9 @@
   "engines": {
     "node": ">=8"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@opticss/util": "^0.3.0",
     "moo": "^0.4.1",

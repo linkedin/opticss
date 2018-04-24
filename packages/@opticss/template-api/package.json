@@ -36,6 +36,9 @@
   "engines": {
     "node": ">=8"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "opticss": "file:../../opticss"
   },

@@ -37,6 +37,9 @@
   "engines": {
     "node": ">=8"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "typescript-collections": "^1.2.5"
   },
