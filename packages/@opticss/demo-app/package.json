@@ -1,7 +1,7 @@
 {
   "name": "@opticss/demo-app",
   "private": "true",
-  "version": "0.2.0",
+  "version": "0.3.0-rc.0",
   "description": "Demonstrates OptiCSS on simple html and css files.",
   "main": "dist/src/DemoOptimizer.js",
   "types": "dist/src/index.d.ts",

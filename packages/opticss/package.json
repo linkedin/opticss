@@ -1,6 +1,6 @@
 {
   "name": "opticss",
-  "version": "0.2.0",
+  "version": "0.3.0-rc.0",
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
