@@ -20,7 +20,7 @@ These packages are what we expect others to have dependencies on. We are careful
 * `template-api` - The template analysis API.
 * `element-analysis`: The element analysis API.
 * `resolve-cascade` - A library that produces a resolved cascade for CSS
-  selectors against a DOM without using a browser.
+  selectors against a DOM without using a browser. [README](./packages/opticss/README.md)
 * `util` - Common utilities and data structures that we share across our project.
 
 ### Internal Dependencies:
