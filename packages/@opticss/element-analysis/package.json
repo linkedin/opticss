@@ -35,7 +35,7 @@
     "node": ">=8"
   },
   "peerDependencies": {
-    "opticss": "file:../opticss"
+    "opticss": "file:../../opticss"
   },
   "dependencies": {
     "@opticss/util": "file:../util"

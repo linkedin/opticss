@@ -36,9 +36,9 @@
     "node": ">=8"
   },
   "dependencies": {
-    "@opticss/element-analysis": "file:../element-analysis",
-    "@opticss/template-api": "file:../template-api",
-    "@opticss/util": "file:../util",
+    "@opticss/element-analysis": "file:../@opticss/element-analysis",
+    "@opticss/template-api": "file:../@opticss/template-api",
+    "@opticss/util": "file:../@opticss/util",
     "@types/debug": "0.0.29",
     "concat-with-sourcemaps": "^1.0.4",
     "css-property-parser": "^1.0.5",
@@ -52,7 +52,7 @@
     "typescript-memoize": "^1.0.0-alpha.3"
   },
   "devDependencies": {
-    "@opticss/simple-template": "file:../simple-template"
+    "@opticss/simple-template": "file:../@opticss/simple-template"
   },
   "engineStrict": true
 }

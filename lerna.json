@@ -5,7 +5,8 @@
   "hoist": "**",
   "useWorkspaces": false,
   "packages": [
-    "packages/*"
+    "packages/*",
+    "packages/@opticss/*"
   ],
   "command": {
     "publish": {

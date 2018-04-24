@@ -1,13 +1,13 @@
 {
 	"folders": [
 		{
-			"path": "packages/attr-analysis-dsl"
+			"path": "packages/@opticss/attr-analysis-dsl"
 		},
 		{
-			"path": "packages/demo-app"
+			"path": "packages/@opticss/demo-app"
 		},
 		{
-			"path": "packages/element-analysis"
+			"path": "packages/@opticss/element-analysis"
 		},
 		{
 			"path": "packages/opticss"
@@ -16,16 +16,16 @@
 			"path": "packages/resolve-cascade"
 		},
 		{
-			"path": "packages/simple-template"
+			"path": "packages/@opticss/simple-template"
 		},
 		{
-			"path": "packages/template-api"
+			"path": "packages/@opticss/template-api"
 		},
 		{
-			"path": "packages/util"
+			"path": "packages/@opticss/util"
 		},
 		{
-			"path": "packages/code-style"
+			"path": "packages/@opticss/code-style"
 		},
 		{
 			"path": "docs"

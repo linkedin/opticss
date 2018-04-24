@@ -20,7 +20,7 @@ These packages are what we expect others to have dependencies on. We are careful
 * `template-api` - The template analysis API.
 * `element-analysis`: The element analysis API.
 * `resolve-cascade` - A library that produces a resolved cascade for CSS
-  selectors against a DOM without using a browser. [README](./packages/opticss/README.md)
+  selectors against a DOM without using a browser. [README](./packages/resolve-cascade/README.md)
 * `util` - Common utilities and data structures that we share across our project.
 
 ### Internal Dependencies:
@@ -32,7 +32,7 @@ these.
 
 * `simple-template` - A custom template language we use for testing OptiCSS.
 * `attr-analysis-dsl` - A custom DSL for expressing attribute analysis succinctly.
-* `code-style`: The coding styleguide and linters for OptiCSS. [README](./packages/code-style/README.md)
+* `code-style`: The coding styleguide and linters for OptiCSS. [README](./packages/@opticss/code-style/README.md)
 
 ### Miscellany
 * `demo-app`: An interactive demo of OptiCSS.

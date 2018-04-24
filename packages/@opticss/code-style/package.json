@@ -15,12 +15,12 @@
     "compile": "rm -rf dist && tsc",
     "pretest": "npm run compile",
     "which": "echo $PATH",
-    "test": "../../node_modules/.bin/tslint --test test/rules/*/*",
+    "test": "../../../node_modules/.bin/tslint --test test/rules/*/*",
     "debug": "echo `pwd` && node --inspect-brk=9229 ../../node_modules/.bin/tslint --test test/rules/*/*",
     "posttest": "npm run lint",
-    "lint": "../../node_modules/.bin/tslint -t msbuild -p . -c tslint.cli.json",
-    "lintall": "../../node_modules/.bin/tslint -t msbuild -p . -c tslint.release.json",
-    "lintfix": "../../node_modules/.bin/tslint -t msbuild -p . --fix -c tslint.cli.json",
+    "lint": "../../../node_modules/.bin/tslint -t msbuild -p . -c tslint.cli.json",
+    "lintall": "../../../node_modules/.bin/tslint -t msbuild -p . -c tslint.release.json",
+    "lintfix": "../../../node_modules/.bin/tslint -t msbuild -p . --fix -c tslint.cli.json",
     "prepublishOnly": "npm run compile && npm run lintall"
   },
   "bugs": {

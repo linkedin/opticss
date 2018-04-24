@@ -1,8 +1,5 @@
 {
-  "extends": "../../tsconfig.json",
-  "include": [
-    "src"
-  ],
+  "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": "dist",
@@ -11,5 +8,13 @@
       "@types/node",
       "@types/mocha"
     ]
-  }
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
 }
