@@ -28,9 +28,9 @@
   "author": "Chris Eppstein",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/linkedin/opticss/issues"
+    "url": "https://github.com/linkedin/opticss/issues?q=is%3Aopen+is%3Aissue+label%3Apkg%3Aelement-analysis"
   },
-  "homepage": "https://github.com/linkedin/opticss#readme",
+  "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/element-analysis",
   "engines": {
     "node": ">=8"
   },

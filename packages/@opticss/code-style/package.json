@@ -24,13 +24,13 @@
     "prepublishOnly": "npm run compile && npm run lintall"
   },
   "bugs": {
-    "url": "https://github.com/css-blocks/css-blocks/issues"
+    "url": "https://github.com/linkedin/opticss/issues?q=is%3Aopen+is%3Aissue+label%3Apkg%3Acode-style"
   },
   "repository": {
-    "url": "https://github.com/css-blocks/css-blocks.git",
+    "url": "https://github.com/linkedin/opticss.git",
     "type": "git"
   },
-  "homepage": "https://github.com/css-blocks/css-blocks/tree/master/packages/code-style",
+  "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/code-style",
   "engines": {
     "node": ">=8"
   },

@@ -28,7 +28,7 @@
   "author": "Chris Eppstein",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/linkedin/opticss/issues"
+    "url": "https://github.com/linkedin/opticss/issues?q=is%3Aopen+is%3Aissue+label%3Apkg%3Aresolve-cascade"
   },
   "homepage": "https://github.com/linkedin/opticss/tree/master/packages/resolve-cascade#readme",
   "engines": {

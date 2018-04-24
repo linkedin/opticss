@@ -248,13 +248,13 @@ sequence of actions is ready to be performed as a batch.
 Most template languages have the undesirable feature of being code that has
 to execute to produce output. This complicates the creation of analysis
 information and adds complexity. To make OptiCSS more testable, we created a
-[specialized template language](../packages/simple-template) that allows
+[specialized template language](../packages/@opticss/simple-template) that allows
 markup to describe in a declarative syntax how attributes, tags and values
 can vary dynamically without actually creating that dynamism through
 conditional branch execution. This template language builds upon [a DSL for
-expressing attribute values](../packages/attr-analysis-dsl) which is much
+expressing attribute values](../packages/@opticss/attr-analysis-dsl) which is much
 more legible and compact than the corresponding javascript object representation
-for the [element analysis for attributes](../packages/element-analysis/src/Attribute.ts).
+for the [element analysis for attributes](../packages/@opticss/element-analysis/src/Attribute.ts).
 In this way, the template language is an html-like syntax for writing a
 template analysis.
 
