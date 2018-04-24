@@ -1,3 +1,6 @@
+/**
+ * @module resolve-cascade
+ **/
 import * as assert from "assert";
 import * as propParser from "css-property-parser";
 import * as parse5 from "parse5";
@@ -155,18 +158,21 @@ export function assertSameCascade(
             }
           }
         } catch (e) {
-          throw new ElementStyleMismatch({
-            expectedHtml,
-            actualHtml,
-            expectedElement: debugElement(expectedElement),
-            actualElement: debugElement(actualElement),
-            expectedCss,
-            actualCss,
-            expectedCascade,
-            actualCascade,
-            expectedStyles,
-            actualStyles,
-          },                             e.message);
+          throw new ElementStyleMismatch(
+            {
+              expectedHtml,
+              actualHtml,
+              expectedElement: debugElement(expectedElement),
+              actualElement: debugElement(actualElement),
+              expectedCss,
+              actualCss,
+              expectedCascade,
+              actualCascade,
+              expectedStyles,
+              actualStyles,
+            },
+            e.message,
+          );
         }
       }
     }
