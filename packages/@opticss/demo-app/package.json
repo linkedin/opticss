@@ -34,7 +34,7 @@
   "bugs": {
     "url": "https://github.com/linkedin/opticss/issues"
   },
-  "homepage": "https://github.com/linkedin/opticss#readme",
+  "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/demo-app",
   "dependencies": {
     "@opticss/simple-template": "file:../simple-template",
     "@types/codemirror": "^0.0.27-alpha",
