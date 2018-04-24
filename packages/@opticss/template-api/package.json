@@ -5,19 +5,19 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "compile-src": "rm -rf dist && tsc",
-    "compile-test": "rm -rf test/build && tsc -p tsconfig-test.json",
+    "compile-src": "rm -rf dist && ../../../node_modules/.bin/tsc",
+    "compile-test": "rm -rf test/build && ../../../node_modules/.bin/tsc -p tsconfig-test.json",
     "compile": "npm run compile-src && npm run compile-test",
     "pretest": "npm run compile",
-    "test": "mocha test/build/test --opts test/mocha.opts",
+    "test": "../../../node_modules/.bin/mocha test/build/test --opts test/mocha.opts",
     "posttest": "npm run lint",
     "prepublishOnly": "npm run compile-src",
-    "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json && tslint -t msbuild --project tsconfig-test.json -c tslint.cli.json",
-    "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json && tslint -t msbuild --project tsconfig-test.json -c tslint.release.json",
-    "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix && tslint -t msbuild --project tsconfig-test.json -c tslint.cli.json --fix",
-    "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
-    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "docs": "typedoc --out ./docs ."
+    "lint": "../../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.cli.json && tslint -t msbuild --project tsconfig-test.json -c tslint.cli.json",
+    "lintall": "../../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.release.json && tslint -t msbuild --project tsconfig-test.json -c tslint.release.json",
+    "lintfix": "../../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix && tslint -t msbuild --project tsconfig-test.json -c tslint.cli.json --fix",
+    "coverage": "../../../node_modules/.bin/istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage ../../../node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
+    "remap": "../../../node_modules/.bin/remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "../../../node_modules/.bin/typedoc --out ./docs ."
   },
   "repository": {
     "type": "git",
@@ -40,9 +40,10 @@
     "opticss": "file:../../opticss"
   },
   "dependencies": {
-    "@opticss/element-analysis": "file:../element-analysis",
-    "@opticss/util": "file:../util",
+    "@opticss/element-analysis": "^0.3.0",
+    "@opticss/util": "^0.3.0",
     "postcss": "^6.0.21",
     "typescript-collections": "^1.2.5"
-  }
+  },
+  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }

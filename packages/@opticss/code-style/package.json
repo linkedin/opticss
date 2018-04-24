@@ -12,7 +12,7 @@
   ],
   "types": "dist",
   "scripts": {
-    "compile": "rm -rf dist && tsc",
+    "compile": "rm -rf dist && ../../../node_modules/.bin/tsc",
     "pretest": "npm run compile",
     "which": "echo $PATH",
     "test": "../../../node_modules/.bin/tslint --test test/rules/*/*",
@@ -43,5 +43,6 @@
     "configs",
     "*.md",
     "test"
-  ]
+  ],
+  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }

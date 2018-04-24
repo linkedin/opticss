@@ -5,17 +5,17 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "compile": "rm -rf dist && tsc && mkdir -p dist/src/grammar && cp grammar/*.js dist/src/grammar",
+    "compile": "rm -rf dist && ../../../node_modules/.bin/tsc && mkdir -p dist/src/grammar && cp grammar/*.js dist/src/grammar",
     "pretest": "npm run compile",
     "prepublishOnly": "npm run compile && npm run lintall",
-    "lint": "tslint -t msbuild --project . -c tslint.cli.json",
-    "lintall": "tslint -t msbuild --project . -c tslint.release.json",
-    "lintfix": "tslint -t msbuild --project . -c tslint.cli.json --fix",
-    "test": "mocha dist/test --opts test/mocha.opts",
+    "lint": "../../../node_modules/.bin/tslint -t msbuild --project . -c tslint.cli.json",
+    "lintall": "../../../node_modules/.bin/tslint -t msbuild --project . -c tslint.release.json",
+    "lintfix": "../../../node_modules/.bin/tslint -t msbuild --project . -c tslint.cli.json --fix",
+    "test": "../../../node_modules/.bin/mocha dist/test --opts test/mocha.opts",
     "posttest": "npm run lint",
-    "coverage": "istanbul cover -i \"dist/src/**/*.js\" -x \"**/grammar/**\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts && npm run remap",
-    "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
-    "docs": "typedoc --out ./docs .",
+    "coverage": "../../../node_modules/.bin/istanbul cover -i \"dist/src/**/*.js\" -x \"**/grammar/**\" --dir ./build/coverage ../../../node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts && npm run remap",
+    "remap": "../../../node_modules/.bin/remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
+    "docs": "../../../node_modules/.bin/typedoc --out ./docs .",
     "grammar": "nearleyc grammar/attrvalue.ne -o grammar/attrvalue.js"
   },
   "repository": {
@@ -39,11 +39,12 @@
     "node": ">=8"
   },
   "dependencies": {
-    "@opticss/util": "file:../util",
+    "@opticss/util": "^0.3.0",
     "moo": "^0.4.1",
     "nearley": "^2.10.3"
   },
   "devDependencies": {
-    "@opticss/element-analysis": "file:../element-analysis"
-  }
+    "@opticss/element-analysis": "^0.3.0"
+  },
+  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }

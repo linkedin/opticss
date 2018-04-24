@@ -13,7 +13,7 @@
     "lintfix": "../../node_modules/.bin/tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
     "test": "../../node_modules/.bin/mocha dist/test/**/*.js --opts test/mocha.opts -i --grep Integration",
     "integration": "npm run pretest && ../../node_modules/.bin/mocha dist/test --opts test/mocha.opts --grep Integration",
-    "coverage": "../../node_modules/.bin/istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
+    "coverage": "../../node_modules/.bin/istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage ../../node_modules/.bin/_mocha -- dist/test --opts test/mocha.opts",
     "remap": "../../node_modules/.bin/remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "../../node_modules/.bin/typedoc --out ./docs ."
   },
@@ -36,9 +36,9 @@
     "node": ">=8"
   },
   "dependencies": {
-    "@opticss/element-analysis": "file:../@opticss/element-analysis",
-    "@opticss/template-api": "file:../@opticss/template-api",
-    "@opticss/util": "file:../@opticss/util",
+    "@opticss/element-analysis": "^0.3.0",
+    "@opticss/template-api": "^0.3.0",
+    "@opticss/util": "^0.3.0",
     "@types/debug": "0.0.29",
     "concat-with-sourcemaps": "^1.0.4",
     "css-property-parser": "^1.0.5",
@@ -52,7 +52,8 @@
     "typescript-memoize": "^1.0.0-alpha.3"
   },
   "devDependencies": {
-    "@opticss/simple-template": "file:../@opticss/simple-template"
+    "@opticss/simple-template": "^0.3.0"
   },
-  "engineStrict": true
+  "engineStrict": true,
+  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }
