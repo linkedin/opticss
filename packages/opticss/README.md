@@ -16,7 +16,7 @@ Frameworks Integration with OptiCSS
 Currently, the only CSS framework that uses OptiCSS is
 [css-blocks](http://css-blocks.com/). The css-blocks framework provides
 application integrations for Glimmer Applications, (some) Ember Applications,
-React/Preact apps using webpack. More application framework integrations are on the way.
+and React/Preact apps using webpack. More application framework integrations are on the way.
 
 If you maintain a CSS framework or styling library, we're excited to help you
 design a solution that can correctly analyze styles and safely integrate with
@@ -31,7 +31,7 @@ template integration and the features that the application wants enabled.
 
 The optimizer runs asynchronously and when complete, provides optimized CSS,
 information for debugging purposes, and metadata that directs the template
-integration on how to rewrite the templates to use the new css selectors.
+integration on how to rewrite the templates to use the new CSS selectors.
 
 The following example demonstrates how to use the optimizer with a single CSS
 file when no template analysis information is available.
@@ -57,8 +57,8 @@ const templateOptions: Partial<TemplateIntegrationOptions> = {
 // A new optimizer instance is required for every optimization.
 let opticss = new Optimizer(options, templateOptions);
 
-// Usually the css file(s) being optimized come from a previous build step.
-// So opticss supports input source maps to ensure that errors and debugging
+// Usually the CSS file(s) being optimized come from a previous build step.
+// So OptiCSS supports input source maps to ensure that errors and debugging
 // information is correctly reported.
 let cssFile = "build/assets/myapp.css";
 opticss.addSource({
@@ -81,7 +81,7 @@ let outputName = "build/assets/optimized.css";
 opticss.optimize(outputName).then(result => {
   fs.writeFileSync(outputName, result.output.content.toString(), "utf-8");
   fs.writeFileSync(`${outputName}.log`, result.actions.logStrings().join("\n"), "utf-8");
-  // Source map information with opticss is of dubious value because sourcemaps cannot
+  // Source map information with OptiCSS is of dubious value because sourcemaps cannot
   // represent mutations that turn multiple source bytes into a single output byte.
   // So the source map will only surface (at most) one of the source bytes that caused
   // an output byte to exist. The log has more in-depth information about what mutations were
@@ -127,7 +127,7 @@ The `rewriteIdents` optimization is the only optimization that has it's own conf
 
 * `id` - whether the `id` attribute should be rewritten.
 * `class` - whether the `class` attribute should be rewritten.
-* `omitIdents` - (optional) An object that specifies identifiers that are reserved and should not be used by opticss in a specific namespace. The object can have keys of `id` and `class` with the value being an array of reserved identifiers.
+* `omitIdents` - (optional) An object that specifies identifiers that are reserved and should not be used by OptiCSS in a specific namespace. The object can have keys of `id` and `class` with the value being an array of reserved identifiers.
 
 #### CSS Feature Support
 
@@ -135,7 +135,7 @@ The `css` configuration option can be set to an object that provides information
 
 The following CSS features are currently supported:
 
-* `caseInsensitiveSelectors` - In older versions of CSS, id and class selectors were case insensitive. This continues to be true for pages that end up in "quirks mode". Setting this value to `true`, forces opticss to assume that those identifiers are case insensitve. This forces the ident generator to use only lower case letters for identifiers which is not as compressible.
+* `caseInsensitiveSelectors` - In older versions of CSS, id and class selectors were case insensitive. This continues to be true for pages that end up in "quirks mode". Setting this value to `true`, forces OptiCSS to assume that those identifiers are case insensitve. This forces the ident generator to use only lower case letters for identifiers which is not as compressible.
 
 #### More About Configuration
 
@@ -146,7 +146,7 @@ The analyzer/rewriter implementation must also tell OptiCSS about its capabiliti
 Combining OptiCSS with other CSS Processors
 -------------------------------------------
 
-OptiCSS takes CSS as input. It has a deep understanding of css selector
+OptiCSS takes CSS as input. It has a deep understanding of CSS selector
 semantics and also about the syntax of CSS property values and how different
 CSS properties conflict/override. Alternative syntaxes, future syntax,
 and any other authoring conveniences of that sort should be processed into
@@ -156,7 +156,7 @@ are accepted).
 Depending on how you it's being used (E.g. for per-browser builds), it may be
 better to run tools like autoprefixer before optimization, but it should
 also be safe to run it afterwards. In general, running tools that change
-what css properties are present or what their values are in a meaningful way
+what CSS properties are present or what their values are in a meaningful way
 should run before optimization.
 
 It is not only safe, but recommended to use a CSS minifier with OptiCSS.
@@ -174,7 +174,7 @@ recommend that OptiCSS is disabled so that re-build caching is effective and
 to make it easier for developers to make sense of the styles they see in
 their browser.
 
-When disabled, opticss still runs, but it returns an identity mapping that
+When disabled, OptiCSS still runs, but it returns an identity mapping that
 rewrites all styles such that they are left intact. This reduces some of the risk
 inherent with running an different set of tools in development than in production.
 
@@ -188,8 +188,8 @@ Browser Targeting
 -----------------
 
 In the future, OptiCSS is likely to accept [`browserlist`](https://github.com/ai/browserslist)
-configuration so that it can make sense of how browser support affects resolutions and progressive enhancement. If you're creating a per-browser build right now, you should pre-process your css
-and remove any unsupported css features and optimize each browser independently. Keep in mind that
+configuration so that it can make sense of how browser support affects resolutions and progressive enhancement. If you're creating a per-browser build right now, you should pre-process your CSS
+and remove any unsupported CSS features and optimize each browser independently. Keep in mind that
 this also implies that your templates will need to be rewritten differently for each browser.
 
 Code Splitting
