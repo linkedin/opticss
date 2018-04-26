@@ -13,4 +13,6 @@ before_install:
 install:
   - lerna bootstrap --registry=https://registry.npmjs.org/
 
-script: lerna run test
+script:
+  - commitlint-travis
+  - lerna run test

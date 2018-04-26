@@ -4,6 +4,7 @@
   "devDependencies": {
     "@commitlint/cli": "^6.1.0",
     "@commitlint/config-conventional": "^6.1.0",
+    "@commitlint/travis-cli": "^6.1.3",
     "@opticss/attr-analysis-dsl": "file:./packages/@opticss/attr-analysis-dsl",
     "@opticss/code-style": "file:./packages/@opticss/code-style",
     "@opticss/demo-app": "file:./packages/@opticss/demo-app",
