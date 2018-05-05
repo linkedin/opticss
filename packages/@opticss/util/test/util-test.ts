@@ -7,6 +7,7 @@ import {
 } from "mocha-typescript";
 
 import { clean } from "../src/clean";
+import { flatten } from "../src/flatten";
 import { IdentityDictionary } from "../src/IdentityDictionary";
 import { MultiMap } from "../src/MultiMap";
 import { TwoKeyMultiMap } from "../src/TwoKeyMultiMap";
@@ -466,5 +467,18 @@ export class SimpleTemplateTest {
       values.push(2);
     });
     assert.deepEqual(multiMap.get(key1, key2), [1]);
+  }
+  @test "flatten a flat array"() {
+    let arr = ["hello", "world"];
+    assert.equal(flatten(arr), arr);
+  }
+  @test "flatten a nested array"() {
+    assert.deepEqual(flatten([["hello", "world"]]), ["hello", "world"]);
+  }
+  @test "flatten two nested arrays"() {
+    assert.deepEqual(flatten([["hello"], ["world"]]), ["hello", "world"]);
+  }
+  @test "flatten some ridiculousness"() {
+    assert.deepEqual(flatten([["a"], ["b", ["c", 1]], [2, [[3]]]]), ["a", "b", "c", 1, 2, 3]);
   }
 }
