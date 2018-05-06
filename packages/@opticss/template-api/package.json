@@ -48,5 +48,8 @@
     "postcss": "^6.0.21",
     "typescript-collections": "^1.2.5"
   },
+  "devDependencies": {
+    "@opticss/attr-analysis-dsl": "^0.3.0"
+  },
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }
