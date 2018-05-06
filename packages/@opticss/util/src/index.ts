@@ -11,3 +11,4 @@ export * from "./OptiCSSError";
 export * from "./MultiMap";
 export * from "./TwoKeyMultiMap";
 export * from "./unionInto";
+export * from "./flatten";
