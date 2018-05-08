@@ -1,0 +1,20 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "package.json",
+        "packages/@opticss/attr-analysis-dsl/package.json",
+        "packages/@opticss/code-style/package.json",
+        "packages/@opticss/demo-app/package.json",
+        "packages/@opticss/demo-app/types-local/codemirror/package.json",
+        "packages/@opticss/element-analysis/package.json",
+        "packages/@opticss/simple-template/package.json",
+        "packages/@opticss/template-api/package.json",
+        "packages/@opticss/util/package.json",
+        "packages/opticss/package.json",
+        "packages/opticss/types-local/concat-with-sourcemaps/package.json",
+        "packages/resolve-cascade/package.json"
+      ]
+    }
+  }
+}
