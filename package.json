@@ -16,5 +16,19 @@
   "workspaces": [
     "packages/*",
     "packages/@opticss/*"
-  ]
+  ],
+  "greenkeeper": {
+    "commitMessages": {
+      "addConfigFile": "chore: Add Greenkeeper config file.",
+      "updateConfigFile": "chore: Update Greenkeeper config file.",
+      "initialBadge": "docs(README): Add Greenkeeper badge.",
+      "initialDependencies": "chore(package): Update dependencies.",
+      "initialBranches": "chore(travis): Whitelist greenkeeper branches.",
+      "dependencyUpdate": "fix(package): Update ${dependency} to version ${version}.",
+      "devDependencyUpdate": "chore(package): Update ${dependency} to version ${version}.",
+      "dependencyPin": "fix: Pin ${dependency} to ${oldVersion}.",
+      "devDependencyPin": "chore: Pin ${dependency} to ${oldVersion}.",
+      "closes": "\n\nCloses #${number}."
+    }
+  }
 }
