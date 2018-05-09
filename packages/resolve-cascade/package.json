@@ -49,7 +49,7 @@
     "source-map-support": "^0.5.3",
     "tslint": "^5.1.0",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typedoc-plugin-markdown": "^1.1.4",
+    "typedoc-plugin-markdown": "^1.1.8",
     "typedoc": "^0.11.1",
     "typescript": "^2.8.1"
   },
