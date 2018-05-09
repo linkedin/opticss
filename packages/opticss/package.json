@@ -55,7 +55,8 @@
     "typescript-memoize": "^1.0.0-alpha.3"
   },
   "devDependencies": {
-    "@opticss/simple-template": "^0.3.0"
+    "@opticss/simple-template": "^0.3.0",
+    "resolve-cascade": "^0.3.0"
   },
   "engineStrict": true,
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
