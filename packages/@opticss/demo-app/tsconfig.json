@@ -1,5 +1,5 @@
 {
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tsproject.json",
   "compilerOptions": {
     "target": "es2015",
     "module": "commonjs",
@@ -17,7 +17,14 @@
     "paths": {
       "codemirror/*": [ "../types-local/codemirror" ],
       "parse5": ["../../../../node_modules/parse5/lib/index.d.ts"]
-    }
+    },
+    "references": [
+      {"path": "../element-analysis"},
+      {"path": "../simple-template"},
+      {"path": "../template-api"},
+      {"path": "../util"},
+      {"path": "../../opticss"}
+    ]
   },
   "include": [
     "src",

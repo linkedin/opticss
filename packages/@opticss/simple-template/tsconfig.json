@@ -1,5 +1,5 @@
 {
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tsproject.json",
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": "dist",
@@ -10,7 +10,13 @@
     ],
     "paths": {
       "parse5": ["../../../../node_modules/parse5/lib/index.d.ts"]
-    }
+    },
+    "references": [
+      {"path": "../attr-analysis-dsl"},
+      {"path": "../element-analysis"},
+      {"path": "../template-api"},
+      {"path": "../util"}
+    ]
 
   },
   "include": [

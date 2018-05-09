@@ -1,10 +1,15 @@
 {
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tsproject.json",
   "compilerOptions": {
     "outDir": "dist/src",
     "baseUrl": "dist/src",
     "types": [
       "@types/node"
+    ],
+    "references": [
+      {"path": "../attr-analysis-dsl"},
+      {"path": "../element-analysis"},
+      {"path": "../util"}
     ]
   },
   "include": [

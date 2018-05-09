@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsproject.json",
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": "dist",
@@ -12,7 +12,14 @@
     "paths": {
       "concat-with-sourcemaps": ["../types-local/concat-with-sourcemaps"],
       "parse5": ["../../../node_modules/parse5/lib/index.d.ts"]
-    }
+    },
+    "references": [
+      {"path": "../@opticss/element-analysis"},
+      {"path": "../@opticss/template-api"},
+      {"path": "../@opticss/util"},
+      {"path": "../@opticss/simple-template"},
+      {"path": "../resolve-cascade"}
+    ]
   },
   "include": [
     "src",
