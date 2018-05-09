@@ -8,12 +8,8 @@
     "curly": false,
     "indent": [true, "spaces"],
     "no-consecutive-blank-lines": true,
-    "space-before-function-paren": {
-      "options": false
-    },
-    "space-within-parens": {
-      "options": false
-    },
+    "space-before-function-paren": false,
+    "space-within-parens": false,
     "typedef-whitespace": [
       true,
       {
@@ -59,7 +55,7 @@
     ],
     "trailing-comma": [
       true,
-      {"multiline": "always", "singleline": "never"}
+      {"multiline": "always", "singleline": "never", "esSpecCompliant": true}
     ],
 
 

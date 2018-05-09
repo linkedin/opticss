@@ -231,7 +231,7 @@ export class SimpleTemplateTest {
     let existingValue = multiMap.get(key1);
     existingValue.push(2);
     assert.deepEqual(multiMap.get(key1), [1]);
-    for (let [_key, values] of multiMap.entries()) {
+    for (let [, values] of multiMap.entries()) {
       values.push(2);
     }
     assert.deepEqual(multiMap.get(key1), [1]);
@@ -305,7 +305,7 @@ export class SimpleTemplateTest {
     let existingValue = multiMap.get(key1);
     existingValue.push(2);
     assert.deepEqual(multiMap.get(key1), [1]);
-    for (let [_key, values] of multiMap.entries()) {
+    for (let [, values] of multiMap.entries()) {
       values.push(2);
     }
     assert.deepEqual(multiMap.get(key1), [1]);
@@ -380,7 +380,7 @@ export class SimpleTemplateTest {
     let existingValue = multiMap.get(key1, key2);
     existingValue.push(2);
     assert.deepEqual(multiMap.get(key1, key2), [1]);
-    for (let [_key1, _key2, values] of multiMap.entries()) {
+    for (let [, , values] of multiMap.entries()) {
       values.push(2);
     }
     assert.deepEqual(multiMap.get(key1, key2), [1]);
@@ -455,7 +455,7 @@ export class SimpleTemplateTest {
     let existingValue = multiMap.get(key1, key2);
     existingValue.push(2);
     assert.deepEqual(multiMap.get(key1, key2), [1]);
-    for (let [_key1, _key2, values] of multiMap.entries()) {
+    for (let [, , values] of multiMap.entries()) {
       values.push(2);
     }
     assert.deepEqual(multiMap.get(key1, key2), [1]);

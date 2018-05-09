@@ -5,6 +5,21 @@ const foo = (asdf,
   return true;
 };
 
+const foo = (
+  asdf,
+  ...baz) => { return true; }
+  ~~~~~~ [Newline expected after last multi-line parameter.]
+
+const foo = (
+  asdf,
+  baz) => { return true; }
+  ~~~[Newline expected after last multi-line parameter.]
+
+const foo = (
+  asdf,
+  ...baz
+) => { return true; }
+
 const foo = function(asdf,
                      ~~~~ [Newline expected before first multi-line parameter.]
   xyz) {

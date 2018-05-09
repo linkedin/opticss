@@ -56,8 +56,7 @@ export type CascadeTestError = Error & CascadeTestErrorDetails;
 export function testOptimizationCascade(
   options: Partial<OptiCSSOptions>,
   templateOptions: TemplateIntegrationOptions,
-  ...stylesAndTemplates: Array<string | TestTemplate>,
-
+  ...stylesAndTemplates: Array<string | TestTemplate>
 ): Promise<CascadeTestResult> {
   let optimizer = new Optimizer(options, templateOptions);
   let nCss = 1;

@@ -1,7 +1,7 @@
 import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
 import { Attr, Attribute, AttributeNS, Element, Tagname } from "@opticss/element-analysis";
 import { AndExpression, BooleanExpression, NotExpression, OrExpression, RewriteMapping, RewriteableAttrName, SimpleAttribute, SimpleTagname, StyleMapping, TemplateIntegrationOptions, isSimpleTagname } from "@opticss/template-api";
-import { assertNever } from "@opticss/util";
+import { assertNever, something } from "@opticss/util";
 import * as parse5 from "parse5";
 
 import { allElements, bodyContents, bodyElement } from "./SimpleTemplateRunner";
@@ -155,14 +155,14 @@ function evaluateExpression(
   }
 }
 
-function isAndExpression<T>(expression: BooleanExpression<T>): expression is AndExpression<T> {
+function isAndExpression<T extends something>(expression: BooleanExpression<T>): expression is AndExpression<T> {
   return !!((<AndExpression<T>>expression).and);
 }
 
-function isOrExpression<T>(expression: BooleanExpression<T>): expression is OrExpression<T> {
+function isOrExpression<T extends something>(expression: BooleanExpression<T>): expression is OrExpression<T> {
   return !!((<OrExpression<T>>expression).or);
 }
 
-function isNotExpression<T>(expression: BooleanExpression<T>): expression is NotExpression<T> {
+function isNotExpression<T extends something>(expression: BooleanExpression<T>): expression is NotExpression<T> {
   return !!((<NotExpression<T>>expression).not);
 }
