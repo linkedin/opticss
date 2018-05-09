@@ -1,6 +1,8 @@
 OptiCSS
 =======
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/linkedin/opticss.svg)](https://greenkeeper.io/)
+
 ### OptiCSS is a template-aware stylesheet optimizer.
 
 Most developers don't use OptiCSS directly. You may be looking for a style framework that uses it:

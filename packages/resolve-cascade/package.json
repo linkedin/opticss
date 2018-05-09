@@ -42,7 +42,7 @@
     "@opticss/util": "^0.3.0",
     "css-property-parser": "^1.0.5",
     "domutils": "^1.6.2",
-    "parse5": "^3.0.2",
+    "parse5": "^4.0.0",
     "postcss": "^6.0.21",
     "specificity": "^0.3.2"
   },

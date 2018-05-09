@@ -15,7 +15,8 @@
       "@types/mocha"
     ],
     "paths": {
-      "codemirror/*": [ "../types-local/codemirror" ]
+      "codemirror/*": [ "../types-local/codemirror" ],
+      "parse5": ["../../../../node_modules/parse5/lib/index.d.ts"]
     }
   },
   "include": [

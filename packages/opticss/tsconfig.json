@@ -10,9 +10,8 @@
       "@types/node"
     ],
     "paths": {
-      "concat-with-sourcemaps": [
-        "../types-local/concat-with-sourcemaps"
-      ]
+      "concat-with-sourcemaps": ["../types-local/concat-with-sourcemaps"],
+      "parse5": ["../../../node_modules/parse5/lib/index.d.ts"]
     }
   },
   "include": [
