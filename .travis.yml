@@ -9,7 +9,7 @@ node_js:
   - "10"
 
 before_install:
-  - npm install -g lerna@3.0.0-beta.0
+  - npm install -g lerna@next
 
 install:
   - lerna bootstrap --registry=https://registry.npmjs.org/
