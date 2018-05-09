@@ -76,14 +76,12 @@ class MultilineParametersRule extends Lint.RuleWalker {
         let lastArg = args[args.length - 1];
         let lastArgEnd = this.getLineAndCharacterOfPosition(lastArg.getEnd());
         let argListEndPos = args.end;
-        if (args.hasTrailingComma) {
-          argListEndPos = argListEndPos + 1;
-        }
+        argListEndPos += args.hasTrailingComma ? 2 : 1;
         let argListEnd = this.getLineAndCharacterOfPosition(argListEndPos);
         if (argListEnd.line === lastArgEnd.line) {
           let startPos = (options.startPos === undefined) ? callTarget.getStart() : options.startPos;
           let argListStart = this.getLineAndCharacterOfPosition(startPos);
-          const fix = this.createReplacement(argListEndPos, 0, `\n${" ".repeat(argListStart.character)}`);
+          const fix = this.createReplacement(argListEndPos - 1, 0, `\n${" ".repeat(argListStart.character)}`);
           this.addFailureAtNode(lastArg, `Newline expected after last multi-line ${type}.`, fix);
         }
       }

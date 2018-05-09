@@ -37,13 +37,13 @@ function testMergeDeclarations(...stylesAndTemplates: Array<string | TestTemplat
       analyzedAttributes: [],
       analyzedTagnames: true,
     },
-    ...stylesAndTemplates);
+    ...stylesAndTemplates,
+  );
 }
 
 function testMergeDeclarationsWithConfig(
   templateOptions: Partial<TemplateIntegrationOptions>,
-  ...stylesAndTemplates: Array<string | TestTemplate>,
-
+  ...stylesAndTemplates: Array<string | TestTemplate>
 ): Promise<CascadeTestResult> {
   return testOptimizationCascade(
     { only: ["mergeDeclarations"] },

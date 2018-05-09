@@ -316,7 +316,8 @@ tmplInEditor.on("keyup", processAndUpdateState);
 });
 
 function objectEntries<T extends object>(v: T): Array<[keyof T, T[keyof T]]> {
-  return Object.keys(v).map((k: keyof T)  => {
+  let keys: Array<keyof T> = <Array<keyof T>>Object.keys(v);
+  return keys.map((k: keyof T)  => {
     let e: [keyof T, T[keyof T]] = [k, v[k]];
     return e;
   });
