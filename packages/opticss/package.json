@@ -52,11 +52,27 @@
     "source-map": "^0.6.1",
     "specificity": "^0.3.2",
     "typescript-collections": "^1.2.5",
-    "typescript-memoize": "^1.0.0-alpha.3"
+    "typescript-memoize": "^1.0.0-alpha.3",
+    "source-map-support": "^0.5.3",
+    "source-map": "^0.6.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.48",
     "@opticss/simple-template": "^0.3.0",
-    "resolve-cascade": "^0.3.0"
+    "resolve-cascade": "^0.3.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1",
+    "@types/node": "^10.0.6",
+    "@types/random-js": "^1.0.30",
+    "random-js": "^1.0.8",
+    "istanbul": "^0.4.5",
+    "mocha-typescript": "^1.1.9",
+    "remap-istanbul": "^0.11.1",
+    "tslint": "^5.10.0",
+    "typedoc": "^0.11.1",
+    "typescript": "^2.8.1",
+    "@opticss/code-style": "^0.3.0"
   },
   "engineStrict": true,
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"

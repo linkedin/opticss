@@ -30,7 +30,6 @@ export class RemoveUnusedStyles implements SingleFileOptimization {
   /**
    * Provided an OptimizationPass, all TemplateAnalyses, and a ParsedCssFile,
    * remove all unused styles.
-   * @param pass
    * @param analyses - All TemplateAnalyses found during analysis
    * @param file - The parsed CSS file to optimize.
    */

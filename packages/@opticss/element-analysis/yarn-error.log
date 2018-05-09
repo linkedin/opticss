@@ -55,7 +55,7 @@ npm manifest:
       "@types/node": "^8.0.26",
       "mocha": "^3.4.2",
       "mocha-typescript": "^1.1.9",
-      "tslint": "^5.1.0",
+      "tslint": "^5.10.0",
       "typescript": "^2.4.1"
     }
   }

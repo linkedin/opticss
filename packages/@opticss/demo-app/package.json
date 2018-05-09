@@ -61,6 +61,9 @@
     "moo": "^0.4.1",
     "nearley": "^2.10.3",
     "rimraf": "^2.6.2",
-    "watch": "^1.0.2"
+    "watch": "^1.0.2",
+    "tslint": "^5.10.0",
+    "typescript": "^2.8.1",
+    "source-map-support": "^0.5.3"
   }
 }
