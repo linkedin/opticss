@@ -46,14 +46,14 @@
     "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
-    "@opticss/code-style": "^0.3.0",
     "@opticss/attr-analysis-dsl": "^0.3.0",
+    "@opticss/code-style": "^0.3.0",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.48",
     "chai": "^4.1.2",
-    "mocha": "^5.1.1",
     "istanbul": "^0.4.5",
     "mocha-typescript": "^1.1.9",
+    "mocha": "^5.1.1",
     "remap-istanbul": "^0.11.1",
     "source-map-support": "^0.5.3",
     "tslint": "^5.10.0",

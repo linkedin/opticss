@@ -48,13 +48,13 @@
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.48",
     "chai": "^4.1.2",
-    "mocha": "^5.1.1",
     "istanbul": "^0.4.5",
     "mocha-typescript": "^1.1.9",
+    "mocha": "^5.1.1",
     "remap-istanbul": "^0.11.1",
+    "source-map-support": "^0.5.3",
     "tslint": "^5.10.0",
     "typedoc": "^0.11.1",
-    "source-map-support": "^0.5.3",
     "typescript": "^2.8.1"
   },
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
