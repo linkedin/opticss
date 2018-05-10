@@ -5,11 +5,10 @@
   ],
   "compilerOptions": {
     "outDir": "dist",
-    "baseUrl": "dist",
     "types": [
-      "@types/chai",
+      "chai",
       "@types/node",
-      "@types/mocha"
+      "mocha"
     ]
   }
 }

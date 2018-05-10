@@ -1,17 +1,18 @@
 {
   "extends": "../../tsproject.json",
   "compilerOptions": {
+    "composite": true,
     "outDir": "dist",
-    "baseUrl": "dist",
+    "baseUrl": ".",
     "types": [
-      "@types/chai",
-      "@types/debug",
-      "@types/mocha",
+      "chai",
+      "debug",
+      "mocha",
       "@types/node"
     ],
     "paths": {
-      "concat-with-sourcemaps": ["../types-local/concat-with-sourcemaps"],
-      "parse5": ["../../../node_modules/parse5/lib/index.d.ts"]
+      "concat-with-sourcemaps": ["./types-local/concat-with-sourcemaps"],
+      "parse5": ["./../../node_modules/parse5/lib/index.d.ts"]
     },
     "references": [
       {"path": "../@opticss/element-analysis"},

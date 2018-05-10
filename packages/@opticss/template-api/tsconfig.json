@@ -1,8 +1,8 @@
 {
   "extends": "../../../tsproject.json",
   "compilerOptions": {
+    "composite": true,
     "outDir": "dist/src",
-    "baseUrl": "dist/src",
     "types": [
       "@types/node"
     ],

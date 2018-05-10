@@ -42,7 +42,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@opticss/util": "^0.3.0",
     "moo": "^0.4.1",
     "nearley": "^2.10.3"
   },

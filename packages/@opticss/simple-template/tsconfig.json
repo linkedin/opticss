@@ -1,15 +1,16 @@
 {
   "extends": "../../../tsproject.json",
   "compilerOptions": {
+    "composite": true,
     "outDir": "dist",
-    "baseUrl": "dist",
+    "baseUrl": ".",
     "types": [
-      "@types/chai",
+      "chai",
       "@types/node",
-      "@types/mocha"
+      "mocha"
     ],
     "paths": {
-      "parse5": ["../../../../node_modules/parse5/lib/index.d.ts"]
+      "parse5": ["./../../../node_modules/parse5/lib/index.d.ts"]
     },
     "references": [
       {"path": "../attr-analysis-dsl"},

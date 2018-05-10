@@ -8,15 +8,15 @@
     "noImplicitAny": true,
     "removeComments": false,
     "outDir": "dist",
-    "baseUrl": "dist",
+    "baseUrl": ".",
     "types": [
-      "@types/chai",
+      "chai",
       "@types/node",
-      "@types/mocha"
+      "mocha"
     ],
     "paths": {
-      "codemirror/*": [ "../types-local/codemirror" ],
-      "parse5": ["../../../../node_modules/parse5/lib/index.d.ts"]
+      "codemirror/*": [ "./types-local/codemirror" ],
+      "parse5": ["./../../../node_modules/parse5/lib/index.d.ts"]
     },
     "references": [
       {"path": "../element-analysis"},

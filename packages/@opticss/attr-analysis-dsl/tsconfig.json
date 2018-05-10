@@ -1,20 +1,22 @@
 {
   "extends": "../../../tsproject.json",
   "compilerOptions": {
+    "composite": true,
     "outDir": "dist",
-    "baseUrl": "dist",
     "types": [
-      "@types/chai",
+      "chai",
       "@types/node",
-      "@types/mocha"
+      "mocha"
     ],
     "references": [
-      {"path": "../@opticss/element-analysis"},
+      {"path": "../element-analysis"},
     ]
   },
   "include": [
     "src",
-    "test"
+    "test",
+    "test",
+    "../util"
   ],
   "exclude": [
     "dist",
