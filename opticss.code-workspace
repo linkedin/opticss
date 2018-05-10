@@ -48,6 +48,8 @@
 			"Opti",
 			"stylesheet",
 			"unoptimized"
-		]
+		],
+		"typescript.preferences.importModuleSpecifier": "relative"
+		
 	}
 }
