@@ -30,6 +30,6 @@
     // output options
     "newLine": "LF",
     "module": "commonjs",
-    "traceResolution": false
+    "traceResolution": true
   }
 }
