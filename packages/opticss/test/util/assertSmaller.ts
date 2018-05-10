@@ -1,7 +1,7 @@
 // tslint:disable:no-console
 import * as assert from "assert";
 import * as cssSize from "css-size";
-import { documentToString } from "resolve-cascade";
+import { documentToString } from "../../../resolve-cascade/src";
 import { inspect } from "util";
 
 import { CascadeTestResult } from "./assertCascade";

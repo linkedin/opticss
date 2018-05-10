@@ -1,6 +1,6 @@
-import { Element } from "@opticss/element-analysis";
-import { TemplateAnalysis, TemplateTypes } from "@opticss/template-api";
-import { MultiMap } from "@opticss/util";
+import { Element } from "../../../../@opticss/element-analysis/src";
+import { TemplateAnalysis, TemplateTypes } from "../../../../@opticss/template-api/src";
+import { MultiMap } from "../../../../@opticss/util/src";
 import * as propParser from "css-property-parser";
 import * as postcss from "postcss";
 import * as specificity from "specificity";

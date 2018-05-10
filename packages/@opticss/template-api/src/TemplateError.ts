@@ -1,7 +1,7 @@
 import {
   ErrorLocation,
   OptiCSSError,
-} from "@opticss/util";
+} from "../../util/src";
 
 /**
  * Custom OptiCSS error type for template analysis errors.

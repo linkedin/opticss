@@ -1,6 +1,6 @@
 import {
   TestTemplate,
-} from "@opticss/simple-template";
+} from "../../@opticss/simple-template/src";
 import * as fs from "fs";
 import {
   slow,

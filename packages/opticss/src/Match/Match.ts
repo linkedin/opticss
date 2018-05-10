@@ -1,4 +1,4 @@
-import { assertNever } from "@opticss/util";
+import { assertNever } from "../../../@opticss/util/src";
 
 export enum Match {
   /**

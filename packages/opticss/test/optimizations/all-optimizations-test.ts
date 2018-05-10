@@ -1,4 +1,4 @@
-import { TestTemplate } from "@opticss/simple-template";
+import { TestTemplate } from "../../../@opticss/simple-template/src";
 import { assert } from "chai";
 import {
   skip,

@@ -1,7 +1,7 @@
 import * as path from "path";
 
-import { SimpleAnalyzer, TestTemplate } from "@opticss/simple-template";
-import { TemplateAnalysis } from "@opticss/template-api";
+import { SimpleAnalyzer, TestTemplate } from "../../../@opticss/simple-template/src";
+import { TemplateAnalysis } from "../../../@opticss/template-api/src";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
 

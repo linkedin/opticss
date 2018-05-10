@@ -4,14 +4,14 @@ import {
   SimpleTemplateRewriter,
   SimpleTemplateRunner,
   TestTemplate,
-} from "@opticss/simple-template";
+} from "../../../@opticss/simple-template/src";
 import {
   TemplateAnalysis,
   TemplateIntegrationOptions,
-} from "@opticss/template-api";
+} from "../../../@opticss/template-api/src";
 import {
   whatever,
-} from "@opticss/util";
+} from "../../../@opticss/util/src";
 import {
   AssertionResult,
   ComputedStyle,
@@ -20,7 +20,7 @@ import {
   assertSameCascade,
   bodyElement,
   serializeElement,
-} from "resolve-cascade";
+} from "../../../resolve-cascade/src";
 
 import {
   OptiCSSOptions,

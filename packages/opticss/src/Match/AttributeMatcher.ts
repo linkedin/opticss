@@ -10,8 +10,8 @@ import {
   isStartsWith,
   isUnknown,
   isUnknownIdentifier,
-} from "@opticss/element-analysis";
-import { assertNever } from "@opticss/util";
+} from "../../../@opticss/element-analysis/src";
+import { assertNever } from "../../../@opticss/util/src";
 import * as SelectorParser from "postcss-selector-parser";
 import { Memoize } from "typescript-memoize";
 

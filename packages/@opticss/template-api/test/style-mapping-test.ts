@@ -1,10 +1,10 @@
 import {
   AttributeValueParser,
-} from "@opticss/attr-analysis-dsl";
-import { Attribute, Element, Tagname, attrValues as v } from "@opticss/element-analysis";
+} from "../../attr-analysis-dsl/src";
+import { Attribute, Element, Tagname, attrValues as v } from "../../element-analysis/src";
 import {
   assert as typedAssert,
-} from "@opticss/util";
+} from "../../util/src";
 import {
   assert,
 } from "chai";

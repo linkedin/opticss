@@ -1,4 +1,4 @@
-import { whatever } from "@opticss/util";
+import { whatever } from "../../util/src";
 export * from "./BooleanExpression";
 export * from "./StyleMapping";
 export * from "./TemplateError";
@@ -60,8 +60,8 @@ export type TemplateConstructors<T extends TemplateTypes = TemplateTypes> = {
  * Note that when using TypeScript, the TemplateTypes interface must first have your key and template type added to it
  * before attempting to register the deserializer function.
  *
- * import { TemplateTypes, TemplateInfo, SerializedTemplateInfo, TemplateInfoFactory } from "@opticss/template-api"
- * declare module "@opticss/template-api" {
+ * import { TemplateTypes, TemplateInfo, SerializedTemplateInfo, TemplateInfoFactory } from "../../template-api/src"
+ * declare module "../../template-api/src" {
  *   export interface TemplateTypes {
  *     "MyTemplateTypeName": MyTemplateClass;
  *   }
@@ -149,8 +149,8 @@ import {
   SourcePosition,
   Tag,
   TagnameBase,
-} from "@opticss/element-analysis";
-import { ObjectDictionary, OptiCSSError } from "@opticss/util";
+} from "../../element-analysis/src";
+import { ObjectDictionary, OptiCSSError } from "../../util/src";
 
 /*
  * This interface defines a JSON friendly serialization

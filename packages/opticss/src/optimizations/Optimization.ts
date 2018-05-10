@@ -1,4 +1,4 @@
-import { TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes } from "@opticss/template-api";
+import { TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes } from "../../../@opticss/template-api/src";
 
 import { ParsedCssFile } from "../CssFile";
 import { Initializers } from "../initializers";

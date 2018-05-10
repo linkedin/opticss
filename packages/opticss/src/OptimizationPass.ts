@@ -1,4 +1,4 @@
-import { StyleMapping, TemplateIntegrationOptions } from "@opticss/template-api";
+import { StyleMapping, TemplateIntegrationOptions } from "../../@opticss/template-api/src";
 
 import { Actions } from "./Actions";
 import { OptiCSSOptions } from "./OpticssOptions";

@@ -1,4 +1,4 @@
-import { AttributeValue } from "@opticss/element-analysis";
+import { AttributeValue } from "../../element-analysis/src";
 import * as nearley from "nearley";
 const grammar: nearley.CompiledRules = require("./grammar/attrvalue");
 

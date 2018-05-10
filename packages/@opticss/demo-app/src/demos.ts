@@ -1,4 +1,4 @@
-import { whatever } from "@opticss/util";
+import { whatever } from "../../util/src";
 export interface FeatureToggles {
   removeUnusedStyles: HTMLInputElement;
   // conflictResolution: HTMLInputElement;

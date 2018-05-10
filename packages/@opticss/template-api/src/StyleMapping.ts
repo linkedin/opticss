@@ -3,14 +3,14 @@ import {
   ElementInfo,
   isConstant,
   isTagnameValueChoice,
-} from "@opticss/element-analysis";
+} from "../../element-analysis/src";
 import {
   IdentityDictionary,
   ItemType,
   assertNever,
   unionInto,
   whatever,
-} from "@opticss/util";
+} from "../../util/src";
 import {
   Dictionary, MultiDictionary,
 } from "typescript-collections";

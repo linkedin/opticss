@@ -2,12 +2,12 @@ import {
   Attribute,
   Element,
   Tagname,
-} from "@opticss/element-analysis";
-import { TestTemplate } from "@opticss/simple-template";
+} from "../../../@opticss/element-analysis/src";
+import { TestTemplate } from "../../../@opticss/simple-template/src";
 import {
   RewritableIdents,
-} from "@opticss/template-api";
-import { clean } from "@opticss/util";
+} from "../../../@opticss/template-api/src";
+import { clean } from "../../../@opticss/util/src";
 import {
   assert,
 } from "chai";
@@ -16,7 +16,7 @@ import {
   test,
 } from "mocha-typescript";
 import * as path from "path";
-import { documentToString } from "resolve-cascade";
+import { documentToString } from "../../../resolve-cascade/src";
 
 import {
   IdentGenerator,

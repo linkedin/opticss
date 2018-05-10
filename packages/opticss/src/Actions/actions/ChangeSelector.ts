@@ -1,4 +1,4 @@
-import { SourcePosition } from "@opticss/element-analysis";
+import { SourcePosition } from "../../../../@opticss/element-analysis/src";
 import * as postcss from "postcss";
 
 import { Optimizations } from "../../OpticssOptions";

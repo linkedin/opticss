@@ -1,4 +1,4 @@
-import { SourcePosition } from "@opticss/element-analysis";
+import { SourcePosition } from "../../../../@opticss/element-analysis/src";
 
 import { Optimizations } from "../../OpticssOptions";
 import { Action } from "../Action";

@@ -1,4 +1,4 @@
-import { assertNever } from "@opticss/util";
+import { assertNever } from "../../util/src";
 
 // TODO: make selectables belong to a template. that template can have template-wide config associated to it.
 // E.g. namespace mappings.

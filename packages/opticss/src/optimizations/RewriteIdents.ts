@@ -1,4 +1,4 @@
-import { NormalizedRewriteOptions, TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes, rewriteOptions } from "@opticss/template-api";
+import { NormalizedRewriteOptions, TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes, rewriteOptions } from "../../../@opticss/template-api/src";
 
 import { RewriteRuleIdents, RuleIdents } from "../Actions/actions/RewriteRuleIdents";
 import { ParsedCssFile } from "../CssFile";

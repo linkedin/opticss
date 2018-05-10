@@ -12,7 +12,7 @@ import {
   isStartsWith,
   isTagChoice,
   isUnknown,
-} from "@opticss/element-analysis";
+} from "../../@opticss/element-analysis/src";
 import {
   assert,
 } from "chai";

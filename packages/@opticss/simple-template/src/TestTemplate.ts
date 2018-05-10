@@ -2,9 +2,9 @@ import {
   SerializedTemplateInfo,
   TemplateInfo,
   TemplateInfoFactory,
-} from "@opticss/template-api";
+} from "../../template-api/src";
 
-declare module "@opticss/template-api" {
+declare module "../../template-api/src" {
   export interface TemplateTypes {
     "TestTemplate": TestTemplate;
   }

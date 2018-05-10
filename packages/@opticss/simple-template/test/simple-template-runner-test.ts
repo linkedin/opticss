@@ -1,4 +1,4 @@
-import { clean } from "@opticss/util";
+import { clean } from "../../util/src";
 import {
   assert,
 } from "chai";

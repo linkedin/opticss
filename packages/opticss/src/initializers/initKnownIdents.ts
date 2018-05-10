@@ -1,5 +1,5 @@
-import { TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes, rewriteOptions } from "@opticss/template-api";
-import { assertNever } from "@opticss/util";
+import { TemplateAnalysis, TemplateIntegrationOptions, TemplateTypes, rewriteOptions } from "../../../@opticss/template-api/src";
+import { assertNever } from "../../../@opticss/util/src";
 import * as SelectorParser from "postcss-selector-parser";
 
 import { ParsedCssFile } from "../CssFile";

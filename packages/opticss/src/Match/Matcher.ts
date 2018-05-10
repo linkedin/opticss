@@ -1,6 +1,6 @@
 import {
   Selectable,
-} from "@opticss/element-analysis";
+} from "../../../@opticss/element-analysis/src";
 import * as SelectorParser from "postcss-selector-parser";
 
 import { ParsedSelector } from "../parseSelector";

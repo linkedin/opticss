@@ -1,10 +1,10 @@
-import { SimpleAnalyzer, SimpleTemplateRewriter, SimpleTemplateRunner, TestTemplate } from "@opticss/simple-template";
+import { SimpleAnalyzer, SimpleTemplateRewriter, SimpleTemplateRunner, TestTemplate } from "../../simple-template/src";
 import * as codemirror from "codemirror";
 import * as csshint from "codemirror/addon/hint/css-hint";
 import * as showhint from "codemirror/addon/hint/show-hint";
 import * as cssmode from "codemirror/mode/css/css";
 import * as htmlmode from "codemirror/mode/htmlmixed/htmlmixed";
-import { Action, Optimizer, isMultiAction } from "opticss";
+import { Action, Optimizer, isMultiAction } from "../../../opticss/src";
 import * as prettier from "prettier";
 import * as Split from "split.js";
 

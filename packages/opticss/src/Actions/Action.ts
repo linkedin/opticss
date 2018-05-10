@@ -4,8 +4,8 @@
  * a central point for creating logs and reports of the work
  * that was done. It can also be used to implement backtracking.
  */
-import { SourcePosition } from "@opticss/element-analysis";
-import { Keys } from "@opticss/util";
+import { SourcePosition } from "../../../@opticss/element-analysis/src";
+import { Keys } from "../../../@opticss/util/src";
 import * as postcss from "postcss";
 
 import { Optimizations } from "../optimizations";

@@ -1,4 +1,4 @@
-import { assertNever } from "@opticss/util";
+import { assertNever } from "../../util/src";
 
 import {
   HasNamespace,

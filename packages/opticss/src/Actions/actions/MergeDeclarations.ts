@@ -1,6 +1,6 @@
 import {
   SourcePosition,
-} from "@opticss/element-analysis";
+} from "../../../../@opticss/element-analysis/src";
 import {
   ElementAttributes,
   SimpleAttribute as ElementAttribute,
@@ -8,7 +8,7 @@ import {
   StyleMapping,
   TemplateIntegrationOptions,
   isSimpleTagname,
-} from "@opticss/template-api";
+} from "../../../../@opticss/template-api/src";
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { isRoot } from "postcss-selector-parser";

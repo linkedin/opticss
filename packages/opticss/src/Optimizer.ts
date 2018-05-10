@@ -4,7 +4,7 @@ import {
   TemplateIntegrationOptions,
   TemplateTypes,
   normalizeTemplateOptions,
-} from "@opticss/template-api";
+} from "../../@opticss/template-api/src";
 import Concat = require("concat-with-sourcemaps");
 import * as postcss from "postcss";
 

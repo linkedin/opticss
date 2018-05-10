@@ -1,4 +1,4 @@
-import { StringDict } from "@opticss/util";
+import { StringDict } from "../../../@opticss/util/src";
 import * as propParser from "css-property-parser";
 
 import {

@@ -1,4 +1,4 @@
-import { TypeGuard, isObject, something, whatever } from "@opticss/util";
+import { TypeGuard, isObject, something, whatever } from "../../util/src";
 
 export interface AndExpression<V extends something> {
   and: Array<V | BooleanExpression<V>>;

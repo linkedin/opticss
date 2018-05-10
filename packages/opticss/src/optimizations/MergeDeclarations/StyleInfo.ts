@@ -1,4 +1,4 @@
-import { Element } from "@opticss/element-analysis";
+import { Element } from "../../../../@opticss/element-analysis/src";
 import * as postcss from "postcss";
 import * as specificity from "specificity";
 import { MultiDictionary } from "typescript-collections";

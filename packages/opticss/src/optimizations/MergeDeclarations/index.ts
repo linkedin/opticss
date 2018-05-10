@@ -10,7 +10,7 @@ import {
   isAbsent,
   isChoice,
   isConstant,
-} from "@opticss/element-analysis";
+} from "../../../../@opticss/element-analysis/src";
 import {
   SimpleAttribute,
   TemplateAnalysis,
@@ -18,13 +18,13 @@ import {
   TemplateTypes,
   isSimpleTagname,
   simpleAttributeToString,
-} from "@opticss/template-api";
+} from "../../../../@opticss/template-api/src";
 import {
   IdentityDictionary,
   MultiMap,
   StringDict,
   TwoKeyMultiMap,
-} from "@opticss/util";
+} from "../../../../@opticss/util/src";
 import * as propParser from "css-property-parser";
 import * as postcss from "postcss";
 import { isAttribute, isClassName, isIdentifier } from "postcss-selector-parser";

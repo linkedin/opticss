@@ -1,5 +1,5 @@
-import { Element } from "@opticss/element-analysis";
-import { TemplateAnalysis, TemplateTypes } from "@opticss/template-api";
+import { Element } from "../../../@opticss/element-analysis/src";
+import { TemplateAnalysis, TemplateTypes } from "../../../@opticss/template-api/src";
 
 import { RemoveRule } from "../Actions";
 import { ChangeSelector } from "../Actions";

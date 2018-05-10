@@ -1,8 +1,8 @@
 import {
   ElementInfo,
   ValueUnknownIdentifier,
-} from "@opticss/element-analysis";
-import { clean } from "@opticss/util";
+} from "../../element-analysis/src";
+import { clean } from "../../util/src";
 import {
   assert,
 } from "chai";

@@ -1,4 +1,4 @@
-import { RewritableIdents } from "@opticss/template-api";
+import { RewritableIdents } from "../../@opticss/template-api/src";
 
 export interface Optimizations {
   /**

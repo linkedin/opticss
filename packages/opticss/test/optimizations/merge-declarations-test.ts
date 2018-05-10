@@ -1,8 +1,8 @@
-import { TestTemplate } from "@opticss/simple-template";
+import { TestTemplate } from "../../../@opticss/simple-template/src";
 import {
   TemplateIntegrationOptions,
   normalizeTemplateOptions,
-} from "@opticss/template-api";
+} from "../../../@opticss/template-api/src";
 import {
   assert,
 } from "chai";
@@ -13,7 +13,7 @@ import {
 } from "mocha-typescript";
 import * as path from "path";
 import * as postcss from "postcss";
-import { documentToString } from "resolve-cascade";
+import { documentToString } from "../../../resolve-cascade/src";
 
 import {
   CascadeTestResult,

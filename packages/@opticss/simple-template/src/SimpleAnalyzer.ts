@@ -1,7 +1,7 @@
-import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
-import { Attribute, AttributeNS, POSITION_UNKNOWN, Tagname  } from "@opticss/element-analysis";
-import { TemplateAnalysis } from "@opticss/template-api";
-import { whatever } from "@opticss/util";
+import { AttributeValueParser } from "../../attr-analysis-dsl/src";
+import { Attribute, AttributeNS, POSITION_UNKNOWN, Tagname  } from "../../element-analysis/src";
+import { TemplateAnalysis } from "../../template-api/src";
+import { whatever } from "../../util/src";
 import * as parse5 from "parse5";
 
 import { TestTemplate } from "./TestTemplate";

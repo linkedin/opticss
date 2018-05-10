@@ -1,4 +1,4 @@
-import { Element } from "@opticss/element-analysis";
+import { Element } from "../../@opticss/element-analysis/src";
 import postcss = require("postcss");
 
 import { ElementMatcher, matches, rejects } from "./Match";

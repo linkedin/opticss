@@ -1,7 +1,7 @@
-import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
-import { Attribute, AttributeNS, FlattenedAttributeValue, isAbsent, isConstant, isEndsWith, isFlattenedSet, isStartsAndEndsWith, isStartsWith, isUnknown, isUnknownIdentifier } from "@opticss/element-analysis";
-import { TemplateAnalysis } from "@opticss/template-api";
-import { assertNever } from "@opticss/util";
+import { AttributeValueParser } from "../../attr-analysis-dsl/src";
+import { Attribute, AttributeNS, FlattenedAttributeValue, isAbsent, isConstant, isEndsWith, isFlattenedSet, isStartsAndEndsWith, isStartsWith, isUnknown, isUnknownIdentifier } from "../../element-analysis/src";
+import { TemplateAnalysis } from "../../template-api/src";
+import { assertNever } from "../../util/src";
 import * as parse5 from "parse5";
 import * as Random from "random-js";
 

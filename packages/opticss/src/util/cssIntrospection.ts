@@ -1,4 +1,4 @@
-import { isObject, whatever } from "@opticss/util";
+import { isObject, whatever } from "../../../@opticss/util/src";
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { isClassName, isIdentifier } from "postcss-selector-parser";
