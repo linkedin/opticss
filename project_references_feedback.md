@@ -1,3 +1,17 @@
+Caveats & Setup Info
+--------------------
+
+I tried to run against typescript master using `tsc` but I get an error in `checkSourceFilesBelongToPath`.
+
+This feedback is based on running against `tsbuild` which currently uses an older fork of
+typescript (and doesn't compile against typescript's master branch right now) -- if there was any major changes in landing on master, this feedback may be inaccurate.
+
+You can run the build (which fails) with these steps:
+
+1. `yarn install`
+2. `yarn tsbuild packages/@opticss/util packages/@opticss/attr-analysis-dsl packages/@opticss/simple-template packages/@opticss/element-analysis packages/@opticss/code-style packages/@opticss/demo-app packages/@opticss/template-api packages/resolve-cascade packages/opticss`
+
+
 Unix Compatibility Issues
 -------------------------
 
@@ -271,5 +285,11 @@ dependencies and npm-based resolution semantics. This would make working with
 development using `npm link` to fix a bug. It also makes adopting this
 trivial for monorepos.
 
+VS Code Configuration
+---------------------
+
+I had to set `"typescript.preferences.importModuleSpecifier": "relative"`. If relative paths
+end up being required, I think vscode and typescript configuration should work together to figure out
+that a project reference is being used and intelligently decide if it's relative or absolute/package scoped.
 
 [relpath_link]: https://github.com/Microsoft/TypeScript/pull/22420/files#diff-c3ed224e4daa84352f7f1abcd23e8ccaR2223
