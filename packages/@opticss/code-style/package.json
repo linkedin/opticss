@@ -37,9 +37,13 @@
   "publishConfig": {
     "access": "public"
   },
+  "devDependencies": {
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.0-dev.20180510"
+  },
   "peerDependencies": {
     "tslint": "^5.10.0",
-    "typescript": "^2.8.1"
+    "typescript": "^2.9.0-dev.20180510"
   },
   "files": [
     "dist",

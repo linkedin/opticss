@@ -52,7 +52,7 @@
     "source-map-support": "^0.5.3",
     "tslint": "^5.10.0",
     "typedoc": "^0.11.1",
-    "typescript": "^2.8.1"
+    "typescript": "^2.9.0-dev.20180510"
   },
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }

@@ -13,8 +13,8 @@
     ]
   },
   "include": [
-    "src/**",
-    "test/**"
+    "src",
+    "test"
   ],
   "exclude": [
     "dist",
