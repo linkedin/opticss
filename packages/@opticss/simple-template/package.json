@@ -43,7 +43,8 @@
     "@opticss/template-api": "^0.6.0",
     "@opticss/util": "^0.6.0",
     "@types/random-js": "^1.0.30",
-    "parse5": "^4.0.0",
+    "parse5": "^5.0.0",
+    "parse5-sax-parser": "^5.0.0",
     "postcss": "^6.0.21",
     "random-js": "^1.0.8",
     "specificity": "^0.3.2"

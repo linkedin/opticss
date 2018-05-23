@@ -11,8 +11,7 @@
     ],
     "paths": {
       "concat-with-sourcemaps": ["../types-local/concat-with-sourcemaps"],
-      "css-size": ["../types-local/css-size"],
-      "parse5": ["../../../node_modules/parse5/lib/index.d.ts"]
+      "parse5": ["../../@opticss/simple-template/types-local/parse5/index.d.ts"]
     }
   },
   "include": [

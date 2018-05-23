@@ -18,12 +18,8 @@ export class SimpleTemplateRewriter {
 
   rewrite(template: TestTemplate, html: string) {
     let valueParser = new AttributeValueParser(template.plainHtml);
-    let templateDoc = parse5.parse(template.contents, {
-      treeAdapter: parse5.treeAdapters.default,
-    }) as parse5.AST.Default.Document;
-    let document = parse5.parse(html, {
-      treeAdapter: parse5.treeAdapters.default,
-    }) as parse5.AST.Default.Document;
+    let templateDoc = parse5.parse(template.contents) as parse5.DefaultTreeDocument;
+    let document = parse5.parse(html) as parse5.DefaultTreeDocument;
 
     let templateElements = allElements(bodyElement(templateDoc)!);
     let htmlElements = allElements(bodyElement(document)!);
@@ -68,8 +64,8 @@ export class SimpleTemplateRewriter {
   rewriteAttribute(
     name: RewriteableAttrName,
     rewriteMapping: RewriteMapping,
-    element: parse5.AST.Default.Element,
-    inputAttrs: Array<parse5.AST.Default.Attribute>,
+    element: parse5.DefaultTreeElement,
+    inputAttrs: Array<parse5.Attribute>,
   ) {
     let attrIndex = element.attrs.findIndex(a => a.name === name);
     let attr = attrIndex >= 0 ? element.attrs[attrIndex] : undefined;
@@ -100,9 +96,9 @@ export class SimpleTemplateRewriter {
 }
 
 function elementHas(
-  element: parse5.AST.Default.Element,
+  element: parse5.DefaultTreeElement,
   trait: SimpleTagname | SimpleAttribute,
-  inputAttrs: Array<parse5.AST.Default.Attribute>,
+  inputAttrs: Array<parse5.Attribute>,
 ): boolean {
   if (isSimpleTagname(trait)) {
     return element.tagName === trait.tagname;
@@ -121,8 +117,8 @@ function elementHas(
 function evaluateExpression(
   expression: BooleanExpression<number>,
   classMapping: RewriteMapping,
-  element: parse5.AST.Default.Element,
-  inputAttrs: Array<parse5.AST.Default.Attribute>,
+  element: parse5.DefaultTreeElement,
+  inputAttrs: Array<parse5.Attribute>,
 ): boolean {
   if (isAndExpression(expression)) {
     return expression.and.every(e => {

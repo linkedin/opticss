@@ -5,7 +5,7 @@ import { inspect } from "util";
 export type RuleScope = Array<postcss.AtRule>;
 export type RuleIteratorWithScope = (rule: postcss.Rule, scope: RuleScope) => false | undefined | void;
 
-export type BodyElement = parse5.AST.HtmlParser2.Element & parse5.AST.HtmlParser2.ParentNode & {
+export type BodyElement = parse5.Element & parse5.ParentNode & {
   nodeName: "body";
   tagName: "body";
 };
@@ -44,20 +44,20 @@ function _walkRulesWithScope(container: postcss.Container, eachRule: RuleIterato
   });
 }
 
-export function allElements(parent: parse5.AST.HtmlParser2.ParentNode): Array<parse5.AST.HtmlParser2.Element> {
-  let els = new Array<parse5.AST.HtmlParser2.Element>();
+export function allElements(parent: parse5.ParentNode): Array<parse5.DefaultTreeElement> {
+  let els = new Array<parse5.DefaultTreeElement>();
   walkElements(parent, (el) => {
     els.push(el);
   });
   return els;
 }
 
-export type StartTagCallback = (node: parse5.AST.HtmlParser2.Element) => EndTagCallback;
-export type EndTagCallback = ((node: parse5.AST.HtmlParser2.Element) => void) | undefined | void;
+export type StartTagCallback = (node: parse5.DefaultTreeElement) => EndTagCallback;
+export type EndTagCallback = ((node: parse5.DefaultTreeElement) => void) | undefined | void;
 /**
  * invokes the callback with each element in the document via a depth first traversal.
  */
-export function walkElements(node: parse5.AST.HtmlParser2.Node | parse5.AST.HtmlParser2.ParentNode, cb: StartTagCallback): void {
+export function walkElements(node: parse5.Node | parse5.ParentNode, cb: StartTagCallback): void {
   let endTagCB: EndTagCallback = undefined;
   if (isElement(node)) {
     endTagCB = cb(node);
@@ -72,16 +72,16 @@ export function walkElements(node: parse5.AST.HtmlParser2.Node | parse5.AST.Html
   }
 }
 
-export function isElement(node: parse5.AST.HtmlParser2.Node): node is parse5.AST.HtmlParser2.Element {
-  if ((<parse5.AST.HtmlParser2.Element>node).tagName) {
+export function isElement(node: parse5.Node): node is parse5.DefaultTreeElement {
+  if ((<parse5.DefaultTreeElement>node).tagName) {
     return true;
   } else {
     return false;
   }
 }
 
-export function isParentNode(node: parse5.AST.HtmlParser2.Node | parse5.AST.HtmlParser2.ParentNode): node is parse5.AST.HtmlParser2.ParentNode {
-  if ((<parse5.AST.HtmlParser2.ParentNode>node).childNodes) {
+export function isParentNode(node: parse5.Node | parse5.ParentNode): node is parse5.DefaultTreeParentNode {
+  if ((<parse5.DefaultTreeParentNode>node).childNodes) {
     return true;
   } else {
     return false;
@@ -94,13 +94,16 @@ export function parseStylesheet(content: string): Promise<postcss.Result> {
   });
 }
 
-export function parseHtml(html: string): parse5.AST.HtmlParser2.Document {
-  return parse5.parse(html, {
-    treeAdapter: parse5.treeAdapters.htmlparser2,
-  }) as parse5.AST.HtmlParser2.Document;
+export function parseHtml(html: string): parse5.DefaultTreeDocument {
+  return parse5.parse(html) as parse5.DefaultTreeDocument;
 }
 
-export function bodyElement(document: parse5.AST.HtmlParser2.Document): BodyElement | undefined {
+function isDocument(doc: parse5.Document): doc is parse5.DefaultTreeDocument {
+  return !!(doc as parse5.DefaultTreeDocument).childNodes;
+}
+
+export function bodyElement(document: parse5.Document): BodyElement | undefined {
+  if (!isDocument(document)) { return; }
   let html = document.childNodes.find(child => isElement(child) && child.tagName === "html");
   if (html && isParentNode(html)) {
     return html.childNodes.find(child => isElement(child) && child.tagName === "body") as BodyElement | undefined;
@@ -112,28 +115,31 @@ export function bodyElement(document: parse5.AST.HtmlParser2.Document): BodyElem
 /**
  * serializes an element and it's children to a string.
  */
-export function serializeElement(element: parse5.AST.HtmlParser2.Element): string {
-  return parse5.serialize({children: [element]}, {treeAdapter: parse5.treeAdapters.htmlparser2});
+export function serializeElement(element: parse5.Node): string {
+  return parse5.serialize({children: [element]});
 }
 
 /**
  * outputs the element's opening tag only.
  */
-export function debugElement(element: parse5.AST.HtmlParser2.Element): string {
-  if (!element || !element.attribs) {
+export function debugElement(element: parse5.DefaultTreeElement): string {
+  if (!element || !element.attrs) {
     return inspect(element);
   }
-  let tagName = element.name;
-  let attrs = Object.keys(element.attribs).reduce((s, a, i) => {
-    if (i > 0) {
-      s += " ";
-    }
-    s += `${a}="${element.attribs[a]}"`;
-    return s;
-  },                                              "");
+  let tagName = element.tagName;
+  let attrs = Object.keys(element.attrs).reduce(
+    (s, a, i) => {
+      if (i > 0) {
+        s += " ";
+      }
+      s += `${a}="${element.attrs[a]}"`;
+      return s;
+    },
+    "",
+  );
   return `<${tagName} ${attrs}>`;
 }
 
-export function documentToString(document: parse5.AST.HtmlParser2.Document): string {
-  return parse5.serialize(bodyElement(document)!, { treeAdapter: parse5.treeAdapters.htmlparser2 });
+export function documentToString(document: parse5.Document): string {
+  return parse5.serialize(bodyElement(document)!);
 }

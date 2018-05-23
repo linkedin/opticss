@@ -52,17 +52,3 @@ export class IntegrationTests {
     });
   }
 }
-
-// export function extractInlineStyleTags(html: string) {
-//   let document = parse5.parse(html, {
-//     treeAdapter: parse5.treeAdapters.default
-//   }) as parse5.AST.Default.Document;
-//   // let css = "";
-//   walkElements(document, (element) => {
-//     if (element.tagName === "style") {
-//       element.childNodes.forEach(e => {
-//         // css += (<parse5.AST.Default.TextNode>e).value;
-//       });
-//     }
-//   });
-// }

@@ -16,7 +16,8 @@
     ],
     "paths": {
       "codemirror/*": [ "../types-local/codemirror" ],
-      "parse5": ["../../../../node_modules/parse5/lib/index.d.ts"]
+      "parse5": ["../types-local/parse5/index.d.ts"],
+      "parse5-sax-parser": ["../types-local/parse5-sax-parser/index.d.ts"]
     }
   },
   "include": [

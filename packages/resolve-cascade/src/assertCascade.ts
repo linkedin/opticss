@@ -18,10 +18,10 @@ import {
 
 export interface AssertionResult {
   expectedFullCascade: FullCascade;
-  expectedDoc: parse5.AST.HtmlParser2.Document;
+  expectedDoc: parse5.Document;
   expectedCss: string;
   actualFullCascade: FullCascade;
-  actualDoc: parse5.AST.HtmlParser2.Document;
+  actualDoc: parse5.Document;
   actualCss: string;
 }
 

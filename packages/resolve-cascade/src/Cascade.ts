@@ -14,7 +14,7 @@ export interface PseudoStates {
    * Maps the pseudo-state's name to the elements for which
    * that state can affect the computed style of an element.
    */
-  [pseudoState: string]: Array<parse5.AST.HtmlParser2.Element>;
+  [pseudoState: string]: Array<parse5.Element>;
 }
 
 export interface StyledPseudoElements {
@@ -146,17 +146,17 @@ function stylesForDeclaration(decl: postcss.Declaration): ComputedStyle {
   }
 }
 
-export type FullCascade = Map<parse5.AST.HtmlParser2.Element, ElementStyle>;
+export type FullCascade = Map<parse5.Element, ElementStyle>;
 
 export class Cascade {
   stylesheet: string;
-  html: parse5.AST.HtmlParser2.Document;
-  constructor(stylesheet: string, html: parse5.AST.HtmlParser2.Document) {
+  html: parse5.DefaultTreeDocument;
+  constructor(stylesheet: string, html: parse5.DefaultTreeDocument) {
     this.stylesheet = stylesheet;
     this.html = html;
   }
   perform(): Promise<FullCascade> {
-    let map = new Map<parse5.AST.HtmlParser2.Element, ElementStyle>();
+    let map = new Map<parse5.Element, ElementStyle>();
     let bodyEl = bodyElement(this.html)!;
     let selectOpts: { strict: true };
     return parseStylesheet(this.stylesheet).then(result => {

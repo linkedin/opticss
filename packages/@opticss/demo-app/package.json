@@ -7,7 +7,7 @@
   "types": "dist/src/index.d.ts",
   "scripts": {
     "demo": "bin/opticss",
-    "compile": "tsc --build && babel dist --out-dir dist && browserify ./dist/src/index.js > ./dist/out.js",
+    "compile": "tsc --build && babel dist --out-dir dist && browserify --full-paths ./dist/src/index.js > ./dist/out.js",
     "pretest": "yarn run compile",
     "test": "mocha dist/test --opts test/mocha.opts",
     "posttest": "yarn run lint",
@@ -44,6 +44,7 @@
     "codemirror": "^5.15.2",
     "express": "^4.15.5",
     "opticss": "^0.6.0",
+    "parse5": "^5.0.0",
     "prettier": "1.7.4",
     "split.js": "^1.3.5"
   },

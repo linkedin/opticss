@@ -1,7 +1,7 @@
 import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
 import { Attribute, AttributeNS, POSITION_UNKNOWN, Tagname  } from "@opticss/element-analysis";
 import { TemplateAnalysis } from "@opticss/template-api";
-import * as parse5 from "parse5";
+import * as parse5 from "parse5-sax-parser";
 
 import { TestTemplate } from "./TestTemplate";
 
@@ -28,13 +28,17 @@ export class SimpleAnalyzer {
    */
   analyze(): Promise<TemplateAnalysis<"TestTemplate">> {
     let analysis = new TemplateAnalysis<"TestTemplate">(this.template);
-    const parser = new parse5.SAXParser({ locationInfo: this.includeSourceInformation });
+
+    // @ts-ignore
+    // Typescript doesn't like considering the default export a constructor...
+    const parser = new parse5({ sourceCodeLocationInfo: this.includeSourceInformation });
 
     // On every element start tag, parse all attributes and add to the analysis.
-    parser.on("startTag", (name, attrs, _selfClosing, location) => {
-      let startLocation = location ? { line: location.line, column: location.col } : POSITION_UNKNOWN;
-      let endLocation = location ? { line: location.line, column: location.col + location.endOffset } : POSITION_UNKNOWN;
-      analysis.startElement(new Tagname({constant: name}), startLocation);
+    parser.on("startTag", (token: parse5.StartTagToken) => {
+      let { tagName, attrs, sourceCodeLocation: location } = token;
+      let startLocation = location ? { line: location.startLine, column: location.startCol } : POSITION_UNKNOWN;
+      let endLocation = location ? { line: location.startLine, column: location.startCol + location.endOffset } : POSITION_UNKNOWN;
+      analysis.startElement(new Tagname({constant: tagName}), startLocation);
       attrs.forEach(attr => {
         let attrValue = this.valueParser.parse(attr.namespace, attr.name, attr.value);
         if (attr.namespace) {
