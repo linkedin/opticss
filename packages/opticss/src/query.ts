@@ -102,32 +102,32 @@ export class QuerySelectorReferences implements SelectorQuery {
  * The returned selectors may not actually match depending on the selector
  * context and various combinators.
  */
-export class QueryKeySelector implements SelectorQuery {
-  target: Element;
-  constructor(obj: Element) {
-    this.target = obj;
-  }
+// export class QueryKeySelector implements SelectorQuery {
+//   target: Element;
+//   constructor(obj: Element) {
+//     this.target = obj;
+//   }
 
-  execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors {
-    let matchedSelectors: ClassifiedParsedSelectors = {
-      main: [],
-      other: {},
-    };
-    walkRules(container, (node) => {
-      let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node);
-      let found = parsedSelectors.filter((value: ParsedSelector) => matches(ElementMatcher.instance.matchSelector(this.target, value, true)));
-      found.forEach((sel) => {
-        let key = sel.key;
-        if (key.pseudoelement !== undefined) {
-          if (matchedSelectors.other[key.pseudoelement.value] === undefined) {
-            matchedSelectors.other[key.pseudoelement.value] = [];
-          }
-          matchedSelectors.other[key.pseudoelement.value].push({parsedSelector: sel, rule: node});
-        } else {
-          matchedSelectors.main.push({parsedSelector: sel, rule: node});
-        }
-      });
-    });
-    return matchedSelectors;
-  }
-}
+//   execute(container: postcss.Container, selectorFactory?: SelectorFactory): ClassifiedParsedSelectors {
+//     let matchedSelectors: ClassifiedParsedSelectors = {
+//       main: [],
+//       other: {},
+//     };
+//     walkRules(container, (node) => {
+//       let parsedSelectors = selectorFactory && selectorFactory.getParsedSelectors(node) || parseSelector(node);
+//       let found = parsedSelectors.filter((value: ParsedSelector) => matches(ElementMatcher.instance.matchSelector(this.target, value, true)));
+//       found.forEach((sel) => {
+//         let key = sel.key;
+//         if (key.pseudoelement !== undefined) {
+//           if (matchedSelectors.other[key.pseudoelement.value] === undefined) {
+//             matchedSelectors.other[key.pseudoelement.value] = [];
+//           }
+//           matchedSelectors.other[key.pseudoelement.value].push({parsedSelector: sel, rule: node});
+//         } else {
+//           matchedSelectors.main.push({parsedSelector: sel, rule: node});
+//         }
+//       });
+//     });
+//     return matchedSelectors;
+//   }
+// }

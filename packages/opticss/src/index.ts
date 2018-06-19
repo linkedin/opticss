@@ -3,7 +3,6 @@ import * as postcssSelectorParser from "postcss-selector-parser";
 import * as TSCollections from "typescript-collections";
 
 export * from "./CssFile";
-export * from "./errors";
 export * from "./query";
 export * from "./OpticssOptions";
 export * from "./parseSelector";

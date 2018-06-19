@@ -13,22 +13,11 @@ import {
   isTagChoice,
   isUnknown,
 } from "@opticss/element-analysis";
-import {
-  assert,
-} from "chai";
-import {
-  suite,
-  test,
-} from "mocha-typescript";
+import { assert } from "chai";
+import { suite, test } from "mocha-typescript";
 
-import {
-  Match,
-  TagMatcher,
-} from "../src/Match";
-import {
-  CompoundSelector,
-  parseSelector,
-} from "../src/parseSelector";
+import { Match, TagMatcher } from "../src/Match";
+import { CompoundSelector, parseSelector } from "../src/parseSelector";
 
 const tagMatcher = TagMatcher.instance;
 
