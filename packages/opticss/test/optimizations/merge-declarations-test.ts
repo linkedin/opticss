@@ -392,7 +392,7 @@ export class MergeDeclarationsTest {
           .a .c { float: right; }
           .a .d { float: left; }
         `);
-      return assertSmaller(css1, result, { gzip: { notBiggerThan: 1 }, brotli: { notBiggerThan: 1 } });
+      return assertSmaller(css1, result, { gzip: { notBiggerThan: 1 }, brotli: { notBiggerThan: 2 } });
     });
   }
   @test "merges psuedoclasses safely"() {

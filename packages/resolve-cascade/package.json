@@ -58,7 +58,7 @@
     "@opticss/util": "^0.3.0",
     "@types/node": "^10.0.6",
     "css-property-parser": "^1.0.5",
-    "css-size": "^4.0.0-rc.4",
+    "css-size": "4.0.0-rc.4",
     "domutils": "^1.6.2",
     "parse5": "^4.0.0",
     "postcss": "^6.0.21",
