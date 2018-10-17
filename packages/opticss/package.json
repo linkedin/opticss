@@ -1,6 +1,6 @@
 {
   "name": "opticss",
-  "version": "0.3.0-rc.1",
+  "version": "0.3.0",
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
@@ -33,7 +33,7 @@
   "types": "dist/src/index.d.ts",
   "homepage": "https://github.com/linkedin/opticss#readme",
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "publishConfig": {
     "access": "public"
@@ -47,10 +47,10 @@
     "css-property-parser": "^1.0.5",
     "debug": "^2.6.8",
     "object.values": "^1.0.4",
-    "postcss-selector-parser": "^4.0.0",
     "postcss": "^6.0.21",
-    "source-map-support": "^0.5.3",
+    "postcss-selector-parser": "^4.0.0",
     "source-map": "^0.6.1",
+    "source-map-support": "^0.5.3",
     "specificity": "^0.3.2",
     "typescript-collections": "^1.2.5",
     "typescript-memoize": "^1.0.0-alpha.3"
@@ -63,9 +63,10 @@
     "@types/node": "^10.0.6",
     "@types/random-js": "^1.0.30",
     "chai": "^4.1.2",
+    "css-size": "^4.0.0",
     "istanbul": "^0.4.5",
-    "mocha-typescript": "^1.1.9",
     "mocha": "^5.1.1",
+    "mocha-typescript": "^1.1.9",
     "random-js": "^1.0.8",
     "remap-istanbul": "^0.11.1",
     "resolve-cascade": "^0.3.0",
@@ -73,6 +74,5 @@
     "typedoc": "^0.11.1",
     "typescript": "^2.8.1"
   },
-  "engineStrict": true,
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }

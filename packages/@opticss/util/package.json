@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/util",
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "publishConfig": {
     "access": "public"

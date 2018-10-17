@@ -36,7 +36,7 @@
     "@opticss/template-api": "^0.3.0"
   },
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "publishConfig": {
     "access": "public"

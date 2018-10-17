@@ -11,6 +11,7 @@
     ],
     "paths": {
       "concat-with-sourcemaps": ["../types-local/concat-with-sourcemaps"],
+      "css-size": ["../types-local/css-size"],
       "parse5": ["../../../node_modules/parse5/lib/index.d.ts"]
     }
   },

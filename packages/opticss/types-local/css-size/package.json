@@ -1,0 +1,7 @@
+{
+  "dependencies": {},
+  "description": "TypeScript definitions for concat-with-sourcemaps 1.0.4",
+  "name": "@types/css-size",
+  "typings": "index.d.ts",
+  "version": "4.0.0"
+}
