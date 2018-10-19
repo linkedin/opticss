@@ -1,6 +1,6 @@
 {
   "name": "opticss",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
@@ -39,9 +39,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.3.0",
-    "@opticss/template-api": "^0.3.0",
-    "@opticss/util": "^0.3.0",
+    "@opticss/element-analysis": "^0.4.0",
+    "@opticss/template-api": "^0.4.0",
+    "@opticss/util": "^0.4.0",
     "@types/debug": "0.0.29",
     "concat-with-sourcemaps": "^1.0.4",
     "css-property-parser": "^1.0.5",
@@ -56,8 +56,8 @@
     "typescript-memoize": "^1.0.0-alpha.3"
   },
   "devDependencies": {
-    "@opticss/code-style": "^0.3.0",
-    "@opticss/simple-template": "^0.3.0",
+    "@opticss/code-style": "^0.4.0",
+    "@opticss/simple-template": "^0.4.0",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.48",
     "@types/node": "^10.0.6",
@@ -69,7 +69,7 @@
     "mocha-typescript": "^1.1.9",
     "random-js": "^1.0.8",
     "remap-istanbul": "^0.11.1",
-    "resolve-cascade": "^0.3.0",
+    "resolve-cascade": "^0.4.0",
     "tslint": "^5.10.0",
     "typedoc": "^0.11.1",
     "typescript": "^2.8.1"
