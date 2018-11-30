@@ -1,6 +1,6 @@
 {
   "name": "@opticss/util",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Utility library for misc shared code for @opticss packages.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/util",
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "publishConfig": {
     "access": "public"
@@ -44,13 +44,13 @@
     "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
-    "@opticss/code-style": "^0.3.0",
+    "@opticss/code-style": "^0.4.0",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.48",
     "chai": "^4.1.2",
     "istanbul": "^0.4.5",
-    "mocha-typescript": "^1.1.9",
     "mocha": "^5.1.1",
+    "mocha-typescript": "^1.1.9",
     "remap-istanbul": "^0.11.1",
     "source-map-support": "^0.5.3",
     "tslint": "^5.10.0",

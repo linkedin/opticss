@@ -3,7 +3,7 @@
   "author": "Chris Eppstein",
   "description": "Configuration and tools to manage the code style of css-blocks.",
   "license": "BSD-2-Clause",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "main": "configs/tslint.interactive.json",
   "readme": "README.md",
   "keywords": [
@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/code-style",
   "engines": {
-    "node": ">=8"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "publishConfig": {
     "access": "public"

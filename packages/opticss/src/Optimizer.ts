@@ -60,6 +60,12 @@ export class Optimizer {
    *   they don't conflict or by having selectors that unambiguously resolve the conflict.
    */
   constructor(options: Partial<OptiCSSOptions>, templateOptions: Partial<TemplateIntegrationOptions>) {
+
+    // TODO: Remove April 2019 when Node.js 6 is EOL'd
+    if (parseInt(process.versions.node) <= 6) {
+      throw new Error("Opticss does not support Node.js <= 6");
+    }
+
     this.sources = [];
     this.analyses = [];
     // TODO: give an error if the options conflict with the template integration abilities?
