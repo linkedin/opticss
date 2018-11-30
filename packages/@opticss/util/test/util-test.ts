@@ -473,12 +473,12 @@ export class SimpleTemplateTest {
     assert.equal(flatten(arr), arr);
   }
   @test "flatten a nested array"() {
-    assert.deepEqual(flatten([["hello", "world"]]), ["hello", "world"]);
+    assert.deepEqual(flatten<string>([["hello", "world"]]), ["hello", "world"]);
   }
   @test "flatten two nested arrays"() {
-    assert.deepEqual(flatten([["hello"], ["world"]]), ["hello", "world"]);
+    assert.deepEqual(flatten<string>([["hello"], ["world"]]), ["hello", "world"]);
   }
   @test "flatten some ridiculousness"() {
-    assert.deepEqual(flatten([["a"], ["b", ["c", 1]], [2, [[3]]]]), ["a", "b", "c", 1, 2, 3]);
+    assert.deepEqual(flatten<string | number>([["a"], ["b", ["c", 1]], [2, [[3]]]]), ["a", "b", "c", 1, 2, 3]);
   }
 }
