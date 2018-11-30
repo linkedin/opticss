@@ -12,7 +12,7 @@
   ],
   "types": "dist",
   "scripts": {
-    "compile": "rm -rf dist && tsc",
+    "compile": "which tsc && tsc --version && rm -rf dist && tsc",
     "pretest": "yarn run compile",
     "which": "echo $PATH",
     "test": "tslint --test test/rules/*/*",
@@ -39,7 +39,7 @@
   },
   "peerDependencies": {
     "tslint": "^5.10.0",
-    "typescript": "^2.8.1"
+    "typescript": "~3.1.6"
   },
   "files": [
     "dist",
