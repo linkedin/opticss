@@ -12,7 +12,7 @@ export interface NotExpression<V extends something> {
   not: V | BooleanExpression<V>;
 }
 
-export type BooleanExpression<V> = AndExpression<V> | OrExpression<V> | NotExpression<V>;
+export type BooleanExpression<V extends something> = AndExpression<V> | OrExpression<V> | NotExpression<V>;
 
 export function not<V extends something>(value: V | BooleanExpression<V>): NotExpression<V> {
   return {not: value};

@@ -79,7 +79,7 @@ let tmplOutEditor = codemirror(tmplOutContainer, {
 });
 
 function query(): URLSearchParams {
-  return new URL(document.location.toString()).searchParams;
+  return new URL(document.location!.toString()).searchParams;
 }
 
 function autoSaveOptions() {
@@ -138,7 +138,7 @@ function initDemos(demos: Array<Demo>, defaultOptions: Partial<FeatureFlags>): [
     cssInEditor.setValue(demo.css);
     tmplInEditor.setValue(demo.template);
     if (addHistory) {
-      let url = new URL(document.location.toString());
+      let url = new URL(document.location!.toString());
       if (demo.unlinkable) {
         url.searchParams.delete("demo");
       } else {
@@ -287,7 +287,7 @@ function processAndUpdateState() {
       let autosave = autoSaveData();
       if (autosave) demos.unshift(autosave);
     }
-    let url = new URL(document.location.toString());
+    let url = new URL(document.location!.toString());
     if (url.searchParams.has("demo")) {
       url.searchParams.delete("demo");
       demoSelect.selectedIndex = 0;
@@ -316,7 +316,8 @@ tmplInEditor.on("keyup", processAndUpdateState);
 });
 
 function objectEntries<T extends object>(v: T): Array<[keyof T, T[keyof T]]> {
-  return Object.keys(v).map((k: keyof T)  => {
+  let keys: Array<keyof T> = <Array<keyof T>>Object.keys(v);
+  return keys.map((k: keyof T)  => {
     let e: [keyof T, T[keyof T]] = [k, v[k]];
     return e;
   });

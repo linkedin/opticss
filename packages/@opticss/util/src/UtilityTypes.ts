@@ -55,7 +55,7 @@ export function isString(v: whatever): v is string {
 export interface ObjectDictionary<T> {
   [prop: string]: T;
 }
-export function isObjectDictionary<T>(
+export function isObjectDictionary<T extends whatever>(
   dict: whatever,
   typeGuard: TypeGuard<T>,
 ) {
@@ -67,6 +67,8 @@ export function isObjectDictionary<T>(
   }
   return true;
 }
+
+export type Keys<Obj extends object> = Extract<keyof Obj, string>;
 
 /**
  * Create an object dictionary given a map object with string keys.

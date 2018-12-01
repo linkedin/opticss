@@ -5,6 +5,7 @@
  * that was done. It can also be used to implement backtracking.
  */
 import { SourcePosition } from "@opticss/element-analysis";
+import { Keys } from "@opticss/util";
 import * as postcss from "postcss";
 
 import { Optimizations } from "../optimizations";
@@ -15,7 +16,7 @@ export abstract class Action {
   abstract logString(): string;
   abstract readonly sourcePosition: SourcePosition | undefined | null;
 
-  constructor(optimization: keyof Optimizations) {
+  constructor(optimization: Keys<Optimizations>) {
     this.optimization = optimization;
   }
 

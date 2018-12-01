@@ -231,7 +231,7 @@ export class SimpleTemplateTest {
     let existingValue = multiMap.get(key1);
     existingValue.push(2);
     assert.deepEqual(multiMap.get(key1), [1]);
-    for (let [_key, values] of multiMap.entries()) {
+    for (let [, values] of multiMap.entries()) {
       values.push(2);
     }
     assert.deepEqual(multiMap.get(key1), [1]);
@@ -305,7 +305,7 @@ export class SimpleTemplateTest {
     let existingValue = multiMap.get(key1);
     existingValue.push(2);
     assert.deepEqual(multiMap.get(key1), [1]);
-    for (let [_key, values] of multiMap.entries()) {
+    for (let [, values] of multiMap.entries()) {
       values.push(2);
     }
     assert.deepEqual(multiMap.get(key1), [1]);
@@ -380,7 +380,7 @@ export class SimpleTemplateTest {
     let existingValue = multiMap.get(key1, key2);
     existingValue.push(2);
     assert.deepEqual(multiMap.get(key1, key2), [1]);
-    for (let [_key1, _key2, values] of multiMap.entries()) {
+    for (let [, , values] of multiMap.entries()) {
       values.push(2);
     }
     assert.deepEqual(multiMap.get(key1, key2), [1]);
@@ -455,7 +455,7 @@ export class SimpleTemplateTest {
     let existingValue = multiMap.get(key1, key2);
     existingValue.push(2);
     assert.deepEqual(multiMap.get(key1, key2), [1]);
-    for (let [_key1, _key2, values] of multiMap.entries()) {
+    for (let [, , values] of multiMap.entries()) {
       values.push(2);
     }
     assert.deepEqual(multiMap.get(key1, key2), [1]);
@@ -473,12 +473,12 @@ export class SimpleTemplateTest {
     assert.equal(flatten(arr), arr);
   }
   @test "flatten a nested array"() {
-    assert.deepEqual(flatten([["hello", "world"]]), ["hello", "world"]);
+    assert.deepEqual(flatten<string>([["hello", "world"]]), ["hello", "world"]);
   }
   @test "flatten two nested arrays"() {
-    assert.deepEqual(flatten([["hello"], ["world"]]), ["hello", "world"]);
+    assert.deepEqual(flatten<string>([["hello"], ["world"]]), ["hello", "world"]);
   }
   @test "flatten some ridiculousness"() {
-    assert.deepEqual(flatten([["a"], ["b", ["c", 1]], [2, [[3]]]]), ["a", "b", "c", 1, 2, 3]);
+    assert.deepEqual(flatten<string | number>([["a"], ["b", ["c", 1]], [2, [[3]]]]), ["a", "b", "c", 1, 2, 3]);
   }
 }

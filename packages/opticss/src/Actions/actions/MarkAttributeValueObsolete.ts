@@ -5,6 +5,7 @@ import {
   SimpleAttribute,
   simpleAttributeToString,
 } from "@opticss/template-api";
+import { Keys } from "@opticss/util";
 
 import { OptimizationPass } from "../../OptimizationPass";
 import { Optimizations } from "../../optimizations";
@@ -26,7 +27,7 @@ export class MarkAttributeValueObsolete extends MultiAction {
     selectors: ParsedSelectorAndRule[],
     attribute: SimpleAttribute,
     reason: string,
-    optimization: keyof Optimizations = "mergeDeclarations",
+    optimization: Keys<Optimizations> = "mergeDeclarations",
   ) {
     super(optimization);
     this.pass = pass;

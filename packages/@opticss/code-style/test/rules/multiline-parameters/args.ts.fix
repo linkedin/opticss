@@ -5,6 +5,21 @@ const foo = (
   return true;
 };
 
+const foo = (
+  asdf,
+  ...baz
+) => { return true; }
+
+const foo = (
+  asdf,
+  baz
+) => { return true; }
+
+const foo = (
+  asdf,
+  ...baz
+) => { return true; }
+
 const foo = function(
   asdf,
   xyz
