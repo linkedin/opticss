@@ -9,6 +9,7 @@
   "command": {
     "publish": {
       "message": "chore(release): Publish %s.",
+      "conventionalCommits": true,
       "sort": true
     },
     "bootstrap": {
