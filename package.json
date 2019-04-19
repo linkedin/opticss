@@ -11,7 +11,8 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "commitmsg": "commitlint --edit $GIT_PARAMS",
-    "cleandist": "rm -rf dist"
+    "cleandist": "rm -rf dist",
+    "test": "lerna run test"
   },
   "workspaces": [
     "packages/*",
@@ -30,5 +31,9 @@
       "devDependencyPin": "chore: Pin ${dependency} to ${oldVersion}.",
       "closes": "\n\nCloses #${number}."
     }
+  },
+  "toolchain": {
+    "node": "10.15.3",
+    "yarn": "1.15.2"
   }
 }
