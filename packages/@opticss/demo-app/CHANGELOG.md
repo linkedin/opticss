@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 0.4.1 (2019-04-19)
+
+
+### Bug Fixes
+
+* **types:** Ignore errors for null document locations. ([2468cc7](https://github.com/linkedin/opticss/commit/2468cc7))
+
+
+
+# 0.4.0 (2018-10-19)
+
+
+
+# 0.3.0 (2018-04-24)
+
+
+
+# 0.3.0-rc.0 (2018-04-24)
+
+
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/linkedin/opticss/compare/v0.3.0-rc.0...v0.3.0) (2018-04-24)
 

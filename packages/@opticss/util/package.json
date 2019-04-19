@@ -1,6 +1,6 @@
 {
   "name": "@opticss/util",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Utility library for misc shared code for @opticss packages.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -44,7 +44,7 @@
     "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
-    "@opticss/code-style": "^0.4.0",
+    "@opticss/code-style": "^0.5.0",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.48",
     "chai": "^4.1.2",

@@ -1,6 +1,6 @@
 {
   "name": "@opticss/template-api",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Simple templates for use in testing with OptiCSS.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -40,14 +40,14 @@
     "access": "public"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.4.0",
-    "@opticss/util": "^0.4.0",
+    "@opticss/element-analysis": "^0.5.0",
+    "@opticss/util": "^0.5.0",
     "postcss": "^6.0.21",
     "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
-    "@opticss/attr-analysis-dsl": "^0.4.0",
-    "@opticss/code-style": "^0.4.0",
+    "@opticss/attr-analysis-dsl": "^0.5.0",
+    "@opticss/code-style": "^0.5.0",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.48",
     "chai": "^4.1.2",
