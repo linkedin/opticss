@@ -39,7 +39,7 @@
   },
   "peerDependencies": {
     "tslint": "^5.10.0",
-    "typescript": "~3.1.6"
+    "typescript": "~3.4.4"
   },
   "files": [
     "dist",
