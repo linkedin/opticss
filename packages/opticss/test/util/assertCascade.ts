@@ -1,34 +1,10 @@
 // tslint:disable:no-console
-import {
-  SimpleAnalyzer,
-  SimpleTemplateRewriter,
-  SimpleTemplateRunner,
-  TestTemplate,
-} from "@opticss/simple-template";
-import {
-  TemplateAnalysis,
-  TemplateIntegrationOptions,
-} from "@opticss/template-api";
-import {
-  whatever,
-} from "@opticss/util";
-import {
-  AssertionResult,
-  ComputedStyle,
-  ElementStyle,
-  ElementStyleMismatch,
-  assertSameCascade,
-  bodyElement,
-  serializeElement,
-} from "resolve-cascade";
+import { SimpleAnalyzer, SimpleTemplateRewriter, SimpleTemplateRunner, TestTemplate } from "@opticss/simple-template";
+import { TemplateAnalysis, TemplateIntegrationOptions } from "@opticss/template-api";
+import { AssertionResult, assertSameCascade, bodyElement, ComputedStyle, ElementStyle, ElementStyleMismatch, serializeElement } from "resolve-cascade";
+import { OptiCSSOptions } from "../../src/OpticssOptions";
+import { OptimizationResult, Optimizer } from "../../src/Optimizer";
 
-import {
-  OptiCSSOptions,
-} from "../../src/OpticssOptions";
-import {
-  OptimizationResult,
-  Optimizer,
-} from "../../src/Optimizer";
 
 export interface TestedMarkup {
   originalBody: string;
@@ -91,7 +67,7 @@ export function testOptimizationCascade(
               assertSameCascade(originalCss,
                                 optimizationToCss(optimization),
                                 html,
-                                rewrittenHtml).catch((e: whatever) => {
+                                rewrittenHtml).catch((e: unknown) => {
                                   Object.assign(e, {
                                     optimization,
                                     template,

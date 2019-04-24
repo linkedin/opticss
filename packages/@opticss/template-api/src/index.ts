@@ -1,4 +1,3 @@
-import { whatever } from "@opticss/util";
 export * from "./BooleanExpression";
 export * from "./StyleMapping";
 export * from "./TemplateError";
@@ -27,7 +26,7 @@ export interface SerializedTemplateInfo<K extends keyof TemplateTypes> {
   identifier: string;
 
   /** the values stored in here must be JSON-friendly. */
-  data?: whatever[];
+  data?: unknown[];
 }
 
 export interface TemplateInfo<K extends keyof TemplateTypes> {
@@ -45,7 +44,7 @@ export interface TemplateInfo<K extends keyof TemplateTypes> {
 }
 
 export type TemplateConstructors<T extends TemplateTypes = TemplateTypes> = {
-    [P in keyof T]?: (identifier: string, ..._data: whatever[]) => T[P];
+    [P in keyof T]?: (identifier: string, ..._data: unknown[]) => T[P];
 };
 
 /**
@@ -80,7 +79,7 @@ export type TemplateConstructors<T extends TemplateTypes = TemplateTypes> = {
 export class TemplateInfoFactory {
   static constructors: TemplateConstructors = {};
 
-  static create<K extends keyof TemplateTypes>(name: K, identifier: string, ...data: whatever[]): TemplateTypes[K] {
+  static create<K extends keyof TemplateTypes>(name: K, identifier: string, ...data: unknown[]): TemplateTypes[K] {
     let constructor: TemplateConstructors[K] = TemplateInfoFactory.constructors[name];
     if (constructor !== undefined) {
       return constructor(identifier, ...data);
@@ -89,7 +88,7 @@ export class TemplateInfoFactory {
     }
   }
   static deserialize<K extends keyof TemplateTypes>(obj: SerializedTemplateInfo<K>): TemplateTypes[K] {
-    let data: whatever[] = obj.data || [];
+    let data: unknown[] = obj.data || [];
     return TemplateInfoFactory.create(obj.type, obj.identifier, ...data);
   }
 }
@@ -122,7 +121,7 @@ export class Template implements TemplateInfo<"Opticss.Template"> {
     this.type = "Opticss.Template";
   }
 
-  static deserialize(identifier: string, ..._data: whatever[]): Template {
+  static deserialize(identifier: string, ..._data: unknown[]): Template {
     return new Template(identifier);
   }
 

@@ -1,4 +1,4 @@
-import { isObject, whatever } from "@opticss/util";
+import { isObject } from "@opticss/util";
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { isClassName, isIdentifier } from "postcss-selector-parser";
@@ -105,7 +105,7 @@ const NODE_TYPES = {
 
 type MaybeNode = { type?: postcss.Node["type"] };
 
-export function isNode(node: whatever): node is postcss.Node {
+export function isNode(node: unknown): node is postcss.Node {
   let nodeType = isObject(node) && (<MaybeNode>node).type || undefined;
   return nodeType && NODE_TYPES[nodeType] || false;
 }
@@ -115,7 +115,7 @@ export function isNode(node: whatever): node is postcss.Node {
  * @param node postcss node to test.
  * @returns True or false if node is an at-rule.
  */
-export function isAtRule(node: whatever): node is postcss.AtRule {
+export function isAtRule(node: unknown): node is postcss.AtRule {
   return (isObject(node) && (<MaybeNode>node).type === "atrule");
 }
 
@@ -124,14 +124,14 @@ export function isAtRule(node: whatever): node is postcss.AtRule {
  * @param node postcss node to test.
  * @returns True or false if node is a rule.
  */
-export function isRule(node: whatever): node is postcss.Rule {
+export function isRule(node: unknown): node is postcss.Rule {
   return (isObject(node) && (<MaybeNode>node).type === "rule");
 }
 
 /**
  * Test if a postcss node is a declaration.
  */
-export function isDeclaration(node: whatever): node is postcss.Declaration {
+export function isDeclaration(node: unknown): node is postcss.Declaration {
   return (isObject(node) && (<MaybeNode>node).type === "decl");
 }
 
@@ -140,6 +140,6 @@ export function isDeclaration(node: whatever): node is postcss.Declaration {
  * @param node postcss node to test.
  * @returns whether the node is a container.
  */
-export function isContainer(node: whatever): node is postcss.Container {
+export function isContainer(node: unknown): node is postcss.Container {
   return isNode(node) && (<postcss.Container>node).each !== undefined;
 }

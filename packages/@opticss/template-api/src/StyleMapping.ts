@@ -9,7 +9,6 @@ import {
   ItemType,
   assertNever,
   unionInto,
-  whatever,
 } from "@opticss/util";
 import {
   Dictionary, MultiDictionary,
@@ -23,7 +22,7 @@ export interface RewriteInformation<InfoType> {
   class: InfoType;
 }
 
-export type RewriteableAttrName = keyof RewriteInformation<whatever>;
+export type RewriteableAttrName = keyof RewriteInformation<unknown>;
 
 export const REWRITE_ATTRS = new Array<RewriteableAttrName>("id", "class");
 Object.freeze(REWRITE_ATTRS);

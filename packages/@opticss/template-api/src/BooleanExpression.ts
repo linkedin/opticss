@@ -1,4 +1,4 @@
-import { TypeGuard, isObject, something, whatever } from "@opticss/util";
+import { TypeGuard, isObject, something } from "@opticss/util";
 
 export interface AndExpression<V extends something> {
   and: Array<V | BooleanExpression<V>>;
@@ -26,9 +26,9 @@ export function or<V extends something>(...values: Array<V | BooleanExpression<V
   return {or: values};
 }
 
-export function isBooleanExpression(expr: whatever): expr is BooleanExpression<something>;
-export function isBooleanExpression<T extends something>(expr: whatever, typeGuard: TypeGuard<T>): expr is BooleanExpression<T>;
-export function isBooleanExpression<T extends something = something>(expr: whatever, typeGuard?: TypeGuard<T>): expr is BooleanExpression<something> {
+export function isBooleanExpression(expr: unknown): expr is BooleanExpression<something>;
+export function isBooleanExpression<T extends something>(expr: unknown, typeGuard: TypeGuard<T>): expr is BooleanExpression<T>;
+export function isBooleanExpression<T extends something = something>(expr: unknown, typeGuard?: TypeGuard<T>): expr is BooleanExpression<something> {
   if (isObject(expr)) {
     if (typeGuard) {
       return isAndExpression(expr, typeGuard)

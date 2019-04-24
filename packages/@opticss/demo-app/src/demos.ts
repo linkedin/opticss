@@ -1,4 +1,3 @@
-import { whatever } from "@opticss/util";
 export interface FeatureToggles {
   removeUnusedStyles: HTMLInputElement;
   // conflictResolution: HTMLInputElement;
@@ -22,7 +21,7 @@ export interface Demo {
   default?: boolean;
 }
 
-export function hush(...objs: Array<whatever>) {
+export function hush(...objs: Array<unknown>) {
   if (!objs[0]) { return true; }
   return false;
 }
