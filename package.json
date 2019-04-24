@@ -11,7 +11,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "commitmsg": "commitlint --edit $GIT_PARAMS",
-    "cleandist": "rm -rf dist",
+    "cleandist": "lerna list --toposort -l | awk '{ print $3\"/dist\" }' | xargs rm -rf",
     "test": "lerna run test"
   },
   "workspaces": [

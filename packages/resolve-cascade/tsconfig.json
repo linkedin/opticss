@@ -19,5 +19,8 @@
   "exclude": [
     "dist",
     "node_modules"
+  ],
+  "references": [
+    {"path": "../@opticss/code-style"}
   ]
 }

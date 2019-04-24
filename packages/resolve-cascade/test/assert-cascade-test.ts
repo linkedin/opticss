@@ -1,4 +1,3 @@
-import { clean } from "@opticss/util";
 import {
   assert,
 } from "chai";
@@ -10,6 +9,8 @@ import {
 import {
   assertSameCascade,
 } from "../src";
+
+import { clean } from "./clean";
 
 @suite("Cascade")
 export class CascadeTest {

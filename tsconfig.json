@@ -1,10 +1,12 @@
 {
   "compilerOptions": {
     // Compilation Configuration
+    "composite": true,
     "target": "es2015",
     "inlineSources": false,
     "inlineSourceMap": true,
     "declaration": true,
+    "declarationMap": true,
     "allowSyntheticDefaultImports": true,
 
     // Environment Configuration

@@ -22,5 +22,10 @@
   "exclude": [
     "dist",
     "node_modules"
+  ],
+  "references": [
+    {"path": "../@opticss/element-analysis"},
+    {"path": "../@opticss/template-api"},
+    {"path": "../@opticss/util"}
   ]
 }

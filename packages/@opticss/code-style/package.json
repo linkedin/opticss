@@ -12,7 +12,7 @@
   ],
   "types": "dist",
   "scripts": {
-    "compile": "which tsc && tsc --version && rm -rf dist && tsc",
+    "compile": "which tsc && tsc --version && tsc --build",
     "pretest": "yarn run compile",
     "which": "echo $PATH",
     "test": "tslint --test test/rules/*/*",
@@ -47,5 +47,9 @@
     "*.md",
     "test"
   ],
-  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
+  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b",
+  "toolchain": {
+    "node": "10.15.3",
+    "yarn": "1.15.2"
+  }
 }

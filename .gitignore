@@ -6,3 +6,4 @@ build/
 packages/css-property-parser
 yarn-error.log
 lerna-debug.log
+tsconfig.tsbuildinfo

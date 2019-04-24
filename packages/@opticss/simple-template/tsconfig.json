@@ -20,5 +20,12 @@
   "exclude": [
     "dist",
     "node_modules"
+  ],
+  "references": [
+    {"path": "../attr-analysis-dsl"},
+    {"path": "../element-analysis"},
+    {"path": "../template-api"},
+    {"path": "../util"},
+    {"path": "../code-style"}
   ]
 }

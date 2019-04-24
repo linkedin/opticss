@@ -1,23 +1,9 @@
-import {
-  AttributeValueParser,
-} from "@opticss/attr-analysis-dsl";
+import { AttributeValueParser } from "@opticss/attr-analysis-dsl";
 import { Attribute, Element, Tagname, attrValues as v } from "@opticss/element-analysis";
-import {
-  assert as typedAssert,
-} from "@opticss/util";
-import {
-  assert,
-} from "chai";
-import {
-  suite,
-  test,
-} from "mocha-typescript";
-
-import { and } from "../src/BooleanExpression";
-import { SimpleAttribute, StyleMapping } from "../src/StyleMapping";
-import {
-  normalizeTemplateOptions,
-} from "../src/TemplateIntegrationOptions";
+import { SimpleAttribute, StyleMapping, and, normalizeTemplateOptions } from "@opticss/template-api";
+import { assert as typedAssert } from "@opticss/util";
+import { assert } from "chai";
+import { suite, test } from "mocha-typescript";
 
 function sAttr(name: string, value: string): SimpleAttribute {
   return {name, value};

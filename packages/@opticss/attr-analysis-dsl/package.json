@@ -5,7 +5,7 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "compile": "rm -rf dist && tsc && mkdir -p dist/src/grammar && cp grammar/*.js dist/src/grammar",
+    "compile": "tsc --build && mkdir -p dist/src/grammar && cp grammar/*.js dist/src/grammar",
     "pretest": "yarn run compile",
     "prepublishOnly": "yarn run compile && yarn run lintall",
     "lint": "tslint -t msbuild --project . -c tslint.cli.json",
@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/attr-analysis-dsl",
   "peerDependencies": {
-    "@opticss/template-api": "^0.3.0"
+    "@opticss/template-api": "^0.5.0"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
@@ -62,5 +62,9 @@
     "typedoc": "^0.15.0-0",
     "typescript": "~3.4.4"
   },
-  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
+  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b",
+  "toolchain": {
+    "node": "10.15.3",
+    "yarn": "1.15.2"
+  }
 }

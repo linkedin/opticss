@@ -16,5 +16,8 @@
     "dist",
     "test/build",
     "node_modules"
+  ],
+  "references": [
+    {"path": "tsconfig.json"}
   ]
 }

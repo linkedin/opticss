@@ -5,8 +5,8 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "compile-src": "rm -rf dist && tsc",
-    "compile-test": "rm -rf test/build && tsc -p tsconfig-test.json",
+    "compile-src": "tsc --build",
+    "compile-test": "rm -rf test/build && tsc --build tsconfig-test.json",
     "compile": "yarn run compile-src && yarn run compile-test",
     "pretest": "yarn run compile",
     "test": "mocha test/build/test --opts test/mocha.opts",
@@ -60,5 +60,9 @@
     "typedoc": "^0.15.0-0",
     "typescript": "~3.4.4"
   },
-  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
+  "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b",
+  "toolchain": {
+    "node": "10.15.3",
+    "yarn": "1.15.2"
+  }
 }

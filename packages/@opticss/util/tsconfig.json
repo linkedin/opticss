@@ -16,5 +16,10 @@
   "exclude": [
     "dist",
     "node_modules"
+  ],
+  "references": [
+    {"path": "../code-style"},
+    {"path": "../../resolve-cascade"}
   ]
+
 }

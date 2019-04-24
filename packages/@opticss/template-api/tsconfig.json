@@ -1,8 +1,8 @@
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist/src",
-    "baseUrl": "dist/src",
+    "outDir": "dist",
+    "baseUrl": "dist",
     "types": [
       "@types/node"
     ]
@@ -14,5 +14,9 @@
     "dist",
     "test/build",
     "node_modules"
+  ],
+  "references": [
+    {"path": "../attr-analysis-dsl"},
+    {"path": "../code-style"}
   ]
 }

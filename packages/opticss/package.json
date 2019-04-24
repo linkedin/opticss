@@ -4,7 +4,7 @@
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
-    "compile": "rm -rf dist && tsc",
+    "compile": "tsc --build",
     "pretest": "yarn run compile",
     "posttest": "yarn run lint",
     "prepublishOnly": "yarn run compile && yarn run lintall",
