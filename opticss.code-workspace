@@ -48,6 +48,9 @@
 			"Opti",
 			"stylesheet",
 			"unoptimized"
-		]
+		],
+		"files.exclude": {
+			"**/dist": true
+		}
 	}
 }
