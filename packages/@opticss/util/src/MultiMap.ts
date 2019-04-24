@@ -1,4 +1,3 @@
-import { whatever } from "./UtilityTypes";
 export class MultiMap<K extends Object, V> {
   private _allowDuplicates: boolean;
   readonly [Symbol.toStringTag] = "MultiMap";
@@ -139,13 +138,13 @@ export class MultiMap<K extends Object, V> {
     return found;
   }
 
-  forEach(callback: (values: V[], key: K, map: MultiMap<K, V>) => void, thisArg?: whatever) {
+  forEach(callback: (values: V[], key: K, map: MultiMap<K, V>) => void, thisArg?: unknown) {
     this.store.forEach(((values, key) => {
       callback.call(thisArg, this.copyValueList(values), key, this);
     }));
   }
 
-  forEachValue(callback: (value: V, key: K, map: MultiMap<K, V>) => void, thisArg?: whatever) {
+  forEachValue(callback: (value: V, key: K, map: MultiMap<K, V>) => void, thisArg?: unknown) {
     this.store.forEach(((values, key) => {
       for (let value of values) {
         callback.call(thisArg, value, key, this);

@@ -1,7 +1,7 @@
 export type NestedArrayValue<V> = V | NestedArray<V>;
 export interface NestedArray<T> extends Array<NestedArrayValue<T>> {}
 
-// tslint:disable-next-line:prefer-whatever-to-any
+// tslint:disable-next-line:prefer-unknown-to-any
 function hasSubArray(a: Array<any>): boolean {
   return a.some(i => Array.isArray(i));
 }

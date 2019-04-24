@@ -2,7 +2,7 @@
  * Types representing having no value for various reasons.
  */
 export type nothing = null | undefined | void;
-export function isNothing(v: whatever): v is nothing {
+export function isNothing(v: unknown): v is nothing {
   return v === null || v === undefined;
 }
 
@@ -10,7 +10,7 @@ export function isNothing(v: whatever): v is nothing {
  * Falsy in JS isn't always what you want. Somethings aren't nothings.
  */
 export type something = string | number | boolean | symbol | object;
-export function isSomething(v: whatever): v is something {
+export function isSomething(v: unknown): v is something {
   return !isNothing(v);
 }
 
@@ -19,44 +19,24 @@ export function isSomething(v: whatever): v is something {
  * something that is null represents the state of knowingly having no value.
  */
 export type defined = something | null;
-export function isDefined(v: whatever): v is defined {
+export function isDefined(v: unknown): v is defined {
   return v !== undefined;
-}
-
-/**
- * TypeScript imbues `any` with dangerous special powers to access unknown
- * properties and assume that values are defined by the type checker.
- * Code that uses `any` removes type checking and makes our code less safe --
- * so we avoid `any` except in rare cases.
- *
- * If you need to represent a value that can be anything and might not even
- * have a value, without making dangerous assumptions that come along with
- * `any`, use whatever instead.
- */
-export type whatever = something | nothing;
-/**
- * This type guard is only useful for down casting an any to whatever.
- * Note: You can just *cast* to `whatever` from `any` with zero runtime
- * overhead, but this type guard is provided for completeness.
- */
-export function isWhatever(_v: whatever): _v is whatever {
-  return true;
 }
 
 /**
  * undefined is not an object... but null is... but not in typescript.
  */
-export function isObject(v: whatever): v is object {
+export function isObject(v: unknown): v is object {
   return (typeof v === "object" && v !== null);
 }
-export function isString(v: whatever): v is string {
+export function isString(v: unknown): v is string {
   return (typeof v === "string");
 }
 export interface ObjectDictionary<T> {
   [prop: string]: T;
 }
-export function isObjectDictionary<T extends whatever>(
-  dict: whatever,
+export function isObjectDictionary<T extends unknown>(
+  dict: unknown,
   typeGuard: TypeGuard<T>,
 ) {
   if (!isObject(dict)) return false;
@@ -91,19 +71,19 @@ export function objectValues<T>(dict: ObjectDictionary<T>): Array<T> {
 }
 
 export type StringDict = ObjectDictionary<string>;
-export function isStringDict(dict: whatever): dict is StringDict {
+export function isStringDict(dict: unknown): dict is StringDict {
   return isObjectDictionary(dict, isString);
 }
 
 /**
  * Set a value to the type of values in an array.
  */
-export type ItemType<T extends Array<whatever>> = T[0];
+export type ItemType<T extends Array<unknown>> = T[0];
 
 /**
  * represents a TypeScript type guard function.
  */
-export type TypeGuard<T extends A, A extends whatever = whatever> = (v: A) => v is T;
+export type TypeGuard<T extends A, A extends unknown = unknown> = (v: A) => v is T;
 
 /** A function that takes no arguments. */
 export type FunctionCall0<R> = () => R;
@@ -124,7 +104,7 @@ export type FunctionCall4<A1, A2, A3, A4, R> = (arg1: A1, arg2: A2, arg3: A3, ar
  * @param guard The type guard function.
  */
 export function firstOfType<
-  ArrayType extends whatever,
+  ArrayType extends unknown,
   GuardType extends ArrayType,
 >(
   ary: Array<ArrayType>,
