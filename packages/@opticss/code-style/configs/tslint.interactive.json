@@ -4,7 +4,7 @@
     "no-var-keyword": true,
     "adjacent-overload-signatures": true,
     "no-for-in-array":true,
-    "prefer-whatever-to-any": true,
+    "prefer-unknown-to-any": true,
     "no-reference": true,
     "no-eval": true,
     "no-floating-promises": true,

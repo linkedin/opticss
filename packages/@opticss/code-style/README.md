@@ -42,7 +42,7 @@ Not all code style can be linted, here's what else you need to know:
     we prefer using a [generator][generators] to taking a callback. This
     works better with `for ... of` loops.
 6. Avoid `any`. There are very few times it's necessary. We use
-   the type `whatever` from `@opticss/util` to express very generic
+   the type `unknown` from `@opticss/util` to express very generic
    values without introducing the infectious semantics of `any`.
    Exceptions:
      * Using a value from library that has a very complex type for which

@@ -1,0 +1,8 @@
+let foo: () => any;
+               ~~~ [Using `any` is usually a bad idea. Consider using `unknown` instead.]
+
+function foo(bar: any): any {
+                  ~~~        [Using `any` is usually a bad idea. Consider using `unknown` instead.]
+                        ~~~  [Using `any` is usually a bad idea. Consider using `unknown` instead.]
+  return true;
+}

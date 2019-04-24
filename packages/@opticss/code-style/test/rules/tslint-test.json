@@ -2,6 +2,6 @@
   "rulesDirectory": "../../dist/rules",
   "rules": {
     "multiline-parameters": true,
-    "prefer-whatever-to-any": true
+    "prefer-unknown-to-any": true
   }
 }
