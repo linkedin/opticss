@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/linkedin/opticss/compare/@opticss/util@0.5.0...@opticss/util@0.6.0) (2019-04-25)
+
+
+### Features
+
+* Remove whatever in favor of builtin unknown. ([f794d80](https://github.com/linkedin/opticss/commit/f794d80))
+
+
+### BREAKING CHANGES
+
+* The `whatever` type is functionally equivalent to the TS
+`unknown` type. Code that was using `whatever` should be changed to use
+TypeScript's built-in type `unknown` instead.
+
+
+
+
+
 # 0.5.0 (2019-04-19)
 
 

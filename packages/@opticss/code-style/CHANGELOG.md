@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/linkedin/opticss/compare/@opticss/code-style@0.5.0...@opticss/code-style@0.6.0) (2019-04-25)
+
+
+### Features
+
+* Replace prefer-whatever-to-any with prefer-unknown-to-any. ([c1bbadc](https://github.com/linkedin/opticss/commit/c1bbadc))
+
+
+### BREAKING CHANGES
+
+* The lint rule prefer-whatever-to-any is no longer valid
+because it relies on a type that was removed. The new
+prefer-unknown-to-any lint rule should be used instead. An error is
+raised if there's a configuration that enables the old rule.
+
+
+
+
+
 # 0.5.0 (2019-04-19)
 
 
