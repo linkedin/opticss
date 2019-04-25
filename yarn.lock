@@ -926,6 +926,19 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.0.6.tgz#c0bce8e539bf34c1b850c13ff46bead2fecc2e58"
   integrity sha512-2whhQUfDHRBiZ3L54Ulyl1X+fZWbWabxPYRDAsibgOAtE6adwusD15Xv0Bw/D7cPah35Z/wKTdW3iAKsevw1uw==
 
+"@types/parse5-sax-parser@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@types/parse5-sax-parser/-/parse5-sax-parser-5.0.1.tgz#f1e26e82bb09e48cb0c16ff6d1e88aea1e538fd5"
+  integrity sha512-wBEwg10aACLggnb44CwzAA27M1Jrc/8TR16zA61/rKO5XZoi7JSfLjdpXbshsm7wOlM6hpfvwygh40rzM2RsQQ==
+  dependencies:
+    "@types/node" "*"
+    "@types/parse5" "*"
+
+"@types/parse5@*", "@types/parse5@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@types/parse5/-/parse5-5.0.0.tgz#9ae2106efc443d7c1e26570aa8247828c9c80f11"
+  integrity sha512-J5D3z703XTDIGQFYXsnU9uRCW9e9mMEFO0Kpe6kykyiboqziru/RlZ0hM2P+PKTG4NHG1SjLrqae/NrV2iJApQ==
+
 "@types/prettier@^1.7.0":
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-1.12.1.tgz#d8aa9c353adc3e8c1c6e51e7acb642315fd79d2d"
@@ -3146,10 +3159,10 @@ css-select@^2.0.0:
     domutils "^1.7.0"
     nth-check "^1.0.1"
 
-css-size@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/css-size/-/css-size-4.0.0.tgz#e4c3625348fa48153142f939597a174dce5357b4"
-  integrity sha1-5MNiU0j6SBUxQvk5WXoXTc5TV7Q=
+css-size@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/css-size/-/css-size-4.0.1.tgz#c65d89211bbec778d87c20909b278b5426aa5e77"
+  integrity sha512-sAL6J4nsn/fv3XUADIaFxHO0/283KcgWjdQeIAOUm/jX9rq956zB1pB9qBq1+P/1VvCBeB1l9fUbnLdxUtKdhA==
   dependencies:
     brotli-size "0.0.2"
     cli-table "^0.3.1"

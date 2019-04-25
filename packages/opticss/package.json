@@ -63,7 +63,7 @@
     "@types/node": "^10.0.6",
     "@types/random-js": "^1.0.30",
     "chai": "^4.1.2",
-    "css-size": "^4.0.0",
+    "css-size": "^4.0.1",
     "istanbul": "^0.4.5",
     "mocha": "^5.1.1",
     "mocha-typescript": "^1.1.9",
