@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.1](https://github.com/linkedin/opticss/compare/@opticss/util@0.6.0...@opticss/util@0.6.1) (2019-04-30)
+
+**Note:** Version bump only for package @opticss/util
+
+
+
+
+
 # [0.6.0](https://github.com/linkedin/opticss/compare/@opticss/util@0.5.0...@opticss/util@0.6.0) (2019-04-25)
 
 

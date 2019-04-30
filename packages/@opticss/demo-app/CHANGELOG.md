@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/linkedin/opticss/compare/@opticss/demo-app@0.5.0...@opticss/demo-app@0.5.1) (2019-04-30)
+
+
+### Bug Fixes
+
+* Upgrade parse5 to 5.0.0 to enable browser builds. ([6a88a33](https://github.com/linkedin/opticss/commit/6a88a33))
+
+
+
+
+
 # [0.5.0](https://github.com/linkedin/opticss/compare/@opticss/demo-app@0.4.1...@opticss/demo-app@0.5.0) (2019-04-25)
 
 **Note:** Version bump only for package @opticss/demo-app

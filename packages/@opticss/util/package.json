@@ -1,6 +1,6 @@
 {
   "name": "@opticss/util",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Utility library for misc shared code for @opticss packages.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
