@@ -1,8 +1,5 @@
-import {
-  OptimizationConstructor,
-} from "./Optimization";
-
 import { MergeDeclarations } from "./MergeDeclarations";
+import { OptimizationConstructor } from "./Optimization";
 import { RemoveUnusedStyles } from "./RemoveUnusedStyles";
 import { RewriteIdents } from "./RewriteIdents";
 

@@ -1,9 +1,8 @@
-import * as path from "path";
-
 import { SimpleAnalyzer, TestTemplate } from "@opticss/simple-template";
 import { TemplateAnalysis } from "@opticss/template-api";
 import { assert } from "chai";
 import { skip, suite, test } from "mocha-typescript";
+import * as path from "path";
 
 import { ChangeSelector, RemoveRule } from "../../src/Actions";
 import { OptimizationResult, Optimizer } from "../../src/Optimizer";

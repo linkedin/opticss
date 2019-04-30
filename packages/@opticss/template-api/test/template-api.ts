@@ -1,7 +1,6 @@
+import { BooleanExpression, and, not, or } from "@opticss/template-api";
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
-
-import { BooleanExpression, and, not, or } from "@opticss/template-api";
 
 @suite("Template API")
 export class TemplateAPITest {

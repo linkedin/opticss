@@ -1,8 +1,7 @@
 // This file is used in the OptiCSS README. If it requires changing, update the README too.
-import * as fs from "fs";
-
 import { unknownElement } from "@opticss/element-analysis";
 import { Template, TemplateAnalysis, TemplateIntegrationOptions } from "@opticss/template-api";
+import * as fs from "fs";
 import { OptiCSSOptions, Optimizer } from "opticss";
 
 // App level control of enabled features, enabling a feature that

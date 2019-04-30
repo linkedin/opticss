@@ -1,8 +1,7 @@
 import { Element } from "@opticss/element-analysis";
 import { TemplateAnalysis, TemplateTypes } from "@opticss/template-api";
 
-import { RemoveRule } from "../Actions";
-import { ChangeSelector } from "../Actions";
+import { ChangeSelector, RemoveRule } from "../Actions";
 import { ParsedCssFile } from "../CssFile";
 import { Initializers } from "../initializers";
 import { ElementMatcher, matches } from "../Match";
