@@ -40,18 +40,18 @@
   "devDependencies": {
     "@opticss/code-style": "^0.6.0",
     "@types/chai": "^4.0.4",
-    "@types/mocha": "^2.2.48",
-    "@types/node": "^10.0.6",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.13.8",
     "@types/parse5": "^5.0.0",
     "chai": "^4.1.2",
     "istanbul": "^0.4.5",
-    "mocha": "^5.1.1",
+    "mocha": "^6.1.4",
     "mocha-typescript": "^1.1.9",
-    "remap-istanbul": "^0.11.1",
+    "remap-istanbul": "^0.13.0",
     "source-map-support": "^0.5.3",
     "tslint": "^5.1.0",
     "typedoc": "^0.15.0-0",
-    "typedoc-plugin-external-module-name": "^1.1.1",
+    "typedoc-plugin-external-module-name": "^2.0.0",
     "typedoc-plugin-markdown": "^1.1.8",
     "typescript": "~3.4.4"
   },
@@ -61,8 +61,8 @@
     "css-size": "^4.0.1",
     "domutils": "^1.6.2",
     "parse5": "^5.0.0",
-    "postcss": "^6.0.21",
-    "specificity": "^0.3.2"
+    "postcss": "^7.0.14",
+    "specificity": "^0.4.1"
   },
   "gitHead": "ef310cb1b10dbc90cae4f859da146863f99d940b"
 }
