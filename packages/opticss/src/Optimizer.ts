@@ -19,6 +19,7 @@ import {
   isSingleFileOptimization,
   optimizations,
 } from "./optimizations";
+import { adaptSourceMap } from "./util/adaptSourceMap";
 
 export interface OptimizationResult {
   output: CssFile;
@@ -32,6 +33,9 @@ export interface TimingData {
     end: number;
   };
 }
+
+type PostcssToResultOptions = Parameters<postcss.Root["toResult"]>[0];
+type PostcssProcessOptions = NonNullable<Parameters<postcss.Processor["process"]>[1]>;
 
 export class Optimizer {
 
@@ -190,7 +194,7 @@ export class Optimizer {
     let start = new Date();
     let output = new Concat(true, outputFilename, "\n");
     for (let file of files) {
-      let resultOpts = {
+      let resultOpts: PostcssToResultOptions = {
         to: outputFilename,
         map: {
           inline: false,
@@ -200,7 +204,7 @@ export class Optimizer {
         },
       };
       let result = file.content.root!.toResult(resultOpts);
-      output.add(file.filename || "optimized-input.css", result.css, result.map.toJSON());
+      output.add(file.filename || "optimized-input.css", result.css, adaptSourceMap(result.map.toJSON()));
     }
     this.logTiming("concatenate", start, new Date());
     return output;
@@ -257,7 +261,7 @@ export class Optimizer {
 function parseCss(file: CssFile): Promise<ParsedCssFile> {
   if (typeof file.content === "string") {
     return new Promise<postcss.Result>((resolve, reject) => {
-      let processOpts = {
+      let processOpts: PostcssProcessOptions = {
         from: file.filename,
         map: {
           inline: false,

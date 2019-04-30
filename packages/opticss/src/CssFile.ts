@@ -1,6 +1,8 @@
 import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
+import { adaptSourceMap } from "./util/adaptSourceMap";
+
 /**
  * Represents a single CSS file and its associated meta-data.
  */
@@ -44,7 +46,7 @@ export interface ParsedCssFile {
 export function sourceMapFromCssFile(file: CssFile): RawSourceMap | string | undefined {
   let sourceMap: RawSourceMap | string | undefined = file.sourceMap;
   if (!sourceMap && (<postcss.Result>file.content).map) {
-    sourceMap = (<postcss.Result>file.content).map.toJSON();
+    sourceMap = adaptSourceMap((<postcss.Result>file.content).map.toJSON());
   }
   return sourceMap;
 }
