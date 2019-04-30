@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/attr-analysis-dsl",
   "peerDependencies": {
-    "@opticss/template-api": "^0.5.0"
+    "@opticss/template-api": "^0.6.1"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
