@@ -3,7 +3,7 @@ import { Attribute, AttributeNS, FlattenedAttributeValue, isAbsent, isConstant, 
 import { TemplateAnalysis } from "@opticss/template-api";
 import { assertNever } from "@opticss/util";
 import * as parse5 from "parse5";
-import * as Random from "random-js";
+import { MersenneTwister19937, Random } from "random-js";
 
 import { SimpleAnalyzer } from "./SimpleAnalyzer";
 import { TestTemplate } from "./TestTemplate";
@@ -44,11 +44,11 @@ export class SimpleTemplateRunner {
     this.template = template;
     this.analyzer = new SimpleAnalyzer(template);
     this.analysis = this.analyzer.analyze();
-    let engine = Random.engines.mt19937();
+    let engine: MersenneTwister19937;
     if (randomSeed) {
-      engine = engine.seed(randomSeed);
+      engine = MersenneTwister19937.seed(randomSeed);
     } else {
-      engine = engine.autoSeed();
+      engine = MersenneTwister19937.autoSeed();
     }
     this.random = new Random(engine);
   }
