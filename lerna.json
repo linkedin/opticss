@@ -8,7 +8,7 @@
   ],
   "command": {
     "publish": {
-      "message": "chore(release): Publish %s.",
+      "message": "chore(release): Publish packages.",
       "conventionalCommits": true,
       "sort": true
     },
