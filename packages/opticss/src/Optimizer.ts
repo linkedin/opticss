@@ -19,7 +19,7 @@ import {
   isSingleFileOptimization,
   optimizations,
 } from "./optimizations";
-import { adaptSourceMap } from "./util/adaptSourceMap";
+import { adaptFromLegacySourceMap } from "./util/adaptSourceMap";
 
 export interface OptimizationResult {
   output: CssFile;
@@ -204,7 +204,7 @@ export class Optimizer {
         },
       };
       let result = file.content.root!.toResult(resultOpts);
-      output.add(file.filename || "optimized-input.css", result.css, adaptSourceMap(result.map.toJSON()));
+      output.add(file.filename || "optimized-input.css", result.css, adaptFromLegacySourceMap(result.map.toJSON()));
     }
     this.logTiming("concatenate", start, new Date());
     return output;

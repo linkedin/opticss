@@ -7,6 +7,7 @@ export * from "./errors";
 export * from "./query";
 export * from "./OpticssOptions";
 export * from "./parseSelector";
+export * from "./util/adaptSourceMap";
 export * from "./util/IdentGenerator";
 export * from "./Actions";
 export {

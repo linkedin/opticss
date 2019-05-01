@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
-import { adaptSourceMap } from "./util/adaptSourceMap";
+import { adaptFromLegacySourceMap, LegacyRawSourceMap } from "./util/adaptSourceMap";
 
 /**
  * Represents a single CSS file and its associated meta-data.
@@ -25,7 +25,7 @@ export interface CssFile {
    * If a postcss.Result is returned for contents, the sourcemap from that
    * object will be used if this property is not set.
    */
-  sourceMap?: RawSourceMap | string;
+  sourceMap?: LegacyRawSourceMap | RawSourceMap | string;
 }
 
 export interface ParsedCssFile {
@@ -44,9 +44,13 @@ export interface ParsedCssFile {
  * @returns The RawSourceMap or source map string, if present.
  */
 export function sourceMapFromCssFile(file: CssFile): RawSourceMap | string | undefined {
-  let sourceMap: RawSourceMap | string | undefined = file.sourceMap;
+  let sourceMap: LegacyRawSourceMap | RawSourceMap | string | undefined = file.sourceMap;
   if (!sourceMap && (<postcss.Result>file.content).map) {
-    sourceMap = adaptSourceMap((<postcss.Result>file.content).map.toJSON());
+    sourceMap = (<postcss.Result>file.content).map.toJSON();
   }
-  return sourceMap;
+  if (typeof sourceMap === "object") {
+    return adaptFromLegacySourceMap(sourceMap);
+  } else {
+    return sourceMap;
+  }
 }
