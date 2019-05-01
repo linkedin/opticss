@@ -45,6 +45,7 @@ export function adaptToLegacySourceMap(sourceMap: LegacyRawSourceMap | RawSource
     file: sourceMap.file || "",
     sourceRoot: sourceMap.sourceRoot,
     // The version was never actually a string, we cast through any to match the legacy behavior.
+    // tslint:disable-next-line:prefer-unknown-to-any
     version: sourceMap.version as any,
     sources: sourceMap.sources,
     names: sourceMap.names,

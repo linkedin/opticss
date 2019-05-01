@@ -1,7 +1,7 @@
 import * as postcss from "postcss";
 import { RawSourceMap } from "source-map";
 
-import { adaptFromLegacySourceMap, LegacyRawSourceMap } from "./util/adaptSourceMap";
+import { LegacyRawSourceMap, adaptFromLegacySourceMap } from "./util/adaptSourceMap";
 
 /**
  * Represents a single CSS file and its associated meta-data.
