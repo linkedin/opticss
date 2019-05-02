@@ -20,15 +20,16 @@
   ],
   "greenkeeper": {
     "commitMessages": {
-      "addConfigFile": "chore: Add Greenkeeper config file.",
-      "updateConfigFile": "chore: Update Greenkeeper config file.",
-      "initialBadge": "docs(README): Add Greenkeeper badge.",
-      "initialDependencies": "chore(package): Update dependencies.",
-      "initialBranches": "chore(travis): Whitelist greenkeeper branches.",
-      "dependencyUpdate": "fix(package): Update ${dependency} to version ${version}.",
-      "devDependencyUpdate": "chore(package): Update ${dependency} to version ${version}.",
-      "dependencyPin": "fix: Pin ${dependency} to ${oldVersion}.",
-      "devDependencyPin": "chore: Pin ${dependency} to ${oldVersion}.",
+      "addConfigFile": "chore(greenkeeper): Add Greenkeeper config file.",
+      "updateConfigFile": "chore(greenkeeper): Update Greenkeeper config file.",
+      "initialBadge": "docs(greenkeeper): Add Greenkeeper badge.",
+      "initialDependencies": "chore(greenkeeper): Update dependencies.",
+      "initialBranches": "chore(greenkeeper): Whitelist greenkeeper branches.",
+      "dependencyUpdate": "chore(greenkeeper): Update ${dependency} to version ${version}.",
+      "devDependencyUpdate": "chore(greenkeeper): Update ${dependency} to version ${version}.",
+      "dependencyPin": "chore(greenkeeper): Pin ${dependency} to ${oldVersion}.",
+      "devDependencyPin": "chore(greenkeeper): Pin ${dependency} to ${oldVersion}.",
+      "lockfileUpdate": "chore(greenkeeper): Update ${lockfilePath}.",
       "closes": "\n\nCloses #${number}."
     }
   },
