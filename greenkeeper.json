@@ -16,5 +16,8 @@
         "packages/resolve-cascade/package.json"
       ]
     }
-  }
+  },
+  "ignore": [
+    "@types/node"
+  ]
 }
