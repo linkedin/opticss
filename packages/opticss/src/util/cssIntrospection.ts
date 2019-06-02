@@ -2,7 +2,6 @@ import { isObject } from "@opticss/util";
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 import { isClassName, isIdentifier } from "postcss-selector-parser";
-import { inspect } from "util";
 
 import { ParsedCssFile } from "../CssFile";
 import { ParsedSelector } from "../parseSelector";
@@ -16,20 +15,19 @@ export function walkRules(container: postcss.Container, eachRule: RuleIteratorWi
 }
 
 function _walkRulesWithScope(container: postcss.Container, eachRule: RuleIteratorWithScope, scope: RuleScope) {
-  container.each(node => {
+  container.each((node: postcss.ChildNode) => {
     if (isRule(node)) {
       eachRule(node, scope);
-    } else if (isAtRule(node)) {
+    }
+    else if (isAtRule(node)) {
       if (node.name.includes("keyframes") || node.name.includes("font-face")) {
         // skip it, keyframe and font-face at-rules aren't optimizable.
       } else {
         _walkRulesWithScope(node, eachRule, scope.concat(node));
       }
-    } else if (isContainer(node)) {
-      // tslint:disable-next-line:no-console
-      console.log("warning: container that's not an AtRule encountered: " + inspect(node));
-      _walkRulesWithScope(node, eachRule, scope);
     }
+    // Otherwise skip it, other possible ChildNode types are `Declaration`
+    // or `CommentNode`, we don't care about those.
   });
 }
 
@@ -51,17 +49,6 @@ export function eachSelectorIdent(sel: ParsedSelector, idents: IdentTypes, cb: (
     if (idents.id && isIdentifier(node)) { cb(node); }
     else if (idents.class && isClassName(node)) { cb(node); }
   });
-}
-
-/**
- * Iterate over all identifiers (ex: .class and #id) in a given postcss tree.
- * @param root Postcss root to walk.
- * @param cache SelectorCache to ensure we are working with the same selector instances.
- * @param idents Object of type IdentTypes to indicate idents to traverse over.
- * @param cb Callback function passed the identifier, rule and parsed selector.
- */
-export function eachIdent(root: postcss.Root, cache: SelectorCache, idents: IdentTypes, cb: (node: IdentNode, rule: postcss.Rule, sel: ParsedSelector) => void) {
-  eachSelector(root, cache, (rule, sel) => eachSelectorIdent(sel, idents, (node) => cb(node, rule, sel)));
 }
 
 /**
@@ -95,20 +82,7 @@ export function eachSelector(root: postcss.Root, cache: SelectorCache, cb: (rule
   walkRules(root, (rule) => cache.getParsedSelectors(rule).forEach((sel: ParsedSelector) => cb(rule, sel)));
 }
 
-const NODE_TYPES = {
-  "root": true,
-  "atrule": true,
-  "rule": true,
-  "decl": true,
-  "comment": true,
-};
-
 type MaybeNode = { type?: postcss.Node["type"] };
-
-export function isNode(node: unknown): node is postcss.Node {
-  let nodeType = isObject(node) && (<MaybeNode>node).type || undefined;
-  return nodeType && NODE_TYPES[nodeType] || false;
-}
 
 /**
  * Test if a postcss node is an at-rule.
@@ -133,13 +107,4 @@ export function isRule(node: unknown): node is postcss.Rule {
  */
 export function isDeclaration(node: unknown): node is postcss.Declaration {
   return (isObject(node) && (<MaybeNode>node).type === "decl");
-}
-
-/**
- * Test if a postcss node is a container (Root, At-Rule, or Rule).
- * @param node postcss node to test.
- * @returns whether the node is a container.
- */
-export function isContainer(node: unknown): node is postcss.Container {
-  return isNode(node) && (<postcss.Container>node).each !== undefined;
 }

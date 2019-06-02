@@ -66,7 +66,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
    * Set pseudo element type on this `CompoundSelector`.
    * @param The `selectorParser.Pseudo` to assign.
    */
-  setPseudoelement(pseudo: postcssSelectorParser.Pseudo) {
+  setPseudoelement(pseudo: postcssSelectorParser.Pseudo | undefined) {
     this.pseudoelement = pseudo;
   }
 
@@ -133,7 +133,7 @@ export class CompoundSelector extends CombinedSelector<CompoundSelector> {
     if (this.pseudoelement && other.pseudoelement && this.pseudoelement.value !== other.pseudoelement.value) {
       throw new Error("Cannot merge two compound selectors with different pseudoelements");
     }
-    this.pseudoelement = other.pseudoelement;
+    this.setPseudoelement(other.pseudoelement);
     return this;
   }
 
@@ -203,20 +203,21 @@ export class ParsedSelector {
   /**
    * The raw string the selector was parsed from, if any.
    */
-  source: string | undefined;
+  source: string;
   private _key: CompoundSelector | undefined;
   selector: CompoundSelector;
 
   /**
    * @param Root `CompoundSelector` of linked list to track.
    */
-  constructor(selector: CompoundSelector, source?: string) {
-    this.source = source;
+  constructor(selector: CompoundSelector, source: string) {
     this.selector = selector;
+    this.source = source;
   }
 
   eachCompoundSelector<EarlyReturnType>(callback: (sel: CompoundSelector) =>  EarlyReturnType | undefined): EarlyReturnType | undefined {
     let selector: CompoundSelector = this.selector;
+    if (!selector) { return; } // ex: `.foo, , .bar`
     let earlyReturn = callback(selector);
     while (earlyReturn === undefined && selector.next) {
       selector = selector.next.selector;
@@ -299,7 +300,7 @@ export class ParsedSelector {
    * @return new `ParsedSelector` clone.
    */
   clone(): ParsedSelector {
-    return new ParsedSelector(this.selector.clone());
+    return new ParsedSelector(this.selector.clone(), this.source);
   }
 
   /**
@@ -400,7 +401,7 @@ function toNodes(selector: Selectorish): postcssSelectorParser.Node[][] {
  * @param selector  Selector like object: including `string`, `selectorParser.Root`, `selectorParser.Selector`, or `selectorParser.Node`
  * @return Array of `CompoundSelector` objects.
  */
-export function parseCompoundSelectors(selector: Selectorish): CompoundSelector[] {
+function parseCompoundSelectors(selector: Selectorish): CompoundSelector[] {
   let compoundSelectors: CompoundSelector[] = [];
 
   // For each selector in this rule, convert to a `CompoundSelector` linked list.
@@ -472,5 +473,5 @@ export function parseSelector(selector: Selectorish): ParsedSelector[] {
     source = selector.toString();
   }
   let compoundSelectors = parseCompoundSelectors(selector);
-  return compoundSelectors.map(cs => new ParsedSelector(cs, source));
+  return compoundSelectors.map(cs => new ParsedSelector(cs, source!));
 }

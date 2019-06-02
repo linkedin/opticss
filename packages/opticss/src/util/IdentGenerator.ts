@@ -38,6 +38,7 @@ export class IdentGenerator {
     this.identChar = identChar.bind(null, caseInsensitive);
     this.increment = increment.bind(null, caseInsensitive);
   }
+
   nextIdent(): string {
     if (this.returnedIdents.length > 0) {
       return this.returnedIdents.pop()!;
@@ -46,6 +47,7 @@ export class IdentGenerator {
     while (this.isReserved(ident = this.generateNextIdent())) {}
     return this.lastIdent = ident;
   }
+
   private generateNextIdent() {
     let nextIdent = this.counters.map(this.identChar).join("");
     let carry = false;
@@ -55,11 +57,6 @@ export class IdentGenerator {
     }
     if (carry) this.counters.push(0);
     return nextIdent;
-  }
-
-  /** An iterator that produces an infinite sequence of identifiers. */
-  *idents() {
-    yield this.nextIdent();
   }
 
   /**
@@ -109,12 +106,14 @@ export class IdentGenerators<Namespace extends string = string> {
   nextIdent(namespace: Namespace) {
     return this.get(namespace).nextIdent();
   }
+
   /**
    * Return an ident to be generated for the next requested ident.
    */
   returnIdent(namespace: Namespace, ident: string) {
     this.get(namespace).returnIdent(ident);
   }
+
   /**
    * Reserved idents are never output by the ident generator.
    * @param namespace The namespace that ident should come from.

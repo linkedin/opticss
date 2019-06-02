@@ -138,6 +138,7 @@ export class RewriteIdentsTest {
     });
 
   }
+
   @test "rewrites idents"() {
     let css1 = `
       #id3 { border-width: 2px; }
@@ -160,6 +161,7 @@ export class RewriteIdentsTest {
       // debugResult(css1, result);
     });
   }
+
   @test "can disable id rewriting"() {
     let css1 = `
       #id3 { border-width: 2px; }
@@ -231,6 +233,7 @@ export class RewriteIdentsTest {
           { "name": "class", "value": "a" },
         ]);
         assert.deepEqual(mapping.staticAttributes.class, ["b"]);
+        assert.equal(result.optimization.output.content.toString(), "");
       }
     });
   }

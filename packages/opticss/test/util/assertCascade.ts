@@ -29,7 +29,7 @@ export interface CascadeTestErrorDetails {
 
 export type CascadeTestError = Error & CascadeTestErrorDetails;
 
-export function testOptimizationCascade(
+export async function testOptimizationCascade(
   options: Partial<OptiCSSOptions>,
   templateOptions: TemplateIntegrationOptions,
   ...stylesAndTemplates: Array<string | TestTemplate>
@@ -37,69 +37,57 @@ export function testOptimizationCascade(
   let optimizer = new Optimizer(options, templateOptions);
   let nCss = 1;
   let originalCss = "";
-  let analysisPromises = new Array<Promise<TemplateAnalysis<"TestTemplate">>>();
-  let templates = new Array<TestTemplate>();
-  stylesAndTemplates.forEach(styleOrTemplate => {
+  let analyses: TemplateAnalysis<"TestTemplate">[] = [];
+  let templates: TestTemplate[] = [];
+
+  for (let styleOrTemplate of stylesAndTemplates) {
     if (typeof styleOrTemplate === "string") {
       originalCss += (originalCss.length > 0 ? "\n" : "") + styleOrTemplate;
       optimizer.addSource({ content: styleOrTemplate, filename: `test${nCss++}.css` });
     } else {
       let analyzer = new SimpleAnalyzer(styleOrTemplate);
-      analysisPromises.push(analyzer.analyze());
+      analyses.push(await analyzer.analyze());
       templates.push(styleOrTemplate);
     }
-  });
-  return Promise.all(analysisPromises).then(analyses => {
-    analyses.forEach(a => {
-      optimizer.addAnalysis(a);
-    });
-  }).then(() => {
-    return optimizer.optimize("optimized.css").then(optimization => {
-      let rewriter = new SimpleTemplateRewriter(optimization.styleMapping, templateOptions);
-      let allTemplateRuns = new Array<Promise<CascadeAssertionResults>>();
-      templates.forEach(template => {
-        let runner = new SimpleTemplateRunner(template);
-        let promise = runner.runAll().then(result => {
-          let cascadeAssertions = new Array<Promise<AssertionResult>>();
-          result.forEach((html) => {
-            let rewrittenHtml = rewriter.rewrite(template, html);
-            cascadeAssertions.push(
-              assertSameCascade(originalCss,
-                                optimizationToCss(optimization),
-                                html,
-                                rewrittenHtml).catch((e: unknown) => {
-                                  Object.assign(e, {
-                                    optimization,
-                                    template,
-                                    rewrittenHtml,
-                                  });
-                                  throw e;
-                                }));
-          });
-          return Promise.all(cascadeAssertions).then(assertionResults => {
-            return {template, assertionResults};
-          });
-        });
-        allTemplateRuns.push(promise);
-      });
-      return Promise.all(allTemplateRuns).then((testedTemplates) => {
-        return {
-          optimization,
-          testedTemplates,
-        };
-      });
-    });
-  });
+  }
+
+  for (let a of analyses) { optimizer.addAnalysis(a); }
+
+  let optimization = await optimizer.optimize("optimized.css");
+  let rewriter = new SimpleTemplateRewriter(optimization.styleMapping, templateOptions);
+  let testedTemplates: CascadeAssertionResults[] = [];
+
+  for (let template of templates) {
+    let runner = new SimpleTemplateRunner(template);
+    let result = await runner.runAll();
+    let assertionResults: AssertionResult[] = [];
+
+    for (let html of result) {
+      let rewrittenHtml = rewriter.rewrite(template, html);
+      try {
+        assertionResults.push(
+          await assertSameCascade(
+            originalCss,
+            optimizationToCss(optimization),
+            html,
+            rewrittenHtml,
+          ),
+        );
+      }
+      catch (e) {
+        throw Object.assign(e, { optimization, template, rewrittenHtml });
+      }
+    }
+    testedTemplates.push({ template, assertionResults });
+  }
+
+  return { optimization, testedTemplates };
 
 }
 
 function optimizationToCss(opt: OptimizationResult): string {
   let content = opt.output.content;
-  if (typeof content === "string") {
-    return content;
-  } else {
-    return content.css;
-  }
+  return (typeof content === "string") ? content : content.css;
 }
 
 export function logOptimizations(optimization: OptimizationResult) {

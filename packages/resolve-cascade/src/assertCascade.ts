@@ -26,7 +26,7 @@ export interface AssertionResult {
 }
 
 export class MarkupMismatchError extends assert.AssertionError {
-  constructor(actual: string, expected: string, message = "html has differing element lengths") {
+  constructor(actual: string, expected: string, message: string) {
     super({message, actual, expected});
   }
 }
@@ -129,7 +129,11 @@ export function assertSameCascade(
     let actualElements = allElements(actualBody);
 
     if (actualElements.length !== expectedElements.length) {
-      throw new MarkupMismatchError(expectedHtml, actualHtml);
+      throw new MarkupMismatchError(
+        expectedHtml,
+        actualHtml,
+        "html has differing element lengths",
+      );
     }
 
     for (let i = 0; i < expectedElements.length; i++) {

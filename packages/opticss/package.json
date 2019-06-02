@@ -11,8 +11,7 @@
     "lint": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json",
     "lintall": "tslint -t msbuild --project tsconfig.json -c tslint.release.json",
     "lintfix": "tslint -t msbuild --project tsconfig.json -c tslint.cli.json --fix",
-    "test": "mocha dist/test/**/*.js --opts test/mocha.opts -i --grep Integration",
-    "integration": "yarn run pretest && mocha dist/test --opts test/mocha.opts --grep Integration",
+    "test": "mocha dist/test --opts test/mocha.opts",
     "coverage": "istanbul cover -i \"dist/src/**/*.js\" --dir ./build/coverage _mocha -- dist/test --opts test/mocha.opts",
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs ."

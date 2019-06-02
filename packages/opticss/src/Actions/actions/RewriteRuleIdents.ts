@@ -2,7 +2,6 @@ import { SourcePosition } from "@opticss/element-analysis";
 import * as postcss from "postcss";
 import * as selectorParser from "postcss-selector-parser";
 
-import { OpticssError } from "../../errors";
 import { OptimizationPass } from "../../OptimizationPass";
 import { ParsedSelector } from "../../parseSelector";
 import { IdentNode } from "../../util/cssIntrospection";
@@ -66,9 +65,6 @@ export class RewriteRuleIdents extends Action {
     this.newSelector = this.ident.rule.selectors!.map(s => {
       s = s.trim();
       for (let newSelector of this.ident.selectors) {
-        if (newSelector.source === undefined) {
-          throw new OpticssError("Internal Error: parsed selector requires a source string for rewriting.");
-        }
         if (s === newSelector.source.trim()) {
           return newSelector.toString();
         }
