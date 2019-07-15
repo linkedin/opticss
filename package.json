@@ -4,7 +4,7 @@
   "devDependencies": {
     "@commitlint/cli": "^8.1.0",
     "@commitlint/config-conventional": "^8.1.0",
-    "@commitlint/travis-cli": "^7.5.2",
+    "@commitlint/travis-cli": "^8.1.0",
     "husky": "^2.2.0",
     "lerna": "^3.13.2"
   },
