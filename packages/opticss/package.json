@@ -42,7 +42,7 @@
     "@opticss/element-analysis": "^0.6.1",
     "@opticss/template-api": "^0.6.2",
     "@opticss/util": "^0.6.1",
-    "@types/debug": "4.1.4",
+    "@types/debug": "4.1.5",
     "concat-with-sourcemaps": "^1.0.4",
     "css-property-parser": "^1.0.5",
     "debug": "^4.1.1",
