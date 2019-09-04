@@ -46,7 +46,7 @@
   "devDependencies": {
     "@opticss/code-style": "^0.6.0",
     "@opticss/element-analysis": "^0.6.1",
-    "@types/chai": "^4.0.4",
+    "@types/chai": "^4.2.1",
     "@types/mocha": "^5.2.6",
     "@types/nearley": "^2.9.0",
     "chai": "^4.1.2",
