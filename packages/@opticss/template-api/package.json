@@ -42,7 +42,7 @@
   "dependencies": {
     "@opticss/element-analysis": "^0.6.1",
     "@opticss/util": "^0.6.1",
-    "postcss": "^7.0.14",
+    "postcss": "^7.0.18",
     "typescript-collections": "^1.2.5"
   },
   "devDependencies": {
