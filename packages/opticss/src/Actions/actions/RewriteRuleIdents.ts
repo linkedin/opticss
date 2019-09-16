@@ -63,7 +63,7 @@ export class RewriteRuleIdents extends Action {
         this.rewriteNode("id", node);
       }
     });
-    this.newSelector = this.ident.rule.selectors!.map(s => {
+    this.newSelector = this.ident.rule.selectors.map(s => {
       s = s.trim();
       for (let newSelector of this.ident.selectors) {
         if (newSelector.source === undefined) {

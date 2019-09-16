@@ -463,7 +463,7 @@ export function parseSelector(selector: Selectorish): ParsedSelector[] {
     return parsedSelectors;
   } else if (isRule(selector)) {
     let parsedSelectors = new Array<ParsedSelector>();
-    for (let source of selector.selectors!) {
+    for (let source of selector.selectors) {
       let compoundSelector = parseCompoundSelectors(source)[0];
       parsedSelectors.push(new ParsedSelector(compoundSelector, source));
     }
