@@ -1,6 +1,6 @@
 {
   "name": "opticss",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
@@ -39,9 +39,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@opticss/element-analysis": "^0.6.1",
-    "@opticss/template-api": "^0.6.2",
-    "@opticss/util": "^0.6.1",
+    "@opticss/element-analysis": "^0.6.2",
+    "@opticss/template-api": "^0.6.3",
+    "@opticss/util": "^0.7.0",
     "@types/debug": "4.1.4",
     "concat-with-sourcemaps": "^1.0.4",
     "css-property-parser": "^1.0.5",
@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "@opticss/code-style": "^0.6.0",
-    "@opticss/simple-template": "^0.6.2",
+    "@opticss/simple-template": "^0.6.3",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.13.8",

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.3](https://github.com/linkedin/opticss/compare/@opticss/attr-analysis-dsl@0.6.2...@opticss/attr-analysis-dsl@0.6.3) (2019-09-16)
+
+**Note:** Version bump only for package @opticss/attr-analysis-dsl
+
+
+
+
+
 ## [0.6.2](https://github.com/linkedin/opticss/compare/@opticss/attr-analysis-dsl@0.6.1...@opticss/attr-analysis-dsl@0.6.2) (2019-05-02)
 
 **Note:** Version bump only for package @opticss/attr-analysis-dsl
