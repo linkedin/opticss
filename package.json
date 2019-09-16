@@ -33,7 +33,7 @@
       "closes": "\n\nCloses #${number}."
     }
   },
-  "toolchain": {
+  "volta": {
     "node": "10.15.3",
     "yarn": "1.15.2"
   }
