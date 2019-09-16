@@ -142,44 +142,6 @@ export function callMaybe<A1 extends unknown, A2 extends unknown, A3 extends unk
   return some(rv);
 }
 
-export type HasMethod<Type extends object, N extends keyof Type, PropertyType extends (...args: unknown[]) => unknown> = Pick<{
-  [P in keyof Type]: PropertyType;
-}, N>;
-
-export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe0<R>>, R extends unknown>(thisObj: Maybe<T>, fnName: N): Maybe<R>;
-export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe1<A1, R>>, A1 extends unknown, R extends unknown>(thisObj: Maybe<T>, fnName: N, arg1: OptionalMaybe<A1>): Maybe<R>;
-export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe2<A1, A2, R>>, A1 extends unknown, A2 extends unknown, R extends unknown>(thisObj: Maybe<T>, fnName: N, arg1: OptionalMaybe<A1>, arg2: OptionalMaybe<A2>): Maybe<R>;
-export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe3<A1, A2, A3, R>>, A1 extends unknown, A2 extends unknown, A3 extends unknown, R extends unknown>(thisObj: Maybe<T>, fnName: N, arg1: OptionalMaybe<A1>, arg2: OptionalMaybe<A2>, arg3: OptionalMaybe<A3>): Maybe<R>;
-export function methodMaybe<N extends keyof T, T extends HasMethod<T, N, CallMeMaybe4<A1, A2, A3, A4, R>>, A1 extends unknown, A2 extends unknown, A3 extends unknown, A4 extends unknown, R extends unknown>(thisObj: Maybe<T>, fnName: N, arg1: OptionalMaybe<A1>, arg2: OptionalMaybe<A2>, arg3: OptionalMaybe<A3>, arg4: OptionalMaybe<A4>): Maybe<R>;
-export function methodMaybe<
-  N extends keyof T,
-  T extends HasMethod<T, N, CallMeMaybe<A1, A2, A3, A4, R>>, A1 extends unknown, A2 extends unknown, A3 extends unknown, A4 extends unknown, R extends unknown>(
-  thisObj: Maybe<T>,
-  fnName: N,
-  arg1?: OptionalMaybe<A1>,
-  arg2?: OptionalMaybe<A2>,
-  arg3?: OptionalMaybe<A3>,
-  arg4?: OptionalMaybe<A4>,
-
-): Maybe<R> {
-  if (isNone(thisObj)) return thisObj;
-  if (isMaybe(arg1) && isNone(arg1)) { return arg1; }
-  else if (isMaybe(arg2) && isNone(arg2)) { return arg2; }
-  else if (isMaybe(arg3) && isNone(arg3)) { return arg3; }
-  else if (isMaybe(arg4) && isNone(arg4)) { return arg4; }
-  if (isNone(thisObj)) return thisObj;
-  let self: T = unwrap(thisObj);
-  let method: CallMeMaybe<A1, A2, A3, A4, R> = self[fnName];
-  let rv: ReturnType<CallMeMaybe<A1, A2, A3, A4, R>> = method.call(self,
-                                                                   arg1 && unwrapIfMaybe(arg1),
-                                                                   arg2 && unwrapIfMaybe(arg2),
-                                                                   arg3 && unwrapIfMaybe(arg3),
-                                                                   arg4 && unwrapIfMaybe(arg4),
-  );
-  if (isMaybe(rv)) return rv;
-  return some(rv);
-}
-
 /**
  * Runs the callback.
  *

@@ -1,8 +1,7 @@
 import { assert } from "chai";
 import { suite, test } from "mocha-typescript";
 
-import { MAYBE, Maybe, NO_VALUE, None, attempt, callMaybe, isMaybe, isNone, isSome, maybe, methodMaybe, none, some, unwrap } from "../src/Maybe";
-import * as typedAssert from "../src/typedAssert";
+import { MAYBE, NO_VALUE, attempt, callMaybe, isMaybe, isNone, isSome, maybe, none, some, unwrap } from "../src/Maybe";
 
 @suite("Maybe")
 export class MaybeTest {
@@ -132,47 +131,6 @@ export class MaybeTest {
     assert.isTrue(isNone(callMaybe(makeMessage, none(), 1, {a: 1}, false)));
     assert.isFalse(wasCalled);
     wasCalled = false;
-  }
-  @test "conditionally call a method with no arguments"() {
-    let wasCalled = false;
-    let obj = some({
-      myMethod(): number {
-        wasCalled = true;
-        return 42;
-      },
-    });
-    assert.equal(unwrap(methodMaybe(obj, "myMethod")), 42);
-    assert.isTrue(wasCalled);
-    wasCalled = false;
-    function getNoObj(): Maybe<{myMethod(): number}> {
-      wasCalled = true;
-      return none();
-    }
-    let noObj = getNoObj();
-    assert.equal(methodMaybe(noObj, "myMethod"), noObj);
-    assert.isTrue(wasCalled);
-  }
-  @test "conditionally call a method with one argument"() {
-    let wasCalled = false;
-    let obj = some({
-      myMethod(n: number): number {
-        wasCalled = true;
-        return n + 41;
-      },
-    });
-    assert.equal(unwrap(methodMaybe(obj, "myMethod", 1)), 42);
-    assert.isTrue(wasCalled);
-    wasCalled = false;
-    function getNoObj(): Maybe<{myMethod(n: number): number}> {
-      wasCalled = true;
-      return none();
-    }
-    let noObj = getNoObj();
-    let result: Maybe<number> = methodMaybe(noObj, "myMethod", 1);
-    typedAssert.isType(isNone, noObj).and((n: None) => {
-      assert.equal(result, n);
-    });
-    assert.isTrue(wasCalled);
   }
   @test "attempt an operation"() {
     assert.equal(unwrap(attempt(() => 42)), 42);
