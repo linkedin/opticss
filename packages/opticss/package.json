@@ -65,7 +65,7 @@
     "chai": "^4.1.2",
     "css-size": "^4.0.1",
     "istanbul": "^0.4.5",
-    "mocha": "^6.1.4",
+    "mocha": "^6.2.1",
     "mocha-typescript": "^1.1.9",
     "random-js": "^2.0.0",
     "remap-istanbul": "^0.13.0",
