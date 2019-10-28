@@ -42,7 +42,7 @@
     "@opticss/element-analysis": "^0.6.2",
     "@opticss/template-api": "^0.6.3",
     "@opticss/util": "^0.7.0",
-    "@types/random-js": "^1.0.30",
+    "@types/random-js": "^2.0.0",
     "parse5": "^5.0.0",
     "parse5-sax-parser": "^5.0.0",
     "postcss": "^7.0.14",
