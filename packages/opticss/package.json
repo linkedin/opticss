@@ -50,7 +50,7 @@
     "postcss": "^7.0.14",
     "postcss-selector-parser": "^6.0.2",
     "source-map": "^0.7.3",
-    "source-map-support": "^0.5.3",
+    "source-map-support": "^0.5.15",
     "specificity": "^0.4.1",
     "typescript-collections": "^1.2.5",
     "typescript-memoize": "^1.0.0-alpha.3"
