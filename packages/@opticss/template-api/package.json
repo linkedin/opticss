@@ -48,7 +48,7 @@
   "devDependencies": {
     "@opticss/attr-analysis-dsl": "^0.6.3",
     "@opticss/code-style": "^0.6.0",
-    "@types/chai": "^4.0.4",
+    "@types/chai": "^4.2.5",
     "@types/mocha": "^5.2.6",
     "chai": "^4.1.2",
     "istanbul": "^0.4.5",
