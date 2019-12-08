@@ -46,6 +46,27 @@ export interface OptiCSSOptions extends Optimizations {
    */
   css?: Partial<CSSFeatureFlags>;
 
+  identifiers?: {
+    /**
+     * Sets the starting value for identifiers. This is a standard base-10 number
+     * that is converted to a corresponding identifier.
+     *
+     * An integer greater than or equal to 1.
+     * Defaults to 1.
+     */
+    startValue?: number;
+
+    /**
+     * How many identifiers the ident generator for each namespace should be
+     * allowed to produce. Note that if any of the produced identifiers are
+     * reserved, the actual number of identifiers returned will be less than
+     * the max.
+     *
+     * An integer greater than or equal to 1.
+     * Defaults to Infinity.
+     */
+    maxCount?: number;
+  };
 }
 
 export const DEFAULT_OPTIONS = Object.freeze<OptiCSSOptions>({

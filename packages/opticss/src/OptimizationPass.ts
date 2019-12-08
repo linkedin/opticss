@@ -14,6 +14,11 @@ export class OptimizationPass {
     this.styleMapping = new StyleMapping(templateOptions);
     this.cache = new SelectorCache();
     this.actions = new Actions();
-    this.identGenerators = new IdentGenerators(options.css!.caseInsensitiveSelectors!, "id", "class");
+    this.identGenerators = new IdentGenerators({
+      caseInsensitive: options.css!.caseInsensitiveSelectors!,
+      namespaces: ["id", "class"],
+      startValue: options.identifiers && options.identifiers.startValue,
+      maxIdentCount: options.identifiers && options.identifiers.maxCount,
+    });
   }
 }
