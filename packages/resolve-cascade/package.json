@@ -1,6 +1,6 @@
 {
   "name": "resolve-cascade",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Resolve CSS selectors against a document.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.2](https://github.com/linkedin/opticss/compare/resolve-cascade@0.6.1...resolve-cascade@0.6.2) (2019-12-09)
+
+
+### Bug Fixes
+
+* Silence postcss warning. ([f881da8](https://github.com/linkedin/opticss/commit/f881da8))
+
+
+
+
+
 ## [0.6.1](https://github.com/linkedin/opticss/compare/resolve-cascade@0.6.0...resolve-cascade@0.6.1) (2019-04-30)
 
 

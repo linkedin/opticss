@@ -1,6 +1,6 @@
 {
   "name": "opticss",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "A CSS Optimizer",
   "main": "dist/src/index.js",
   "scripts": {
@@ -69,7 +69,7 @@
     "mocha-typescript": "^1.1.9",
     "random-js": "^2.0.0",
     "remap-istanbul": "^0.13.0",
-    "resolve-cascade": "^0.6.1",
+    "resolve-cascade": "^0.6.2",
     "tslint": "^5.10.0",
     "typedoc": "^0.15.0-0",
     "typescript": "~3.4.4"

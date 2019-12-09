@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/linkedin/opticss/compare/opticss@0.6.3...opticss@0.7.0) (2019-12-09)
+
+
+### Bug Fixes
+
+* Silence postcss warning. ([f881da8](https://github.com/linkedin/opticss/commit/f881da8))
+
+
+### Features
+
+* Ability to specify identifier ranges. ([27dac99](https://github.com/linkedin/opticss/commit/27dac99))
+
+
+
+
+
 ## [0.6.3](https://github.com/linkedin/opticss/compare/opticss@0.6.2...opticss@0.6.3) (2019-09-16)
 
 **Note:** Version bump only for package opticss
