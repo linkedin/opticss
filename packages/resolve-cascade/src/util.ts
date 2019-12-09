@@ -145,7 +145,7 @@ export function documentToString(document: parse5.Document): string {
 }
 
 // This use of this plugin silences a postcss warning.
-export const POSTCSS_NOOP_PLUGIN = postcss.plugin('resolve-cascade', function (_opts) {
+export const POSTCSS_NOOP_PLUGIN = postcss.plugin("resolve-cascade", function (_opts) {
   return function (_root, _result) {
     return Promise.resolve();
   };
