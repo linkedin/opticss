@@ -18,6 +18,7 @@ import {
 import * as path from "path";
 import { documentToString } from "resolve-cascade";
 
+import { OptiCSSOptions } from "../../src/OpticssOptions";
 import {
   IdentGenerator,
   IdentGenerators,
@@ -27,9 +28,14 @@ import {
   testOptimizationCascade,
 } from "../util/assertCascade";
 
-function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
+function testRewriteIdents(templateRewriteOpts: RewritableIdents & Pick<OptiCSSOptions, "identifiers">, ...stylesAndTemplates: Array<string | TestTemplate>): Promise<CascadeTestResult> {
+  let identifiers = templateRewriteOpts.identifiers;
+  delete templateRewriteOpts.identifiers;
   return testOptimizationCascade(
-    { only: ["rewriteIdents"] },
+    {
+      only: ["rewriteIdents"],
+      identifiers,
+    },
     {
       rewriteIdents: templateRewriteOpts,
       analyzedAttributes: [],
@@ -40,22 +46,51 @@ function testRewriteIdents(templateRewriteOpts: RewritableIdents, ...stylesAndTe
 
 @suite("Rewrite idents")
 export class RewriteIdentsTest {
+  @test "Can select a starting value"() {
+    for (let startValue = 1; startValue < 20_000_000; startValue += Math.round(Math.random() * 50000)) {
+      const idGen = new IdentGenerator(false, startValue);
+      assert.equal(idGen.currentValue, startValue);
+      idGen.nextIdent();
+      assert.equal(idGen.currentValue, startValue + 1);
+    }
+  }
+  @test "can specify a max number of idents to generate"() {
+    let startValue = Math.round(Math.random() * 20_000_000);
+    let maxIdentCount = 100;
+    const idGen = new IdentGenerator(false, startValue, maxIdentCount);
+    for (let i = 0; i < maxIdentCount; i++) {
+      idGen.nextIdent();
+    }
+    assert.throws(() => {
+      idGen.nextIdent();
+    });
+  }
   @test "has an ident generator"() {
     const idGen = new IdentGenerator();
+    let currentValue = 1;
+    assert.equal(idGen.currentValue, currentValue++);
     assert.equal(idGen.nextIdent(), "a");
+    assert.equal(idGen.currentValue, currentValue++);
     assert.equal(idGen.nextIdent(), "b");
+    assert.equal(idGen.currentValue, currentValue++);
     for (let i = 2; i < 52; i++) {
       idGen.nextIdent();
+      currentValue++;
     }
     assert.equal(idGen.nextIdent(), "a0");
+    assert.equal(idGen.currentValue, currentValue++);
     for (let i = 1; i < 64; i++) {
       idGen.nextIdent();
+      currentValue++;
     }
     assert.equal(idGen.nextIdent(), "b0");
+    assert.equal(idGen.currentValue, currentValue++);
     for (let i = 1; i < 64 * 51; i++) {
       idGen.nextIdent();
+      currentValue++;
     }
     assert.equal(idGen.nextIdent(), "a00");
+    assert.equal(idGen.currentValue, currentValue++);
   }
 
   @test "has an case-insensitive ident generator"() {
@@ -84,7 +119,7 @@ export class RewriteIdentsTest {
   }
 
   @test "ident generator set"() {
-    const idGens = new IdentGenerators(false, "id", "class", "state");
+    const idGens = new IdentGenerators({namespaces: ["id", "class", "state"]});
     assert.equal(idGens.nextIdent("id"), "a");
     assert.equal(idGens.nextIdent("class"), "a");
     assert.equal(idGens.nextIdent("state"), "a");
@@ -93,7 +128,7 @@ export class RewriteIdentsTest {
     assert.equal(idGens.nextIdent("class"), "b");
     assert.equal(idGens.nextIdent("state"), "b");
     try {
-      const errorProneGen = new IdentGenerators<string>(false, "id", "class", "state");
+      const errorProneGen = new IdentGenerators<string>({namespaces: ["id", "class", "state"]});
       errorProneGen.nextIdent("foo");
       assert.fail("error expected");
     } catch (e) {
@@ -233,5 +268,56 @@ export class RewriteIdentsTest {
         assert.deepEqual(mapping.staticAttributes.class, ["b"]);
       }
     });
+  }
+  @test "can configure ident start value"() {
+    let css1 = `
+      #id3 { border-width: 2px; }
+      #a { color: blue; }
+      .a { color: red; }
+      #id2 { width: 50%; }
+      .thing2 { border: 1px solid blue; }
+      .thing3 { background: red; }
+      div { background-color: white; }
+      #id3.thing4 { border-color: black; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="(thing3 | a)" id="(a | id2)"></div>
+      <div class="(--- | thing2 | thing4)" id="id3"></div>
+    `);
+    return testRewriteIdents({ id: true, class: true, identifiers: {startValue: 100, maxCount: 100} }, css1, template).then(result => {
+      // debugResult(css1, result);
+      assert.equal(result.optimization.output.content, `
+      #aL { border-width: 2px; }
+      #aM { color: blue; }
+      .aL { color: red; }
+      #aN { width: 50%; }
+      .aM { border: 1px solid blue; }
+      .aN { background: red; }
+      div { background-color: white; }
+      #aL.aO { border-color: black; }
+    `);
+    });
+  }
+  @test async "rejects if there's not enough idents"() {
+    let css1 = `
+      #id3 { border-width: 2px; }
+      #a { color: blue; }
+      .a { color: red; }
+      #id2 { width: 50%; }
+      .thing2 { border: 1px solid blue; }
+      .thing3 { background: red; }
+      div { background-color: white; }
+      #id3.thing4 { border-color: black; }
+    `;
+    let template = new TestTemplate("test", clean`
+      <div class="(thing3 | a)" id="(a | id2)"></div>
+      <div class="(--- | thing2 | thing4)" id="id3"></div>
+    `);
+    try {
+      await testRewriteIdents({ id: true, class: true, identifiers: {startValue: 100, maxCount: 2} }, css1, template);
+      throw new Error("Didn't reject promise");
+    } catch (e) {
+      assert.equal(e.message, "Too many identifiers were generated (Max: 2).");
+    }
   }
 }
