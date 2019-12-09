@@ -90,7 +90,7 @@ export function isParentNode(node: parse5.Node | parse5.ParentNode): node is par
 
 export function parseStylesheet(content: string): Promise<postcss.Result> {
   return new Promise<postcss.Result>((resolve, reject) => {
-    postcss().process(content, {from: "stylesheet.css"}).then(resolve, reject);
+    postcss(POSTCSS_NOOP_PLUGIN).process(content, {from: "stylesheet.css"}).then(resolve, reject);
   });
 }
 
@@ -143,3 +143,10 @@ export function debugElement(element: parse5.DefaultTreeElement): string {
 export function documentToString(document: parse5.Document): string {
   return parse5.serialize(bodyElement(document)!);
 }
+
+// This use of this plugin silences a postcss warning.
+export const POSTCSS_NOOP_PLUGIN = postcss.plugin('resolve-cascade', function (_opts) {
+  return function (_root, _result) {
+    return Promise.resolve();
+  };
+});

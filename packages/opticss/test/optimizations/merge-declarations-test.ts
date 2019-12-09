@@ -15,6 +15,7 @@ import * as path from "path";
 import * as postcss from "postcss";
 import { documentToString } from "resolve-cascade";
 
+import { POSTCSS_NOOP_PLUGIN } from "../../src/Optimizer";
 import {
   CascadeTestResult,
   debugCascadeError,
@@ -1313,6 +1314,6 @@ export class MergeDeclarationsTest {
 
 function parseStylesheet(content: string): Promise<postcss.Result> {
   return new Promise<postcss.Result>((resolve, reject) => {
-    postcss().process(content, { from: "stylesheet.css" }).then(resolve, reject);
+    postcss([POSTCSS_NOOP_PLUGIN]).process(content, { from: "stylesheet.css" }).then(resolve, reject);
   });
 }
