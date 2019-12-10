@@ -58,7 +58,7 @@
   "devDependencies": {
     "@opticss/code-style": "^0.6.0",
     "@opticss/simple-template": "^0.6.3",
-    "@types/chai": "^4.0.4",
+    "@types/chai": "^4.2.7",
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.13.8",
     "@types/random-js": "^1.0.30",
