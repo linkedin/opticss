@@ -2,7 +2,7 @@
   "private": true,
   "name": "opticss",
   "devDependencies": {
-    "@commitlint/cli": "^7.5.2",
+    "@commitlint/cli": "^8.3.4",
     "@commitlint/config-conventional": "^7.5.0",
     "@commitlint/travis-cli": "^7.5.2",
     "husky": "^2.2.0",
