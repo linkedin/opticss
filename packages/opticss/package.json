@@ -59,7 +59,7 @@
     "@opticss/code-style": "^0.6.0",
     "@opticss/simple-template": "^0.6.3",
     "@types/chai": "^4.0.4",
-    "@types/mocha": "^5.2.6",
+    "@types/mocha": "^7.0.1",
     "@types/node": "^11.13.8",
     "@types/random-js": "^1.0.30",
     "chai": "^4.1.2",
