@@ -51,7 +51,7 @@
   "devDependencies": {
     "@opticss/code-style": "^0.6.0",
     "@opticss/util": "^0.7.0",
-    "@types/mkdirp": "^0.5.1",
+    "@types/mkdirp": "^1.0.0",
     "@types/parse5": "^5.0.0",
     "@types/rimraf": "^2.0.2",
     "babel-cli": "^6.26.0",
