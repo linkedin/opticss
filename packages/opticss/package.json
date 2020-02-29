@@ -71,7 +71,7 @@
     "remap-istanbul": "^0.13.0",
     "resolve-cascade": "^0.6.2",
     "tslint": "^5.10.0",
-    "typedoc": "^0.15.0-0",
+    "typedoc": "^0.16.11",
     "typescript": "~3.4.4"
   },
   "volta": {
