@@ -40,7 +40,7 @@
   "devDependencies": {
     "@opticss/code-style": "^0.6.0",
     "@types/chai": "^4.0.4",
-    "@types/mocha": "^5.2.6",
+    "@types/mocha": "^7.0.2",
     "@types/node": "^11.13.8",
     "@types/parse5": "^5.0.0",
     "chai": "^4.1.2",
