@@ -50,7 +50,7 @@
     "remap-istanbul": "^0.13.0",
     "source-map-support": "^0.5.3",
     "tslint": "^5.1.0",
-    "typedoc": "^0.15.0-0",
+    "typedoc": "^0.17.2",
     "typedoc-plugin-external-module-name": "^2.0.0",
     "typedoc-plugin-markdown": "^1.1.8",
     "typescript": "~3.4.4"
