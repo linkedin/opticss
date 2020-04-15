@@ -44,7 +44,7 @@
     "@opticss/util": "^0.7.0",
     "@types/random-js": "^1.0.30",
     "parse5": "^5.0.0",
-    "parse5-sax-parser": "^5.0.0",
+    "parse5-sax-parser": "^6.0.0",
     "postcss": "^7.0.14",
     "random-js": "^2.0.0",
     "specificity": "^0.4.1"
