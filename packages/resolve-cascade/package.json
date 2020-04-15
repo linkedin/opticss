@@ -60,7 +60,7 @@
     "css-property-parser": "^1.0.5",
     "css-size": "^4.0.1",
     "domutils": "^1.6.2",
-    "parse5": "^5.0.0",
+    "parse5": "^6.0.0",
     "postcss": "^7.0.14",
     "specificity": "^0.4.1"
   },
