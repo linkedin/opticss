@@ -55,7 +55,7 @@
     "mocha": "^6.1.4",
     "mocha-typescript": "^1.1.9",
     "remap-istanbul": "^0.13.0",
-    "source-map-support": "^0.5.3",
+    "source-map-support": "^0.5.17",
     "tslint": "^5.10.0",
     "typedoc": "^0.15.0-0",
     "typescript": "~3.4.4"
