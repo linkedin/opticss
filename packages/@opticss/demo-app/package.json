@@ -37,7 +37,7 @@
   "homepage": "https://github.com/linkedin/opticss/tree/master/packages/%40opticss/demo-app",
   "dependencies": {
     "@opticss/simple-template": "^0.6.3",
-    "@types/codemirror": "^0.0.74",
+    "@types/codemirror": "^0.0.93",
     "@types/prettier": "^1.7.0",
     "@types/split.js": "^1.3.0",
     "babel-cli": "^6.26.0",
