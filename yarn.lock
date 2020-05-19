@@ -857,10 +857,10 @@
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.2.tgz#6b825013863d04868c15624ec8b7fdced88a47c6"
   integrity sha512-8V2aCcPM3WLuJvJpF6N60uUvdZb7NHjpjQlLk1QmZbTP4XZET/FX0c3TJ3K7qt4L98FS1Pifa8BVofTVuJFWVA==
 
-"@types/codemirror@^0.0.74":
-  version "0.0.74"
-  resolved "https://registry.yarnpkg.com/@types/codemirror/-/codemirror-0.0.74.tgz#7ca146f7f3414166e7501000d691b2f18d978d10"
-  integrity sha512-pjc14HE6KCCk3SYoC49k/gJJHkredJy4GdSK+lGRMIBfG+Uq6vT8oZiKToFH2J7pZ5pUd69UGD6CgmFG1V17wA==
+"@types/codemirror@^0.0.94":
+  version "0.0.94"
+  resolved "https://registry.yarnpkg.com/@types/codemirror/-/codemirror-0.0.94.tgz#386a74ee1fac9db624be288947df66e3cdb5ad45"
+  integrity sha512-uMf+r8CPbR8sRsFqdoKpE+SqXqTvw/7l21pk31TRSyH0nXKmtcPBW+YAOdBapEctIvwHkFvlybApP4OExE1glA==
   dependencies:
     "@types/tern" "*"
 
@@ -7407,10 +7407,10 @@ preserve@^0.2.0:
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
   integrity sha1-gV7R9uvGWSb4ZbMQwHE7yzMVzks=
 
-prettier@1.17.0:
-  version "1.17.0"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.17.0.tgz#53b303676eed22cc14a9f0cec09b477b3026c008"
-  integrity sha512-sXe5lSt2WQlCbydGETgfm1YBShgOX4HxQkFPvbxkcwgDvGDeqVau8h+12+lmSVlP3rHPz0oavfddSZg/q+Szjw==
+prettier@1.17.1:
+  version "1.17.1"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.17.1.tgz#ed64b4e93e370cb8a25b9ef7fef3e4fd1c0995db"
+  integrity sha512-TzGRNvuUSmPgwivDqkZ9tM/qTGW9hqDKWOE9YHiyQdixlKbv7kvEqsmDPrcHJTKwthU774TQwZXVtaQ/mMsvjg==
 
 pretty-bytes@^5.0.0:
   version "5.3.0"
