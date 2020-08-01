@@ -35,8 +35,10 @@ export function initKnownIdents(
   eachFileIdent(files, pass.cache, opts, (node) => {
     if (isClassName(node)) {
       pass.identGenerators.reserve("class", node.value);
+      pass.styleMapping.addSourceAttribute({name: "class", value: node.value});
     } else if (isIdentifier(node)) {
       pass.identGenerators.reserve("id", node.value);
+      pass.styleMapping.addSourceAttribute({name: "id", value: node.value});
     } else {
       assertNever(node);
     }

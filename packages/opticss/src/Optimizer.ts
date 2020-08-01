@@ -76,7 +76,7 @@ export class Optimizer {
     this.options = Object.assign({}, DEFAULT_OPTIONS, options);
     this.templateOptions = normalizeTemplateOptions(templateOptions);
     this.optimizations = new Set();
-    this.initializers = new Set();
+    this.initializers = new Set(["initKnownIdents"]); // Always run initKnownIdents so we know what classes are used.
     this.timings = {};
 
     // If disabled, short circuit.

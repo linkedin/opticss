@@ -124,8 +124,29 @@ export class StyleMapping {
     this.optimizedAttributes = new IdentityDictionary(attrToKey);
     this.obsoleteAttributes = new IdentityDictionary(attrToKey);
   }
+
+  /**
+   * Returns true if, after optimization, there is still a selector that
+   * might match the attribute on at least one analyzed element.
+   */
+  isStyledAfterOptimization(attr: SimpleAttribute): boolean {
+    if (!this.sourceAttributes.has(attr)) return false; // it was never in the css
+    if (this.obsoleteAttributes.has(attr)) return false; // it was marked as having been removed.
+    if (this.replacedAttributes.containsKey(attr)) return false; // it was replaced by a different attribute
+    return true;
+  }
+
   attributeIsObsolete(attr: SimpleAttribute) {
     this.obsoleteAttributes.add(attr);
+  }
+  /**
+   * Records a source attribute that was discovered from the styles before
+   * optimization.
+   */
+  addSourceAttribute(attr: SimpleAttribute) {
+    if (!this.sourceAttributes.has(attr)) {
+      this.sourceAttributes.add(attr);
+    }
   }
   rewriteAttribute(from: SimpleAttribute, to: SimpleAttribute): void {
     if (this.optimizedAttributes.has(from)) {
