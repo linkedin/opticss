@@ -110,12 +110,12 @@ interface PrimaryAttributeLink {
 }
 
 export class StyleMapping {
-  private templateOptions: TemplateIntegrationOptions;
-  private replacedAttributes: Dictionary<SimpleAttribute, SimpleAttribute>;
-  private linkedAttributes: MultiDictionary<SimpleAttribute, PrimaryAttributeLink>;
-  private sourceAttributes: IdentityDictionary<SimpleAttribute>;
-  private optimizedAttributes: IdentityDictionary<SimpleAttribute>;
-  private obsoleteAttributes: IdentityDictionary<SimpleAttribute>;
+  templateOptions: TemplateIntegrationOptions;
+  replacedAttributes: Dictionary<SimpleAttribute, SimpleAttribute>;
+  linkedAttributes: MultiDictionary<SimpleAttribute, PrimaryAttributeLink>;
+  sourceAttributes: IdentityDictionary<SimpleAttribute>;
+  optimizedAttributes: IdentityDictionary<SimpleAttribute>;
+  obsoleteAttributes: IdentityDictionary<SimpleAttribute>;
   constructor(templateOptions: TemplateIntegrationOptions) {
     this.templateOptions = templateOptions;
     this.replacedAttributes = attributeDictionary();
