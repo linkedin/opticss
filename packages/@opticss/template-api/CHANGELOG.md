@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/linkedin/opticss/compare/@opticss/template-api@0.6.3...@opticss/template-api@0.7.0) (2020-08-04)
+
+
+### Features
+
+* Expose StyleMapping data as public. ([ab815be](https://github.com/linkedin/opticss/commit/ab815be))
+* Record in the stylemapping styles used before optimization. ([314a8c9](https://github.com/linkedin/opticss/commit/314a8c9))
+
+
+
+
+
 ## [0.6.3](https://github.com/linkedin/opticss/compare/@opticss/template-api@0.6.2...@opticss/template-api@0.6.3) (2019-09-16)
 
 **Note:** Version bump only for package @opticss/template-api

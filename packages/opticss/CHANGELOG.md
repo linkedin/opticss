@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/linkedin/opticss/compare/opticss@0.7.0...opticss@0.8.0) (2020-08-04)
+
+
+### Features
+
+* Record in the stylemapping styles used before optimization. ([314a8c9](https://github.com/linkedin/opticss/commit/314a8c9))
+
+
+
+
+
 # [0.7.0](https://github.com/linkedin/opticss/compare/opticss@0.6.3...opticss@0.7.0) (2019-12-09)
 
 
