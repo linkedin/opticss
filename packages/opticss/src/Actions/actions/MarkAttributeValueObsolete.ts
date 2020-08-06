@@ -50,8 +50,11 @@ export class MarkAttributeValueObsolete extends MultiAction {
   logStrings(): Array<string> {
     let logs = new Array<string>();
     let mainMessage = `Attribute ${simpleAttributeToString(this.attribute)} will be removed from templates. ${this.reason}`;
-    let firstPos = this.nodeSourcePosition(this.selectors[0].rule);
-    if (firstPos) { firstPos.line = -1; }
+    let firstPos: SourcePosition | undefined;
+    if (this.selectors.length > 0) {
+      firstPos = this.nodeSourcePosition(this.selectors[0].rule);
+      if (firstPos) { firstPos.line = -1; }
+    }
     logs.push(this.annotateLogMessage(mainMessage, firstPos));
     for (let sel of this.selectors) {
       let rulePos = this.nodeSourcePosition(sel.rule);
