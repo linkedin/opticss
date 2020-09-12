@@ -402,7 +402,7 @@ export class MergeDeclarations implements MultiFileOptimization {
       if (declInfos.length === 0) {
         continue;
       }
-      let expanded = expandIfNecessary(context.authoredProps, declInfos[0].prop, declInfos[0].value, actions);
+      let expanded = expandIfNecessary(context.authoredProps, declInfos[0].prop, declInfos[0].value, actions, declInfos[0].decl);
       nextMerge:
       for (let unmergedDecl of declInfos) {
         nextGroup:

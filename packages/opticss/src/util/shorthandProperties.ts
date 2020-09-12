@@ -1,9 +1,11 @@
+import { SourcePosition } from "@opticss/element-analysis";
 import { StringDict } from "@opticss/util";
 import * as propParser from "css-property-parser";
+import * as postcss from "postcss";
 
 import {
   Actions,
-  Note,
+  Warning,
 } from "../Actions";
 
 export function expandPropertyName(prop: string, recursively = false): string[] {
@@ -15,30 +17,7 @@ export function expandPropertyName(prop: string, recursively = false): string[] 
   }
 }
 
-export function fullyExpandShorthandProperty(prop: string, value: string) {
-  try {
-    let expanded = propParser.expandShorthandProperty(prop, value, true);
-    for (let p of Object.keys(expanded)) {
-      if (propParser.isShorthandProperty(p)) {
-        delete expanded[p];
-      }
-    }
-    return expanded;
-  } catch (e) {
-    if (/parsing shorthand property/.test(e.message)) {
-      // TODO: instrument this so it can be added to the optimization logger.
-      // tslint:disable-next-line:no-console
-      console.log(e.message + `(long hands for this declaration will not be optimized)`);
-      return {
-        [prop]: value,
-      };
-    } else {
-      throw e;
-    }
-  }
-}
-
-export function expandIfNecessary(authoredProps: Set<string>, prop: string, value: string, actions: Actions): StringDict {
+export function expandIfNecessary(authoredProps: Set<string>, prop: string, value: string, actions: Actions, decl: postcss.Declaration): StringDict {
   if (!propParser.isShorthandProperty(prop)) {
     return {[prop]: value};
   }
@@ -50,10 +29,10 @@ export function expandIfNecessary(authoredProps: Set<string>, prop: string, valu
     longHandProps = Object.keys(longHandValues);
   } catch (e) {
     if (/parsing shorthand property/.test(e.message)) {
-      actions.perform(new Note("mergeDeclarations", e.message + `(long hands for this declaration will not be optimized)`));
+      actions.perform(new Warning("mergeDeclarations", e.message + ` (long hands for this declaration will not be optimized)`, sourcePositionForNode(decl)));
       return { [prop]: value };
     } else if (/is not a supported property/.test(e.message)) {
-      actions.perform(new Note("mergeDeclarations", e.message + `(long hands for this declaration with conflicting values will not be understood as such which could result in incorrect optimization output.)`));
+      actions.perform(new Warning("mergeDeclarations", e.message + ` (long hands for this declaration with conflicting values will not be understood as such which could result in incorrect optimization output.)`, sourcePositionForNode(decl)));
       return { [prop]: value };
     } else {
       throw e;
@@ -62,7 +41,7 @@ export function expandIfNecessary(authoredProps: Set<string>, prop: string, valu
   let directAuthored = longHandProps.some(p => authoredProps.has(p));
   for (let p of longHandProps) {
     let v = longHandValues[p];
-    let expanded = expandIfNecessary(authoredProps, p, v, actions);
+    let expanded = expandIfNecessary(authoredProps, p, v, actions, decl);
     if (Object.keys(expanded).some(key => authoredProps.has(key))) {
       Object.assign(longhandDeclarations, expanded);
     } else if (directAuthored) {
@@ -73,4 +52,16 @@ export function expandIfNecessary(authoredProps: Set<string>, prop: string, valu
     longhandDeclarations[prop] = value;
   }
   return longhandDeclarations;
+}
+
+function sourcePositionForNode(node: postcss.NodeBase): SourcePosition | undefined {
+  if (node.source && node.source.start) {
+    return {
+      filename: node.source.input.file,
+      line: node.source.start.line,
+      column: node.source.start.column,
+    };
+  } else {
+    return undefined;
+  }
 }

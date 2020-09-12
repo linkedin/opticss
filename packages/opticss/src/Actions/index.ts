@@ -26,4 +26,5 @@ export { RemoveRule } from "./actions/RemoveRule";
 export { RewriteRuleIdents } from "./actions/RewriteRuleIdents";
 export { MergeDeclarations } from "./actions/MergeDeclarations";
 export { Note } from "./actions/Note";
+export { Warning } from "./actions/Warning";
 export * from "./Action";
