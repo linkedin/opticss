@@ -217,39 +217,32 @@ export class Optimizer {
    *   but it is needed to ensure that source maps works correctly.
    * @returns The optimization result.
    */
-  optimize(outputFilename: string): Promise<OptimizationResult> {
+  async optimize(outputFilename: string): Promise<OptimizationResult> {
     let pass = new OptimizationPass(this.options, this.templateOptions);
     let start = new Date();
 
     // Parse all input files.
-    return this.parseFiles(this.sources)
+    let files = await this.parseFiles(this.sources);
 
     // Run all initializers on parsed files.
-    .then(files => {
-      this.initialize(pass, files);
-      return files;
-    })
+    this.initialize(pass, files);
 
     // Run all optimizers on parsed files.
-    .then(files => {
-      return this.optimizeFiles(pass, files);
-    })
+    files = await this.optimizeFiles(pass, files);
 
     // Concatenate all files and return optimization result.
-    .then((files) => {
-      let output = this.concatenateFiles(files, outputFilename);
-      this.logTiming("total", start, new Date());
-      return {
-        output: {
-          filename: outputFilename,
-          content: output.content.toString(),
-          sourceMap: output.sourceMap,
-        },
-        styleMapping: pass.styleMapping,
-        actions: pass.actions,
-      };
-    });
+    let output = this.concatenateFiles(files, outputFilename);
+    this.logTiming("total", start, new Date());
 
+    return {
+      output: {
+        filename: outputFilename,
+        content: output.content.toString(),
+        sourceMap: output.sourceMap,
+      },
+      styleMapping: pass.styleMapping,
+      actions: pass.actions,
+    };
   }
 }
 
