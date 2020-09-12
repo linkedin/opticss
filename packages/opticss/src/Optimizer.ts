@@ -276,7 +276,7 @@ function parseCss(file: CssFile): Promise<ParsedCssFile> {
 }
 
 // This use of this plugin silences a postcss warning.
-export const POSTCSS_NOOP_PLUGIN = postcss.plugin("css-blocks-plugin", function (_opts) {
+export const POSTCSS_NOOP_PLUGIN = postcss.plugin("noop-plugin", function (_opts) {
   return function (_root, _result) {
     return Promise.resolve();
   };
