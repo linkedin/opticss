@@ -46,7 +46,9 @@ export class IntegrationTests {
       //   // debugResult(css, result);
       // });
     }).catch(e => {
-      logOptimizations(e.optimization);
+      if (e.optimization) {
+        logOptimizations(e.optimization);
+      }
       debugCascadeError(e);
       throw e;
     });

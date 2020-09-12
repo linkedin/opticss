@@ -52,6 +52,9 @@ export function expandIfNecessary(authoredProps: Set<string>, prop: string, valu
     if (/parsing shorthand property/.test(e.message)) {
       actions.perform(new Note("mergeDeclarations", e.message + `(long hands for this declaration will not be optimized)`));
       return { [prop]: value };
+    } else if (/is not a supported property/.test(e.message)) {
+      actions.perform(new Note("mergeDeclarations", e.message + `(long hands for this declaration with conflicting values will not be understood as such which could result in incorrect optimization output.)`));
+      return { [prop]: value };
     } else {
       throw e;
     }
