@@ -5,7 +5,7 @@ import {
   slow,
   suite,
   test,
-  timeout
+  timeout,
 } from "mocha-typescript";
 import * as path from "path";
 
@@ -17,7 +17,7 @@ import {
   debugCascadeError,
   debugError,
   logOptimizations,
-  testOptimizationCascade
+  testOptimizationCascade,
 } from "./util/assertCascade";
 
 // import { debugSize } from "./util/assertSmaller";
