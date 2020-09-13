@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/linkedin/opticss/compare/opticss@0.8.1...opticss@0.9.0) (2020-09-13)
+
+
+### Bug Fixes
+
+* Handle unsupport css properties during shorthand expansion. ([5e2df42](https://github.com/linkedin/opticss/commit/5e2df42))
+
+
+### Features
+
+* Issue a warning instead of a note for css property issues. ([1c5d032](https://github.com/linkedin/opticss/commit/1c5d032))
+
+
+
+
+
 ## [0.8.1](https://github.com/linkedin/opticss/compare/opticss@0.8.0...opticss@0.8.1) (2020-08-06)
 
 
