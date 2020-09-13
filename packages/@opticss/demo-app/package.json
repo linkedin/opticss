@@ -19,7 +19,9 @@
     "remap": "remap-istanbul -i build/coverage/coverage.json -o coverage -t html",
     "docs": "typedoc --out ./docs .",
     "start": "node server.js",
-    "watch": "watch 'yarn run compile' './src' './static' './test' --wait=1"
+    "watch": "watch 'yarn run compile' './src' './static' './test' --wait=1",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "bin": "bin/opticss",
   "repository": {
@@ -46,7 +48,8 @@
     "opticss": "^0.9.0",
     "parse5": "^5.0.0",
     "prettier": "1.17.1",
-    "split.js": "^1.3.5"
+    "split.js": "^1.3.5",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "@opticss/code-style": "^0.6.0",
@@ -67,5 +70,6 @@
     "tslint": "^5.10.0",
     "typescript": "~3.4.4",
     "watch": "^1.0.2"
-  }
+  },
+  "snyk": true
 }
